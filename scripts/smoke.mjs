@@ -442,6 +442,81 @@ check('a Casteless Lunar chooses 3', /Favored attributes 0\/3/.test(castelessPic
 await page.select('#splat-sel', 'solar');
 await new Promise((r) => setTimeout(r, 200));
 
+// The home page routes into the sheet
+{
+  const home = URL.replace(/sheet\/?$/, '');
+  // Its own context, so localStorage starts empty and the "you have work in progress"
+  // path can be triggered deliberately rather than by leftovers from the tests above.
+  const ctx = await browser.createBrowserContext();
+  const p2 = await ctx.newPage();
+  await p2.setViewport({ width: 1400, height: 1000 });
+  await p2.goto(home, { waitUntil: 'networkidle0' });
+  const cards = await p2.evaluate(() => ({
+    splats: [...document.querySelectorAll('.splat-card')].map((a) => a.getAttribute('href')),
+    ways: [...document.querySelectorAll('.way')].map((a) => ({
+      href: a.getAttribute('href'),
+      title: a.querySelector('h2')?.textContent,
+      explained: (a.querySelector('p')?.textContent || '').length > 80,
+    })),
+  }));
+  check('every exalt card links into the sheet with its type',
+        cards.splats.length === 7 && cards.splats.every((h) => /sheet\?splat=[a-z-]+$/.test(h || '')),
+        JSON.stringify(cards.splats));
+  check('the page body offers Sheet and Campaigns',
+        cards.ways.length === 2 && /sheet$/.test(cards.ways[0].href) && /campaigns$/.test(cards.ways[1].href),
+        JSON.stringify(cards.ways.map((w) => w.href)));
+  check('both are explained, not just linked',
+        cards.ways.every((w) => w.explained), JSON.stringify(cards.ways.map((w) => w.title)));
+
+  // A fresh browser: picking a type just opens that sheet, no questions asked.
+  await p2.goto(home + 'sheet?splat=lunar', { waitUntil: 'networkidle0' });
+  await p2.waitForSelector('#attrs .dot', { timeout: 15000 });
+  const picked = await p2.evaluate(() => ({
+    splat: document.getElementById('splat-sel').value,
+    groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+    url: location.search,
+  }));
+  check('picking Lunar opens a Lunar sheet', picked.splat === 'lunar', JSON.stringify(picked));
+  check('and really switches the layout',
+        JSON.stringify(picked.groups) === JSON.stringify(['War', 'Life', 'Wisdom']), JSON.stringify(picked.groups));
+  check('the query string is cleaned up afterwards', picked.url === '', picked.url);
+
+  // With work in progress it must ask first, and taking "keep" must change nothing.
+  await p2.evaluate(() => {
+    const row = [...document.querySelectorAll('#attrs .trow')].find((r) => r.textContent.trim().startsWith('Strength'));
+    row.querySelector('.dots [data-v="4"]').click();
+    document.querySelector('[data-id="name"]').value = 'Work In Progress';
+    document.querySelector('[data-id="name"]').dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await new Promise((r) => setTimeout(r, 300));
+  await p2.goto(home + 'sheet?splat=sidereal', { waitUntil: 'networkidle0' });
+  await p2.waitForSelector('dialog.ui-dlg', { timeout: 15000 });
+  check('switching type over existing work asks first', true);
+  await p2.evaluate(() => document.querySelector('dialog.ui-dlg [data-cancel]').click());
+  await p2.waitForSelector('#attrs .dot', { timeout: 15000 });
+  const kept = await p2.evaluate(() => ({
+    splat: document.getElementById('splat-sel').value,
+    name: document.querySelector('[data-id="name"]').value,
+  }));
+  check('declining keeps the character exactly as it was',
+        kept.splat === 'lunar' && kept.name === 'Work In Progress', JSON.stringify(kept));
+
+  // Accepting must actually switch it.
+  await p2.goto(home + 'sheet?splat=sidereal', { waitUntil: 'networkidle0' });
+  await p2.waitForSelector('dialog.ui-dlg', { timeout: 15000 });
+  await p2.evaluate(() => document.querySelector('dialog.ui-dlg button[type=submit]').click());
+  await p2.waitForSelector('#attrs .dot', { timeout: 15000 });
+  const switched = await p2.evaluate(() => ({
+    splat: document.getElementById('splat-sel').value,
+    name: document.querySelector('[data-id="name"]').value,
+    groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+  }));
+  check('accepting switches the type but keeps the character',
+        switched.splat === 'sidereal' && switched.name === 'Work In Progress'
+        && switched.groups[0] === 'Journeys', JSON.stringify(switched));
+  await ctx.close();
+}
+
 // No block may push the page wider than the viewport
 const overflow = await page.evaluate(() => {
   const bad = [];

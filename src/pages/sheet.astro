@@ -9,20 +9,57 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
 
 <script>
   import { mountSheet } from '../lib/engine';
+  import { SPLAT_BY_ID } from '../lib/data';
+  import { uiConfirm } from '../lib/dialog';
 
   const KEY = 'exalted:sheet';
 
-  mountSheet({
-    load: () => {
-      const m = location.hash.match(/c=([^&]+)/);
-      if (m) {
-        try { return JSON.parse(decodeURIComponent(escape(atob(m[1])))); } catch { /* fall through */ }
+  /** Does this saved sheet hold anything worth not clobbering? */
+  function hasWork(state: any) {
+    if (!state || typeof state !== 'object') return false;
+    if ((state.id?.name || '').trim()) return true;
+    // Cheap proxy for "someone has been spending": any trait above its own granted floor.
+    for (const group of ['attrs', 'abils', 'virtues']) {
+      for (const t of Object.values<any>(state[group] || {})) {
+        if ((t?.v || 0) > (t?.granted || 0)) return true;
       }
+    }
+    return (state.charms?.list || []).length > 0 || (state.backgrounds || []).length > 0;
+  }
+
+  mountSheet({
+    load: async () => {
+      const hash = location.hash.match(/c=([^&]+)/);
+      if (hash) {
+        try { return JSON.parse(decodeURIComponent(escape(atob(hash[1])))); } catch { /* fall through */ }
+      }
+
+      let saved: any = null;
       try {
         const raw = localStorage.getItem(KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) saved = JSON.parse(raw);
       } catch { /* storage unavailable */ }
-      return null;
+
+      // ?splat=lunar, from the type cards on the home page.
+      const wanted = new URLSearchParams(location.search).get('splat');
+      const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+
+      if (wanted && SPLAT_BY_ID[wanted]) {
+        if (!saved) { clean(); return { splat: wanted }; }
+        if (saved.splat !== wanted) {
+          // Switching type resets caste and favoured picks, so ask before discarding work.
+          const name = SPLAT_BY_ID[wanted].name;
+          const ok = !hasWork(saved) || await uiConfirm(
+            `Turn the character in this browser into a ${name}? `
+            + 'Its caste and favoured picks are cleared, and traits below the new floors are raised.',
+            { title: `Switch to ${name}`, ok: `Make it a ${name}`, cancel: 'Keep what I have' });
+          clean();
+          if (!ok) return saved;
+          return { ...saved, splat: wanted, caste: '', favored: { abilities: [], attributes: [] } };
+        }
+        clean();
+      }
+      return saved;
     },
     save: (S) => {
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* quota */ }

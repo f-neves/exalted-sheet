@@ -12,16 +12,39 @@ const base = import.meta.env.BASE_URL;
     block shows its working on hover.
   </p>
 
-  <p><a class="btn primary big" href={`${base}sheet`}>Open the sheet</a></p>
+  <div class="ways">
+    <a class="way" href={`${base}sheet`}>
+      <h2>The character sheet</h2>
+      <p>
+        Build a character on your own. It needs no account and works offline: everything
+        stays in this browser. Export it as a file, import it back, print it, or copy a link
+        that carries the whole character with it.
+      </p>
+      <span class="go">Open the sheet →</span>
+    </a>
 
-  <h2 class="hero-h2">Supported Exalt types</h2>
+    <a class="way" href={`${base}campaigns`}>
+      <h2>Campaigns</h2>
+      <p>
+        Play at a table. The Storyteller starts a campaign and hands out a six-character
+        code; players join with it and build their characters there. The Storyteller reads
+        every sheet, sets each character's experience, approves them or sends them back, and
+        shares handouts and a summary after each session. Needs an account.
+      </p>
+      <span class="go">Go to campaigns →</span>
+    </a>
+  </div>
+
+  <h2 class="hero-h2">Pick a type to start a sheet</h2>
   <div class="splat-grid">
     {SPLATS.map((s: any) => (
-      <div class="splat-card" style={`--c:${s.accent}`}>
+      <a class="splat-card" href={`${base}sheet?splat=${s.id}`} style={`--c:${s.accent}`}>
         <b>{s.name}</b>
-        <span>{s.castes.map((c: any) => c.name).join(' · ')}</span>
+        <span>{s.castes.length
+          ? s.castes.map((c: any) => c.name).join(' · ')
+          : 'no caste'}</span>
         {!s.verified && <em>data still needs verifying</em>}
-      </div>
+      </a>
     ))}
   </div>
 
@@ -29,13 +52,35 @@ const base = import.meta.env.BASE_URL;
     .hero-h { font-size: 2.6rem; margin: 1.5rem 0 .3rem; letter-spacing: .08em; color: var(--accent); }
     .hero-h span { display: block; font-size: .8rem; letter-spacing: .3em; color: var(--ink-soft); }
     .hero-p { max-width: 42rem; color: var(--ink-soft); }
-    .btn.big { font-size: .95rem; padding: .5rem 1.4rem; display: inline-block; text-decoration: none; }
     .hero-h2 { font-size: .82rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-strong); margin-top: 2.5rem; }
+
+    .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.6rem 0 0; align-items: stretch; }
+    @media (max-width: 760px) { .ways { grid-template-columns: 1fr; } }
+    .way {
+      display: flex; flex-direction: column; gap: .4rem; text-decoration: none; color: var(--ink);
+      border: 1px solid var(--panel-border); border-top: 3px solid var(--accent);
+      background: var(--panel); border-radius: 7px; padding: 1rem 1.1rem;
+      transition: border-color .12s, transform .12s;
+    }
+    .way:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .way h2 {
+      font-size: .9rem; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--accent); margin: 0;
+    }
+    .way p { margin: 0; font-size: .92rem; color: var(--ink-soft); line-height: 1.5; }
+    .way .go {
+      font-family: 'Cinzel'; font-size: .76rem; letter-spacing: .05em;
+      color: var(--accent-strong); margin-top: auto; padding-top: .5rem;
+    }
+
     .splat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .6rem; }
     .splat-card {
+      display: block; text-decoration: none; color: var(--ink);
       border: 1px solid var(--panel-border); border-left: 4px solid var(--c);
       background: var(--panel); border-radius: 5px; padding: .5rem .7rem;
+      transition: border-color .12s, transform .12s;
     }
+    .splat-card:hover { border-color: var(--c); transform: translateY(-2px); }
     .splat-card b { font-family: 'Cinzel'; color: var(--c); display: block; font-size: .95rem; }
     .splat-card span { font-size: .82rem; color: var(--ink-soft); }
     .splat-card em { display: block; font-size: .75rem; color: var(--danger); margin-top: .2rem; }
