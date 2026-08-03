@@ -1,0 +1,90 @@
+{
+  "id": "solar",
+  "name": "Solar",
+  "order": 1,
+  "verified": true,
+  "_doc": [
+    "REFERENCE FILE. Every other splat copies this shape. Numbers here are derived from Solar.xlsx",
+    "and match canonical Exalted 2e.",
+    "",
+    "XP MODEL: a trait costs nothing up to max(floors[kind], granted). Above that, each dot from",
+    "n-1 to n costs   mult * (n - 1) + base   using the 'favored' spec when the trait is caste/favored,",
+    "otherwise 'normal'. Abilities additionally use firstDot / favoredFirstDot for the 0 -> 1 step.",
+    "",
+    "POOLS: linear coefficient maps. Available keys: essence, willpower, virtuesSum, highestVirtue,",
+    "twoHighestVirtues, lowestVirtue, breeding, flat. Anything absent counts as 0."
+  ],
+
+  "casteLabel": "Caste",
+  "favoredKind": "ability",
+  "favoredPicks": 5,
+  "accent": "#e0a83c",
+  "accentSoft": "#8a6416",
+
+  "castes": [
+    { "id": "dawn",     "name": "Dawn",     "traits": ["archery", "martial-arts", "melee", "thrown", "war"] },
+    { "id": "zenith",   "name": "Zenith",   "traits": ["integrity", "performance", "presence", "resistance", "survival"] },
+    { "id": "twilight", "name": "Twilight", "traits": ["craft", "investigation", "lore", "medicine", "occult"] },
+    { "id": "night",    "name": "Night",    "traits": ["athletics", "awareness", "dodge", "larceny", "stealth"] },
+    { "id": "eclipse",  "name": "Eclipse",  "traits": ["bureaucracy", "linguistics", "ride", "sail", "socialize"] }
+  ],
+
+  "floors": {
+    "attribute": 2,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 2,
+    "background": 0
+  },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8,  "favored": 6 },
+      "celestial":   { "normal": 10, "favored": 8 },
+      "solar":       { "normal": 12, "favored": 10 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "_doc": "Buying a circle spends one Charm and grants the first spell of that circle free.",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery", "kind": "sorcery" },
+      { "id": "celestial",   "name": "Celestial Circle Sorcery",   "kind": "sorcery" },
+      { "id": "solar",       "name": "Solar Circle Sorcery",       "kind": "sorcery" }
+    ]
+  },
+
+  "pools": {
+    "personal":   { "essence": 3, "willpower": 1 },
+    "peripheral": { "essence": 7, "willpower": 1, "virtuesSum": 1 }
+  },
+
+  "soak": {
+    "_doc": "Multiplier applied to Stamina, floored, then armour soak is added.",
+    "bashing": 1,
+    "lethal": 0.5,
+    "aggravated": 1
+  },
+
+  "limit": { "enabled": true, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
+
+  "anima": [
+    { "range": "1-3",  "text": "Caste Mark glimmers; iconic anima flickers." },
+    { "range": "4-7",  "text": "Caste Mark burns brightly; anima banner visible." },
+    { "range": "8-10", "text": "Anima banner blazes to full height; caste power active." },
+    { "range": "11-15","text": "Bonfire. Anima power active for free; impossible to hide." },
+    { "range": "16+",  "text": "Iconic anima. Totemic display." }
+  ]
+}

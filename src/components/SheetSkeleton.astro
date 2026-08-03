@@ -1,0 +1,316 @@
+---
+// Static markup + styles for the sheet. All behaviour lives in src/lib/engine.ts.
+// Containers are intentionally empty: the engine fills them.
+---
+
+<div class="xpbar" id="xpbar">
+  <span class="big">XP <b id="xpSpent">0</b></span>
+  <label>Budget <input type="number" id="xpBudget" value="0" step="1" /></label>
+  <span class="big">Left <b id="xpRem" class="rem ok">0</b></span>
+  <span class="breakdown" id="xpBreak"></span>
+  <span class="xp-btns">
+    <button class="btn" id="f-export" type="button">Export</button>
+    <button class="btn" id="f-import" type="button">Import</button>
+    <button class="btn" id="f-print" type="button">Print</button>
+    <button class="btn" id="f-link" type="button">Link</button>
+    <button class="btn" id="f-reset" type="button">Reset</button>
+    <input type="file" id="f-file" accept="application/json,.json" hidden />
+  </span>
+</div>
+
+<div class="idrow">
+  <label>Name<input class="txt" data-id="name" placeholder="Unconquered name" /></label>
+  <label>Player<input class="txt" data-id="player" /></label>
+  <label>Concept<input class="txt" data-id="concept" /></label>
+  <label>Exalt<select id="splat-sel"></select></label>
+  <label id="caste-label-wrap">Caste<select id="caste-sel"></select></label>
+</div>
+<div class="idrow idrow-2">
+  <label>Motivation<input class="txt" data-id="motivation" /></label>
+  <label>Anima Banner<input class="txt" data-id="anima" /></label>
+  <label>Sobriquet<input class="txt" data-id="sobriquet" /></label>
+</div>
+<div class="caste-info" id="caste-info"></div>
+
+<h2 class="barh">Attributes <small id="attr-hint"></small></h2>
+<div class="cols3" id="attrs"></div>
+
+<div class="cols2">
+  <div>
+    <h2 class="barh">Virtues, Willpower &amp; Essence</h2>
+    <div id="power"></div>
+  </div>
+  <div>
+    <h2 class="barh">Derived <small>(calculated)</small><button class="deriv-toggle" id="deriv-toggle" type="button">Expand</button></h2>
+    <div class="panel derived collapsed" id="derived"></div>
+  </div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="abils"><span class="sec-caret">▾</span> Abilities <small id="abil-hint"></small></h2>
+<div class="sec-body" id="sec-abils">
+  <div class="cols3" id="abils"></div>
+  <div class="cols2 sublists">
+    <div>
+      <div class="sub-head">Craft <small>(one rating per Craft type)</small><button class="btn tiny" id="craft-add" type="button">+ craft</button></div>
+      <div id="crafts"></div>
+    </div>
+    <div>
+      <div class="sub-head">Martial Arts <small>(one rating per style)</small><button class="btn tiny" id="style-add" type="button">+ style</button></div>
+      <div id="styles"></div>
+    </div>
+  </div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="bgs"><span class="sec-caret">▾</span> Backgrounds <small>(granted dots cost no XP)</small></h2>
+<div class="sec-body" id="sec-bgs">
+  <div id="backgrounds"></div>
+  <button class="btn" id="bg-add" type="button">+ background</button>
+  <datalist id="bg-list"></datalist>
+</div>
+
+<h2 class="barh barh-tog" data-sec="essence"><span class="sec-caret">▾</span> Essence Pools &amp; Commitments</h2>
+<div class="sec-body" id="sec-essence">
+  <div class="panel" id="pools"></div>
+  <div class="commit-head">Committed Essence<button class="btn tiny" id="commit-add" type="button">+ commitment</button></div>
+  <div id="commitments"></div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="charms"><span class="sec-caret">▾</span> Charms &amp; Combos <small>(names are free text; only the count drives XP)</small></h2>
+<div class="sec-body" id="sec-charms">
+  <div class="cols2">
+    <div>
+      <div class="sub-head">Charms<button class="btn tiny" id="charm-add" type="button">+ charm</button></div>
+      <div id="charms"></div>
+    </div>
+    <div>
+      <div class="sub-head">Combos<button class="btn tiny" id="combo-add" type="button">+ combo</button></div>
+      <div id="combos"></div>
+    </div>
+  </div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="sorcery"><span class="sec-caret">▾</span> Sorcery &amp; Necromancy <small>(initiating into a circle spends a Charm and grants its first spell free)</small></h2>
+<div class="sec-body" id="sec-sorcery">
+  <div id="circles"></div>
+  <div class="sub-head">Spells<button class="btn tiny" id="spell-add" type="button">+ spell</button></div>
+  <div id="spells"></div>
+</div>
+
+<h2 class="barh">Health</h2>
+<div class="panel" id="health"></div>
+
+<h2 class="barh barh-tog" data-sec="equip"><span class="sec-caret">▾</span> Equipment <small>(costs no XP · drives attack, Parry DV and Soak)</small></h2>
+<div class="sec-body" id="sec-equip">
+  <div class="sub-head">Weapons<button class="btn tiny" id="weapon-add" type="button">+ weapon</button></div>
+  <div id="weapons"></div>
+  <div class="sub-head">Armour <small>(worn pieces stack: highest Soak per type, mobility penalties add)</small><button class="btn tiny" id="armor-add" type="button">+ armour</button></div>
+  <div id="armor"></div>
+  <div class="panel" id="combat"></div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="notes"><span class="sec-caret">▾</span> Intimacies &amp; Notes</h2>
+<div class="sec-body" id="sec-notes">
+  <div class="cols3 notes-grid" id="notes"></div>
+</div>
+
+<!-- is:global because the engine builds this DOM with innerHTML, which never
+     receives Astro's scoping attribute. -->
+<style is:global>
+  /* ---------- XP bar ---------- */
+  .xpbar {
+    display: flex; gap: .8rem 1.1rem; flex-wrap: wrap; align-items: center;
+    background: var(--accent); color: var(--on-accent);
+    padding: .55rem .95rem; border-radius: 7px; margin: .8rem 0 1rem;
+    position: sticky; top: 3.6rem; z-index: 30; box-shadow: 0 4px 14px var(--shadow);
+  }
+  @media print { .xpbar { position: static; box-shadow: none; } }
+  .xpbar .big { font-family: 'Cinzel'; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; }
+  .xpbar .big b { font-size: 1.35rem; letter-spacing: 0; }
+  .xpbar .rem.neg { color: #ffd8d0; }
+  .xpbar label { font-family: 'Cinzel'; font-size: .74rem; letter-spacing: .05em; text-transform: uppercase; display: flex; align-items: center; gap: .4rem; }
+  .xpbar input { width: 5rem; text-align: center; border: none; background: color-mix(in srgb, var(--on-accent) 12%, transparent); color: var(--on-accent); font-family: 'Cinzel'; }
+  .xpbar input:focus { box-shadow: none; outline: 2px solid var(--on-accent); }
+  .xpbar .breakdown { font-size: .76rem; opacity: .92; flex: 1 1 14rem; line-height: 1.4; }
+  .xpbar .xp-btns { display: flex; gap: .35rem; margin-left: auto; flex-wrap: wrap; }
+  .xpbar .btn { background: color-mix(in srgb, var(--on-accent) 14%, transparent); color: var(--on-accent); border-color: color-mix(in srgb, var(--on-accent) 30%, transparent); }
+  .xpbar .btn:hover { background: color-mix(in srgb, var(--on-accent) 26%, transparent); }
+
+  /* ---------- identity ---------- */
+  .idrow { display: grid; grid-template-columns: 1.4fr 1fr 1.4fr 1fr 1fr; gap: .8rem; margin-bottom: .5rem; }
+  .idrow.idrow-2 { grid-template-columns: 1.6fr 1.2fr 1.2fr; }
+  @media (max-width: 820px) { .idrow, .idrow.idrow-2 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .idrow, .idrow.idrow-2 { grid-template-columns: 1fr; } }
+  .idrow label { display: flex; flex-direction: column; gap: .18rem; font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+  .idrow .txt { font-size: 1rem; border: none; border-bottom: 1px solid var(--rule); background: transparent; border-radius: 0; padding: .18rem .1rem; }
+  .idrow .txt:focus { box-shadow: none; border-bottom-color: var(--accent); }
+  .idrow select { width: 100%; }
+  .caste-info { font-size: .84rem; color: var(--ink-soft); margin: 0 0 .8rem; line-height: 1.45; }
+  .caste-info b { font-family: 'Cinzel'; color: var(--accent-strong); font-weight: 600; }
+  .caste-info .todo { color: var(--danger); }
+
+  /* ---------- section headers ---------- */
+  h2.barh {
+    background: var(--accent); color: var(--on-accent);
+    font-family: 'Cinzel'; font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
+    padding: .32rem .7rem; border-radius: 3px; margin: 1.6rem 0 .7rem;
+  }
+  h2.barh small { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: .72rem; opacity: .85; }
+  h2.barh.barh-tog { cursor: pointer; user-select: none; }
+  h2.barh .sec-caret { display: inline-block; width: 1em; font-size: .85em; }
+  .sec-body.sec-hidden { display: none; }
+
+  h3.grph, .sub-head {
+    font-family: 'Cinzel'; font-size: .7rem; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--accent-strong); margin: .9rem 0 .35rem; padding-bottom: .18rem;
+    border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: .5rem;
+  }
+  h3.grph:first-child { margin-top: .2rem; }
+  .sub-head small { font-family: 'EB Garamond'; text-transform: none; letter-spacing: 0; font-size: .78rem; color: var(--ink-soft); font-style: italic; }
+  .sub-head .btn.tiny, .commit-head .btn.tiny { margin-left: auto; }
+  .btn.tiny { font-size: .68rem; padding: .12rem .5rem; }
+  .commit-head { font-family: 'Cinzel'; font-size: .7rem; letter-spacing: .07em; text-transform: uppercase; color: var(--accent-strong); margin: 1rem 0 .35rem; padding-bottom: .18rem; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; }
+
+  .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .2rem 1.8rem; align-items: start; }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem 1.8rem; align-items: start; }
+  @media (max-width: 860px) { .cols3, .cols2 { grid-template-columns: 1fr; } }
+  .sublists { margin-top: .8rem; }
+
+  .panel { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 5px; padding: .6rem .8rem; }
+
+  /* ---------- trait rows ---------- */
+  .trow { display: flex; align-items: center; gap: .4rem; padding: .11rem 0; }
+  .trow .nm { flex: 1 1 auto; min-width: 0; font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trow .nm.fav { color: var(--accent-strong); }
+  .trow .tag {
+    font-family: 'Cinzel'; font-size: .58rem; font-weight: 700; letter-spacing: .06em;
+    width: 1.15rem; height: 1.15rem; display: inline-grid; place-items: center; flex: none;
+    border-radius: 3px; border: 1px solid var(--panel-border); background: transparent;
+    color: var(--ink-soft); cursor: pointer; padding: 0;
+  }
+  .trow .tag.on { background: var(--accent); border-color: transparent; color: var(--on-accent); }
+  .trow .tag.locked { background: var(--accent-soft); border-color: transparent; color: var(--ink); cursor: default; }
+  .trow .tag.ghost { visibility: hidden; cursor: default; }
+  .trow .tag:not(.locked):not(.ghost):hover { border-color: var(--accent); }
+
+  .dots { display: inline-flex; gap: 3px; align-items: center; flex: none; }
+  .dot {
+    width: 14px; height: 14px; border: 1.5px solid var(--accent); border-radius: 50%;
+    background: transparent; cursor: pointer; padding: 0; flex: none; transition: background .08s;
+  }
+  .dot.on { background: var(--accent); }
+  .dot.free { border-color: var(--gold); }
+  .dot.on.free { background: var(--gold); }
+  .dot:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 32%, transparent); }
+  .dots:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  .grant {
+    width: 2.5rem; text-align: center; font-family: 'Cinzel'; font-size: .74rem; flex: none;
+    padding: .1rem .1rem; background: transparent; border: 1px solid transparent; border-bottom-color: var(--rule); border-radius: 0;
+    color: var(--gold);
+  }
+  .grant:hover { border-color: var(--panel-border); }
+  .grant:focus { box-shadow: none; border-color: var(--gold); border-radius: 4px; }
+  .xpc { font-family: 'Cinzel'; font-size: .7rem; color: var(--ink-soft); min-width: 2.2rem; text-align: right; flex: none; }
+  .xpc.paid { color: var(--accent-strong); }
+
+  .specbtn { background: none; border: none; cursor: pointer; font-size: .7rem; color: var(--gold); opacity: .3; padding: 0 .1rem; line-height: 1; flex: none; font-family: system-ui, 'Segoe UI Symbol', sans-serif; }
+  .specbtn:hover, .specbtn.has { opacity: 1; }
+
+  /* ---------- specialty popover ---------- */
+  .specpop {
+    position: absolute; z-index: 60; width: 280px; background: var(--panel);
+    border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 8px 24px var(--shadow); padding: .6rem .7rem;
+  }
+  .specpop-h { font-family: 'Cinzel'; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent-strong); margin-bottom: .5rem; }
+  .specpop-h small { font-family: 'EB Garamond'; text-transform: none; letter-spacing: 0; color: var(--ink-soft); font-style: italic; }
+  .specpop-row { display: flex; align-items: center; gap: .4rem; margin-bottom: .35rem; }
+  .specpop-row input { flex: 1; min-width: 0; }
+  .specpop-row .sqs { display: inline-flex; gap: 3px; flex: none; }
+  .sq { width: 13px; height: 13px; border: 1.2px solid var(--ink-soft); border-radius: 2px; background: transparent; cursor: pointer; padding: 0; flex: none; }
+  .sq.on { background: var(--gold); border-color: var(--gold); }
+  .rowx { border: none; background: none; color: var(--ink-soft); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 0 .15rem; flex: none; }
+  .rowx:hover { color: var(--danger); }
+  .spec-add { display: block; width: 100%; font-family: 'Cinzel'; font-size: .68rem; cursor: pointer; background: none; color: var(--accent-strong); border: 1px dashed var(--panel-border); border-radius: 6px; padding: .22rem; margin: .1rem 0 .4rem; }
+  .spec-add:hover { border-color: var(--accent); }
+  .specpop-f { text-align: right; }
+
+  /* ---------- derived ---------- */
+  .derived { border-left: 4px solid var(--accent); }
+  .derv { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; padding: .18rem 0; border-bottom: 1px dotted var(--rule); }
+  .derv:last-child { border-bottom: none; }
+  .derv .dl { font-family: 'Cinzel'; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-strong); }
+  .derv .dv { font-family: 'Cinzel'; font-weight: 700; font-size: 1.05rem; color: var(--accent); white-space: nowrap; }
+  .derv .dv[data-calc] { cursor: help; border-bottom: 1px dotted var(--accent-soft); }
+  .derived.collapsed .derv-extra { display: none; }
+  h2.barh .deriv-toggle {
+    float: right; font-family: 'Cinzel'; font-size: .66rem; text-transform: none; letter-spacing: 0;
+    padding: .1rem .55rem; background: color-mix(in srgb, var(--on-accent) 16%, transparent);
+    color: var(--on-accent); border: 1px solid color-mix(in srgb, var(--on-accent) 32%, transparent);
+    border-radius: 3px; cursor: pointer;
+  }
+  .calcpop {
+    position: absolute; z-index: 60; max-width: 300px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--accent); border-radius: 6px; padding: .4rem .6rem;
+    box-shadow: 0 4px 16px var(--shadow); font-size: .85rem; line-height: 1.45;
+  }
+
+  /* ---------- generic editable list rows ---------- */
+  .lrow { display: flex; align-items: center; gap: .4rem; padding: .16rem 0; border-bottom: 1px dotted var(--rule); }
+  .lrow .lname { flex: 1 1 auto; min-width: 4rem; }
+  .lrow .lnum { width: 3.6rem; text-align: center; }
+  .lrow .lsel { flex: 0 0 auto; max-width: 13rem; }
+  .lrow .lbl { font-family: 'Cinzel'; font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); flex: none; }
+  .lrow.head { border-bottom: 1px solid var(--rule); padding-bottom: .2rem; }
+  .lrow.head span { font-family: 'Cinzel'; font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
+  .empty { font-size: .85rem; color: var(--ink-soft); font-style: italic; padding: .3rem 0; }
+
+  /* ---------- power block (virtues / willpower / essence / limit) ---------- */
+  .wp-track { display: flex; flex-wrap: wrap; gap: 3px; margin: .2rem 0 .5rem; }
+  .box { width: 15px; height: 15px; border: 1.5px solid var(--panel-border); border-radius: 2px; background: transparent; cursor: pointer; padding: 0; flex: none; }
+  .box.on { background: var(--accent); border-color: var(--accent); }
+  .box.limit.on { background: var(--danger); border-color: var(--danger); }
+  .tline { display: flex; align-items: center; gap: .5rem; padding: .1rem 0; }
+  .tline .tl { font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
+
+  /* ---------- health ---------- */
+  .hl-track { display: flex; flex-wrap: wrap; gap: .5rem 1rem; }
+  .hl-grp { display: flex; align-items: center; gap: .35rem; }
+  .hl-lbl { font-family: 'Cinzel'; font-size: .7rem; color: var(--accent-strong); min-width: 2.4rem; }
+  .hl-box { width: 17px; height: 17px; border: 1.5px solid var(--panel-border); border-radius: 2px; background: transparent; cursor: pointer; padding: 0; font-family: 'Cinzel'; font-size: .7rem; line-height: 1; color: var(--ink); flex: none; }
+  .hl-box.b { background: color-mix(in srgb, var(--ink-soft) 55%, transparent); }
+  .hl-box.l { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .hl-box.a { background: #7a1f10; border-color: #7a1f10; color: #fff; }
+  .hl-ox { width: 3rem; text-align: center; }
+  .hl-ox-row { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .9rem; margin-top: .7rem; padding-top: .5rem; border-top: 1px dotted var(--rule); }
+  .hl-ox-row .hl-lbl { min-width: 0; }
+  .hl-ox-row .ox-title { font-family: 'Cinzel'; font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); margin-right: .3rem; }
+  .hl-foot { margin-top: .5rem; font-size: .88rem; }
+  .hl-foot b { font-family: 'Cinzel'; color: var(--accent-strong); }
+
+  /* ---------- combat summary ---------- */
+  .cmb { padding: .18rem 0; font-size: .93rem; border-bottom: 1px dotted var(--rule); }
+  .cmb:last-child { border-bottom: none; }
+  .cmb b { font-family: 'Cinzel'; font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-strong); }
+  .cmb .val { font-family: 'Cinzel'; color: var(--accent); font-weight: 700; }
+
+  .notes-grid textarea { width: 100%; min-height: 7rem; resize: vertical; }
+  .notes-grid label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+
+  .warn-todo {
+    border: 1px solid var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent);
+    border-radius: 5px; padding: .4rem .7rem; margin: .5rem 0; font-size: .85rem;
+  }
+
+  /* ---------- print ---------- */
+  @media print {
+    .xp-btns, .deriv-toggle, .btn, .specbtn { display: none !important; }
+    .sec-body.sec-hidden { display: block !important; }
+    .derived.collapsed .derv-extra { display: flex !important; }
+    h2.barh .sec-caret { display: none; }
+    h2.barh { background: none !important; color: #000 !important; border-bottom: 1.5px solid #000; border-radius: 0; }
+    .xpbar { background: none !important; color: #000 !important; border-bottom: 2px solid #000; border-radius: 0; }
+    .dot { border-color: #000; } .dot.on { background: #000; }
+    .box, .hl-box, .sq { border-color: #000; }
+    .panel { border-color: #999; background: none; }
+  }
+</style>

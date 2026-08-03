@@ -1,0 +1,31 @@
+[
+  { "id": "archery",       "name": "Archery",       "group": "war",     "attr": "dexterity" },
+  { "id": "martial-arts",  "name": "Martial Arts",  "group": "war",     "attr": "dexterity", "sub": "style" },
+  { "id": "melee",         "name": "Melee",         "group": "war",     "attr": "dexterity" },
+  { "id": "thrown",        "name": "Thrown",        "group": "war",     "attr": "dexterity" },
+  { "id": "war",           "name": "War",           "group": "war",     "attr": "charisma" },
+
+  { "id": "integrity",     "name": "Integrity",     "group": "virtue",  "attr": "wits" },
+  { "id": "performance",   "name": "Performance",   "group": "virtue",  "attr": "charisma" },
+  { "id": "presence",      "name": "Presence",      "group": "virtue",  "attr": "charisma" },
+  { "id": "resistance",    "name": "Resistance",    "group": "virtue",  "attr": "stamina" },
+  { "id": "survival",      "name": "Survival",      "group": "virtue",  "attr": "perception" },
+
+  { "id": "craft",         "name": "Craft",         "group": "lore",    "attr": "intelligence", "sub": "type" },
+  { "id": "investigation", "name": "Investigation", "group": "lore",    "attr": "perception" },
+  { "id": "lore",          "name": "Lore",          "group": "lore",    "attr": "intelligence" },
+  { "id": "medicine",      "name": "Medicine",      "group": "lore",    "attr": "intelligence" },
+  { "id": "occult",        "name": "Occult",        "group": "lore",    "attr": "intelligence" },
+
+  { "id": "athletics",     "name": "Athletics",     "group": "shadow",  "attr": "strength" },
+  { "id": "awareness",     "name": "Awareness",     "group": "shadow",  "attr": "perception" },
+  { "id": "dodge",         "name": "Dodge",         "group": "shadow",  "attr": "dexterity" },
+  { "id": "larceny",       "name": "Larceny",       "group": "shadow",  "attr": "dexterity" },
+  { "id": "stealth",       "name": "Stealth",       "group": "shadow",  "attr": "dexterity" },
+
+  { "id": "bureaucracy",   "name": "Bureaucracy",   "group": "society", "attr": "charisma" },
+  { "id": "linguistics",   "name": "Linguistics",   "group": "society", "attr": "intelligence" },
+  { "id": "ride",          "name": "Ride",          "group": "society", "attr": "dexterity" },
+  { "id": "sail",          "name": "Sail",          "group": "society", "attr": "wits" },
+  { "id": "socialize",     "name": "Socialize",     "group": "society", "attr": "charisma" }
+]

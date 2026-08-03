@@ -1,0 +1,72 @@
+{
+  "id": "sidereal",
+  "name": "Sidereal",
+  "order": 4,
+  "verified": true,
+  "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and castes are canonical 2e.",
+
+  "casteLabel": "Caste",
+  "favoredKind": "ability",
+  "favoredPicks": 4,
+  "accent": "#9b7fd4",
+  "accentSoft": "#5c4a86",
+
+  "castes": [
+    { "id": "journeys", "name": "Journeys", "traits": ["resistance", "ride", "sail", "survival", "thrown"] },
+    { "id": "serenity", "name": "Serenity", "traits": ["craft", "dodge", "linguistics", "performance", "socialize"] },
+    { "id": "battles",  "name": "Battles",  "traits": ["archery", "integrity", "melee", "presence", "war"] },
+    { "id": "secrets",  "name": "Secrets",  "traits": ["investigation", "larceny", "lore", "occult", "stealth"] },
+    { "id": "endings",  "name": "Endings",  "traits": ["athletics", "awareness", "bureaucracy", "martial-arts", "medicine"] }
+  ],
+
+  "floors": {
+    "attribute": 2,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 2,
+    "background": 0
+  },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8,  "favored": 6 },
+      "celestial":   { "normal": 10, "favored": 8 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery", "kind": "sorcery" },
+      { "id": "celestial",   "name": "Celestial Circle Sorcery",   "kind": "sorcery" }
+    ]
+  },
+
+  "pools": {
+    "personal":   { "essence": 2, "willpower": 1 },
+    "peripheral": { "essence": 6, "willpower": 1, "virtuesSum": 1 }
+  },
+
+  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 1 },
+
+  "limit": { "enabled": true, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
+
+  "anima": [
+    { "range": "1-3",  "text": "Caste mark glimmers; the Loom hums." },
+    { "range": "4-7",  "text": "Caste mark obvious; anima banner visible." },
+    { "range": "8-10", "text": "Anima banner at full height; constellation display." },
+    { "range": "11-15","text": "Bonfire. Anima power active for free." },
+    { "range": "16+",  "text": "Iconic anima of the Maidens' chosen." }
+  ]
+}

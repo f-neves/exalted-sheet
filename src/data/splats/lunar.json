@@ -1,0 +1,77 @@
+{
+  "id": "lunar",
+  "name": "Lunar",
+  "order": 3,
+  "verified": true,
+  "_doc": [
+    "Lunars favour ATTRIBUTES, not Abilities: favoredKind = 'attribute'. The caste grants the three",
+    "Attributes listed below; favoredPicks are additional Attributes chosen freely.",
+    "Casteless Lunars have no caste Attributes, so all five picks are free."
+  ],
+  "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and castes are canonical 2e.",
+
+  "casteLabel": "Caste",
+  "favoredKind": "attribute",
+  "favoredPicks": 2,
+  "accent": "#8fb8d8",
+  "accentSoft": "#4a6f8c",
+
+  "castes": [
+    { "id": "full-moon",     "name": "Full Moon",     "traits": ["strength", "dexterity", "stamina"] },
+    { "id": "changing-moon", "name": "Changing Moon", "traits": ["charisma", "manipulation", "appearance"] },
+    { "id": "no-moon",       "name": "No Moon",       "traits": ["perception", "intelligence", "wits"] },
+    { "id": "casteless",     "name": "Casteless",     "traits": [] }
+  ],
+
+  "floors": {
+    "attribute": 2,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 2,
+    "background": 0
+  },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "knack":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8,  "favored": 6 },
+      "celestial":   { "normal": 10, "favored": 8 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery", "kind": "sorcery" },
+      { "id": "celestial",   "name": "Celestial Circle Sorcery",   "kind": "sorcery" }
+    ]
+  },
+
+  "pools": {
+    "personal":   { "essence": 1, "willpower": 2 },
+    "peripheral": { "essence": 4, "willpower": 2, "highestVirtue": 4 }
+  },
+
+  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 1 },
+
+  "limit": { "enabled": true, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
+
+  "anima": [
+    { "range": "1-3",  "text": "Moonsilver tattoos and caste mark shimmer." },
+    { "range": "4-7",  "text": "Caste mark obvious; silver anima rises." },
+    { "range": "8-10", "text": "Anima banner at full height; totem animal manifest." },
+    { "range": "11-15","text": "Bonfire. Anima power active for free." },
+    { "range": "16+",  "text": "Iconic anima of Luna's chosen." }
+  ]
+}

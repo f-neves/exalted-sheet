@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import SheetSkeleton from '../components/SheetSkeleton.astro';
+---
+
+<Base title="Exalted 2e — Character Sheet">
+  <SheetSkeleton />
+</Base>
+
+<script>
+  import { mountSheet } from '../lib/engine';
+
+  const KEY = 'exalted:sheet';
+
+  mountSheet({
+    load: () => {
+      const m = location.hash.match(/c=([^&]+)/);
+      if (m) {
+        try { return JSON.parse(decodeURIComponent(escape(atob(m[1])))); } catch { /* fall through */ }
+      }
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw) return JSON.parse(raw);
+      } catch { /* storage unavailable */ }
+      return null;
+    },
+    save: (S) => {
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* quota */ }
+    },
+    onReset: () => {
+      try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+      location.hash = '';
+    },
+  });
+</script>

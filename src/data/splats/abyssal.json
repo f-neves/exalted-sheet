@@ -1,0 +1,78 @@
+{
+  "id": "abyssal",
+  "name": "Abyssal",
+  "order": 2,
+  "verified": true,
+  "_doc": "Dark mirror of the Solar: same XP costs, same pools, castes map 1:1 onto the Solar castes.",
+
+  "casteLabel": "Caste",
+  "favoredKind": "ability",
+  "favoredPicks": 5,
+  "accent": "#b9b2a4",
+  "accentSoft": "#6b6459",
+
+  "castes": [
+    { "id": "dusk",       "name": "Dusk",       "traits": ["archery", "martial-arts", "melee", "thrown", "war"] },
+    { "id": "midnight",   "name": "Midnight",   "traits": ["integrity", "performance", "presence", "resistance", "survival"] },
+    { "id": "daybreak",   "name": "Daybreak",   "traits": ["craft", "investigation", "lore", "medicine", "occult"] },
+    { "id": "day",        "name": "Day",        "traits": ["athletics", "awareness", "dodge", "larceny", "stealth"] },
+    { "id": "moonshadow", "name": "Moonshadow", "traits": ["bureaucracy", "linguistics", "ride", "sail", "socialize"] }
+  ],
+
+  "floors": {
+    "attribute": 2,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 2,
+    "background": 0
+  },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8,  "favored": 6 },
+      "celestial":   { "normal": 10, "favored": 8 },
+      "shadowlands": { "normal": 8,  "favored": 6 },
+      "labyrinth":   { "normal": 10, "favored": 8 },
+      "void":        { "normal": 12, "favored": 10 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery",  "kind": "sorcery" },
+      { "id": "celestial",   "name": "Celestial Circle Sorcery",    "kind": "sorcery" },
+      { "id": "shadowlands", "name": "Shadowlands Circle Necromancy", "kind": "necromancy" },
+      { "id": "labyrinth",   "name": "Labyrinth Circle Necromancy",   "kind": "necromancy" },
+      { "id": "void",        "name": "Void Circle Necromancy",        "kind": "necromancy" }
+    ]
+  },
+
+  "pools": {
+    "personal":   { "essence": 3, "willpower": 1 },
+    "peripheral": { "essence": 7, "willpower": 1, "virtuesSum": 1 }
+  },
+
+  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 1 },
+
+  "limit": { "enabled": true, "label": "Resonance", "boxes": 10, "breakLabel": "Resonance Bleed" },
+
+  "anima": [
+    { "range": "1-3",  "text": "Caste Mark glimmers; the air chills." },
+    { "range": "4-7",  "text": "Caste Mark visible; anima banner of void and bone." },
+    { "range": "8-10", "text": "Anima banner at full height; caste power active." },
+    { "range": "11-15","text": "Bonfire. Anima power active for free; creatures of life recoil." },
+    { "range": "16+",  "text": "Iconic anima of the Neverborn." }
+  ]
+}

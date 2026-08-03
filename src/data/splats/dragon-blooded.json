@@ -1,0 +1,77 @@
+{
+  "id": "dragon-blooded",
+  "name": "Dragon-Blooded",
+  "order": 5,
+  "verified": true,
+  "_doc": [
+    "Terrestrial Exalted. Aspects instead of Castes. Smallest Essence pools of the six types.",
+    "pools.*.breeding is wired up but set to 0: raise it to 1 if your table uses the variant where",
+    "the Breeding Background feeds the mote pools."
+  ],
+  "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and aspects are canonical 2e.",
+
+  "casteLabel": "Aspect",
+  "favoredKind": "ability",
+  "favoredPicks": 3,
+  "accent": "#5fa87d",
+  "accentSoft": "#356b4d",
+
+  "castes": [
+    { "id": "air",   "name": "Air",   "traits": ["linguistics", "lore", "occult", "stealth", "thrown"],          "accent": "#a8c8e8" },
+    { "id": "earth", "name": "Earth", "traits": ["awareness", "craft", "integrity", "resistance", "war"],        "accent": "#b09070" },
+    { "id": "fire",  "name": "Fire",  "traits": ["athletics", "dodge", "melee", "presence", "socialize"],        "accent": "#e07a4a" },
+    { "id": "water", "name": "Water", "traits": ["bureaucracy", "investigation", "larceny", "martial-arts", "sail"], "accent": "#4a9ec0" },
+    { "id": "wood",  "name": "Wood",  "traits": ["archery", "medicine", "performance", "ride", "survival"],      "accent": "#7db054" }
+  ],
+
+  "floors": {
+    "attribute": 2,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 2,
+    "background": 0
+  },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8, "favored": 6 },
+      "shadowlands": { "normal": 8, "favored": 6 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery",    "kind": "sorcery" },
+      { "id": "shadowlands", "name": "Shadowlands Circle Necromancy", "kind": "necromancy" }
+    ]
+  },
+
+  "pools": {
+    "personal":   { "essence": 1, "willpower": 1, "breeding": 0 },
+    "peripheral": { "essence": 4, "willpower": 1, "highestVirtue": 1, "breeding": 0 }
+  },
+
+  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 1 },
+
+  "limit": { "enabled": true, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
+
+  "anima": [
+    { "range": "1-3",  "text": "Aspect markings become prominent; subtle elemental discharge." },
+    { "range": "4-7",  "text": "Aspect markings and elemental energies become obvious." },
+    { "range": "8-10", "text": "Anima banner at full height; elemental display." },
+    { "range": "11-15","text": "Bonfire. Anima power active for free." },
+    { "range": "16+",  "text": "Anima flux: elemental damage to everything nearby." }
+  ]
+}

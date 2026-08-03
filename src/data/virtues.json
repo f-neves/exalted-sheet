@@ -1,0 +1,6 @@
+[
+  { "id": "compassion", "name": "Compassion", "flaw": "Heart's Blood" },
+  { "id": "temperance", "name": "Temperance", "flaw": "Contempt" },
+  { "id": "conviction", "name": "Conviction", "flaw": "Deliberate Cruelty" },
+  { "id": "valor",      "name": "Valor",      "flaw": "Berserk Anger" }
+]

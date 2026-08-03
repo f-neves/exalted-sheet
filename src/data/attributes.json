@@ -1,0 +1,11 @@
+[
+  { "id": "strength",     "name": "Strength",     "group": "physical" },
+  { "id": "dexterity",    "name": "Dexterity",    "group": "physical" },
+  { "id": "stamina",      "name": "Stamina",      "group": "physical" },
+  { "id": "charisma",     "name": "Charisma",     "group": "social" },
+  { "id": "manipulation", "name": "Manipulation", "group": "social" },
+  { "id": "appearance",   "name": "Appearance",   "group": "social" },
+  { "id": "perception",   "name": "Perception",   "group": "mental" },
+  { "id": "intelligence", "name": "Intelligence", "group": "mental" },
+  { "id": "wits",         "name": "Wits",         "group": "mental" }
+]

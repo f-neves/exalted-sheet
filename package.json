@@ -1,0 +1,23 @@
+{
+  "name": "exalted-sheet",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Exalted 2nd Edition interactive character sheet (Astro, static, GitHub Pages)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/validate-data.mjs && node scripts/test-solar.mjs && astro build",
+    "validate": "node scripts/validate-data.mjs && node scripts/test-solar.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.6.1"
+  },
+  "devDependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/cinzel": "^5.1.0",
+    "@fontsource/eb-garamond": "^5.1.0",
+    "zod": "^3.24.1"
+  }
+}
