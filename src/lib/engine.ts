@@ -10,6 +10,27 @@
 import * as calc from './calc.js';
 import { SPLATS, SPLAT_BY_ID, DATA, RULES, BACKGROUNDS, ATTRIBUTE_GROUPS } from './data';
 
+export interface PortraitPos { x: number; y: number; z: number }
+
+export interface GalleryItem { id: string; name: string; kind: 'file' | 'link'; open: () => void | Promise<void> }
+
+/**
+ * Optional storage for the portrait and gallery. Left out (the offline /sheet), the whole
+ * block stays hidden; supplied (/character), it drives Supabase Storage. Same idea as
+ * load/save: the engine never learns where anything lives.
+ */
+export interface MediaAdapter {
+  canEdit: boolean;
+  getPortrait: () => Promise<{ url: string; pos: PortraitPos } | null>;
+  setPortrait: (file: File) => Promise<{ url: string } | null>;
+  clearPortrait: () => Promise<void>;
+  savePortraitPos: (pos: PortraitPos) => void;
+  listItems: () => Promise<GalleryItem[]>;
+  addFile: (file: File) => Promise<void>;
+  addLink: () => Promise<void>;
+  removeItem: (id: string) => Promise<void>;
+}
+
 export interface SheetOpts {
   load: () => any | null | Promise<any | null>;
   save: (state: any) => void;
@@ -17,6 +38,9 @@ export interface SheetOpts {
   budgetValue?: number | null;
   onReset?: () => void;
   readOnly?: boolean;
+  media?: MediaAdapter;
+  /** Fires after every recalculation, so pages need not scrape the XP bar. */
+  onChange?: (info: { spent: number; budget: number; remaining: number }) => void;
 }
 
 const SCHEMA = 2;
@@ -921,6 +945,7 @@ export function mountSheet(opts: SheetOpts) {
     renderCombat();
     renderDerived();
     renderChecks();
+    opts.onChange?.({ spent: total, budget: S.budget || 0, remaining: rem });
     save();
   }
 
@@ -1410,6 +1435,138 @@ export function mountSheet(opts: SheetOpts) {
     el('deriv-toggle').textContent = collapsed ? 'Expand' : 'Collapse';
   });
 
+  /* ----------------------------------------------------- portrait & gallery */
+
+  const FRAME_W = 172, FRAME_H = 208;
+
+  async function mountMedia(media: MediaAdapter) {
+    el('media').hidden = false;
+    const frame = el('pt-frame');
+    const img = el('pt-img') as HTMLImageElement;
+    const empty = el('pt-empty');
+    const zoom = el('pt-zoom') as HTMLInputElement;
+    const lightbox = el('pt-lightbox');
+    const lbImg = el('pt-lb-img') as HTMLImageElement;
+
+    let pos: PortraitPos = { x: 50, y: 50, z: 1 };
+    let hasImage = false;
+
+    const applyPos = () => {
+      img.style.objectPosition = `${pos.x}% ${pos.y}%`;
+      img.style.transformOrigin = `${pos.x}% ${pos.y}%`;
+      img.style.transform = `scale(${pos.z})`;
+      zoom.value = String(pos.z);
+    };
+
+    const paint = () => {
+      frame.hidden = !hasImage;
+      empty.hidden = hasImage;
+      el('pt-pick').hidden = !media.canEdit;
+      el('pt-del').hidden = !(media.canEdit && hasImage);
+      el('pt-adjust').hidden = !(media.canEdit && hasImage);
+      if (!(media.canEdit && hasImage)) zoom.hidden = true;
+      const txt = el('pt-pick-txt');
+      if (txt) txt.textContent = hasImage ? 'Replace' : 'Upload';
+      el('gal-pick').hidden = !media.canEdit;
+      el('gal-link').hidden = !media.canEdit;
+    };
+
+    const show = (url: string) => { img.src = url; lbImg.src = url; hasImage = true; paint(); applyPos(); };
+
+    const existing = await media.getPortrait();
+    if (existing) { pos = existing.pos; show(existing.url); } else paint();
+
+    if (media.canEdit) {
+      (el('pt-file') as HTMLInputElement).addEventListener('change', async (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        const next = await media.setPortrait(file);
+        if (next) { pos = { x: 50, y: 50, z: 1 }; show(next.url); media.savePortraitPos(pos); }
+        (ev.target as HTMLInputElement).value = '';
+      });
+
+      el('pt-del').addEventListener('click', async () => {
+        if (!confirm('Remove the portrait?')) return;
+        await media.clearPortrait();
+        img.src = ''; lbImg.src = ''; hasImage = false;
+        frame.classList.remove('adjusting'); zoom.hidden = true;
+        paint();
+      });
+
+      // Adjust mode: drag to pan, slider to zoom. Only the card is reframed;
+      // the lightbox always shows the whole image.
+      let adjusting = false, dragging = false, lastX = 0, lastY = 0;
+      const adjustBtn = el('pt-adjust');
+      adjustBtn.addEventListener('click', () => {
+        adjusting = !adjusting;
+        frame.classList.toggle('adjusting', adjusting);
+        zoom.hidden = !adjusting;
+        adjustBtn.textContent = adjusting ? 'Done' : 'Adjust';
+      });
+      frame.addEventListener('pointerdown', (ev) => {
+        if (!adjusting) return;
+        const pe = ev as PointerEvent;
+        dragging = true; lastX = pe.clientX; lastY = pe.clientY;
+        frame.setPointerCapture?.(pe.pointerId);
+      });
+      frame.addEventListener('pointermove', (ev) => {
+        if (!adjusting || !dragging) return;
+        const pe = ev as PointerEvent;
+        const dx = pe.clientX - lastX, dy = pe.clientY - lastY;
+        lastX = pe.clientX; lastY = pe.clientY;
+        pos.x = clamp(pos.x - (dx / (FRAME_W * pos.z)) * 100, 0, 100);
+        pos.y = clamp(pos.y - (dy / (FRAME_H * pos.z)) * 100, 0, 100);
+        applyPos();
+      });
+      const drop = () => { if (dragging) { dragging = false; media.savePortraitPos(pos); } };
+      frame.addEventListener('pointerup', drop);
+      frame.addEventListener('pointercancel', drop);
+      zoom.addEventListener('input', () => {
+        pos.z = parseFloat(zoom.value) || 1;
+        applyPos();
+        media.savePortraitPos(pos);
+      });
+
+      (el('gal-file') as HTMLInputElement).addEventListener('change', async (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        if (file) { await media.addFile(file); await refreshGallery(); }
+        (ev.target as HTMLInputElement).value = '';
+      });
+      el('gal-link').addEventListener('click', async () => { await media.addLink(); await refreshGallery(); });
+    }
+
+    frame.addEventListener('click', () => {
+      if (frame.classList.contains('adjusting') || !hasImage) return;
+      lightbox.hidden = false;
+      document.body.style.overflow = 'hidden';
+    });
+    const closeLightbox = () => { lightbox.hidden = true; document.body.style.overflow = ''; };
+    lightbox.addEventListener('click', closeLightbox);
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !lightbox.hidden) closeLightbox(); });
+
+    async function refreshGallery() {
+      const items = await media.listItems();
+      const list = el('gal-list');
+      list.innerHTML = items.length
+        ? items.map((it) => `<div class="gal-row" data-item="${esc(it.id)}">`
+            + `<a href="#" data-open>${esc(it.name)}</a>`
+            + `<span class="gal-kind">${it.kind}</span>`
+            + (media.canEdit ? '<button type="button" class="rowx" data-remove title="Remove">×</button>' : '')
+            + '</div>').join('')
+        : '<div class="empty">Nothing here yet.</div>';
+      for (const row of Array.from(list.querySelectorAll<HTMLElement>('[data-item]'))) {
+        const item = items.find((i) => i.id === row.dataset.item)!;
+        row.querySelector('[data-open]')!.addEventListener('click', (ev) => { ev.preventDefault(); item.open(); });
+        row.querySelector('[data-remove]')?.addEventListener('click', async () => {
+          if (!confirm(`Remove "${item.name}"?`)) return;
+          await media.removeItem(item.id);
+          await refreshGallery();
+        });
+      }
+    }
+    await refreshGallery();
+  }
+
   /* ------------------------------------------------------------- boot */
   (async () => {
     let raw: any = null;
@@ -1424,5 +1581,8 @@ export function mountSheet(opts: SheetOpts) {
     renderAll();
     booting = false;
     save();
+    if (opts.media) {
+      try { await mountMedia(opts.media); } catch { /* storage down: the sheet still works */ }
+    }
   })();
 }

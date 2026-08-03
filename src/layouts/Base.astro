@@ -19,7 +19,12 @@ const base = import.meta.env.BASE_URL;
     <a class="skip" href="#main">Skip to content</a>
     <header class="topbar">
       <a class="brand" href={base}>Exalted<small>Second Edition</small></a>
+      <nav class="topnav">
+        <a href={`${base}sheet`}>Sheet</a>
+        <a href={`${base}campaigns`} id="nav-campaigns" hidden>Campaigns</a>
+      </nav>
       <span class="spacer"></span>
+      <a class="btn" id="auth-link" href={`${base}login`}><span class="auth-label">Sign in</span></a>
       <button class="btn" id="theme-toggle" type="button" title="Toggle light / dark">Parchment</button>
     </header>
     <main class="content" id="main">
@@ -45,6 +50,33 @@ const base = import.meta.env.BASE_URL;
           try { localStorage.setItem(KEY, next); } catch (e) {}
           label();
         });
+      })();
+    </script>
+
+    <script>
+      // Auth state in the topbar. The auth lib is imported dynamically so pages that
+      // never touch Supabase do not pay for the bundle, and every failure is swallowed:
+      // an outage must not be able to break the navigation.
+      (async () => {
+        const link = document.getElementById('auth-link');
+        const label = link?.querySelector('.auth-label');
+        const campaigns = document.getElementById('nav-campaigns');
+        if (!link || !label) return;
+        try {
+          const { currentUser, profileName, signOut, supabaseConfigured } = await import('../lib/auth');
+          if (!supabaseConfigured) return;
+          if (campaigns) campaigns.hidden = false;
+          const user = await currentUser();
+          if (!user) return;
+          const name = await profileName();
+          label.textContent = 'Sign out' + (name ? ' · ' + name : '');
+          link.setAttribute('href', '#');
+          link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut();
+            location.href = import.meta.env.BASE_URL;
+          });
+        } catch { /* not configured, offline, or blocked — leave the link alone */ }
       })();
     </script>
   </body>

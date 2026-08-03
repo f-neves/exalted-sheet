@@ -1,9 +1,26 @@
 # Exalted 2e Character Sheet
 
 A static, self-calculating character sheet for Exalted Second Edition, covering heroic
-mortals plus Solar, Abyssal, Lunar, Sidereal, Dragon-Blooded and Infernal characters.
+mortals plus Solar, Abyssal, Lunar, Sidereal, Dragon-Blooded and Infernal characters, with
+a campaign area where a Storyteller hands out an invite code and reads their table's sheets.
 
 Live: <https://f-neves.github.io/exalted-sheet/>
+
+## The two halves
+
+**`/sheet`** works offline and needs no account. State lives in `localStorage`, with export,
+import and a shareable `#c=` link.
+
+**The campaign area** is the same sheet backed by Supabase. Sign in, start a campaign, and
+hand your players the six-character code; they join, build characters, and you can read
+every sheet, set each character's XP, approve or send sheets back, share handouts and upload
+a summary after each session. Characters there gain a portrait and a gallery of images and
+links.
+
+Hosting stays static — GitHub Pages serves files, the browser talks to Supabase directly,
+and all the access rules are row-level security in Postgres. See
+[`supabase/README.md`](./supabase/README.md). With no keys configured the site still builds
+and the sheet works; only the campaign pages show a notice.
 
 ## How it works
 
@@ -151,34 +168,47 @@ and that the Solar numbers still reproduce the spreadsheet.
 
 ```bash
 npm install
-npm run dev        # http://localhost:4321/exalted-sheet/
-npm run validate   # data schema + Solar.xlsx golden test
-npm run build      # validate, test, then build to dist/
-npm run smoke      # 40 browser checks against a running dev server
+npm run dev              # http://localhost:4321/exalted-sheet/
+npm run validate         # data schema + Solar.xlsx golden test        182 checks
+npm run build            # validate, test, then build to dist/
+npm run smoke            # the sheet, in a browser                      84 checks
+npm run smoke:db         # row-level security, against live Supabase    42 checks
+node scripts/smoke-gm.mjs   # the campaign area, two users in a browser  28 checks
+npm run check:migration  # migration applied twice to Docker Postgres
 ```
 
 `npm run build` runs the validator and the golden test first, so bad data cannot ship.
 
-`npm run smoke` drives the real page in headless Chrome and asserts the XP arithmetic,
-derived values, splat switching, equipment, health and persistence all behave. It needs a
-dev server plus a local Chrome and `puppeteer-core`, which is not a dependency here — point
-`PUPPETEER_FROM` at a `package.json` that has it, and `CHROME_PATH` at the browser.
+The browser tests need a running dev server, a local Chrome, and `puppeteer-core`, which is
+not a dependency here — point `PUPPETEER_FROM` at a `package.json` that has it and
+`CHROME_PATH` at the browser. The two Supabase tests need `.env` filled in.
+
+Between them they cover the arithmetic (`smoke`), the security boundaries (`smoke:db`) and
+the wiring that joins the two (`smoke-gm`).
 
 Pushing to `main` builds and deploys to GitHub Pages via `.github/workflows/deploy.yml`.
 
 ## Architecture
 
 ```
-src/pages/sheet.astro              the route; wires the localStorage adapter
+src/pages/sheet.astro              offline sheet; wires the localStorage adapter
+src/pages/login.astro              sign in, sign up, password reset
+src/pages/campaigns.astro          your campaigns, create one, join with a code
+src/pages/campaign.astro           members, characters, handouts, summaries, notes
+src/pages/character.astro          the same sheet, backed by Supabase
 src/components/SheetSkeleton.astro all markup and all sheet CSS (must stay `is:global`,
                                    because the engine builds DOM with innerHTML)
 src/lib/engine.ts                  state, rendering, events, persistence
 src/lib/calc.js                    pure formulas — no DOM, no imports, used by the
                                    browser and by scripts/test-solar.mjs alike
 src/lib/data.ts                    pulls the JSON into the client bundle
+src/lib/supabase.ts                client singleton + `supabaseConfigured` guard
+src/lib/auth.ts                    sign in / up / out, requireLogin
+src/lib/dialog.ts                  themed alert / confirm / prompt / form
 ```
 
-`mountSheet()` takes its persistence as an argument:
+`mountSheet()` takes everything it touches as an argument, which is why one engine serves
+both an offline page and a database-backed one:
 
 ```ts
 mountSheet({
@@ -188,10 +218,17 @@ mountSheet({
   readOnly?: boolean,
   budgetLocked?: boolean,
   budgetValue?: number | null,
+  media?: MediaAdapter,        // portrait + gallery; omitted, the block stays hidden
+  onChange?: (info: { spent, budget, remaining }) => void,
 });
 ```
 
-so a server-backed page can reuse the engine untouched.
+`/sheet` passes `load`/`save` only. `/character` adds a Supabase `media` adapter, the
+Storyteller's XP as `budgetValue` with `budgetLocked`, `readOnly` when the sheet is not the
+viewer's to edit, and uses `onChange` for the over-budget warning.
+
+Writes are debounced with no save button — sheet 900 ms, prose 700 ms, portrait framing
+500 ms — and flushed on `beforeunload` so closing the tab cannot eat the last edit.
 
 State is one plain object under `localStorage['exalted:sheet']`. `normalize()` in
 `engine.ts` backfills and repairs anything missing, so older saves keep loading after the

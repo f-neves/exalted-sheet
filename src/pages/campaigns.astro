@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Campaigns — Exalted 2e">
+  <h1 class="page-h">Campaigns</h1>
+
+  <div class="notice" id="setup" hidden>
+    <h2>The campaign area is not switched on yet</h2>
+    <p class="muted">This build has no Supabase keys. See <code>supabase/README.md</code>.</p>
+  </div>
+
+  <p class="muted" id="loading">Loading…</p>
+
+  <div id="content" hidden>
+    <div id="list"></div>
+
+    <div class="cols">
+      <form class="panel-card" id="form-create">
+        <h2>Start a campaign</h2>
+        <p class="muted">You become its Storyteller and get a code to hand out.</p>
+        <label><span>Name</span><input name="name" required maxlength="80" /></label>
+        <label><span>Description (optional)</span><input name="description" maxlength="200" /></label>
+        <button class="btn primary" type="submit">Create</button>
+      </form>
+
+      <form class="panel-card" id="form-join">
+        <h2>Join a campaign</h2>
+        <p class="muted">Use the six-character code your Storyteller gave you.</p>
+        <label><span>Code</span><input name="code" required maxlength="8" class="code-input" autocomplete="off" /></label>
+        <button class="btn primary" type="submit">Join</button>
+      </form>
+    </div>
+
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </div>
+
+  <style>
+    .page-h { font-size: 1.6rem; letter-spacing: .06em; color: var(--accent); margin: 1.2rem 0 1rem; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+    @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+    .code-input { text-transform: uppercase; letter-spacing: .25em; font-family: 'Cinzel'; }
+    .camp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .7rem; margin-bottom: 1.4rem; }
+    .camp-card {
+      display: flex; flex-direction: column; gap: .3rem; text-decoration: none;
+      border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
+      background: var(--panel); border-radius: 6px; padding: .7rem .8rem; color: var(--ink);
+    }
+    .camp-card:hover { border-color: var(--accent); }
+    .camp-name { font-family: 'Cinzel'; font-size: 1rem; color: var(--accent); }
+    .camp-desc { font-size: .86rem; color: var(--ink-soft); }
+    .camp-code { font-family: 'Cinzel'; font-size: .78rem; color: var(--ink-soft); letter-spacing: .12em; }
+    .empty-note { color: var(--ink-soft); font-style: italic; margin-bottom: 1.4rem; }
+  </style>
+</Base>
+
+<script>
+  import { getSupabase } from '../lib/supabase';
+  import { requireLogin, supabaseConfigured } from '../lib/auth';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  const msg = (t: string, bad = true) => { const m = el('msg'); m.textContent = t; m.className = 'msg' + (bad ? ' bad' : ''); };
+
+  (async () => {
+    if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
+    const user = await requireLogin(base);
+    if (!user) return;
+
+    const sb = getSupabase();
+    el('loading').hidden = true;
+    el('content').hidden = false;
+
+    // RLS already limits this to campaigns you belong to, so no filter is needed.
+    const { data, error } = await sb
+      .from('campaign_members')
+      .select('role, campaign:campaigns(id, name, description, join_code)')
+      .order('joined_at', { ascending: true });
+
+    if (error) {
+      msg('Could not load your campaigns: ' + error.message);
+    } else if (!data?.length) {
+      el('list').innerHTML = '<p class="empty-note">No campaigns yet. Start one, or join with a code.</p>';
+    } else {
+      el('list').innerHTML = '<div class="camp-grid">' + data.map((row: any) => {
+        const c = row.campaign;
+        const gm = row.role === 'gm';
+        return `<a class="camp-card" href="${base}campaign?id=${c.id}">
+          <span class="seal ${gm ? 'gm' : ''}">${gm ? 'Storyteller' : 'Player'}</span>
+          <span class="camp-name">${esc(c.name)}</span>
+          ${c.description ? `<span class="camp-desc">${esc(c.description)}</span>` : ''}
+          ${gm ? `<span class="camp-code">Code ${esc(c.join_code)}</span>` : ''}
+        </a>`;
+      }).join('') + '</div>';
+    }
+
+    el('form-create').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const f = ev.target as HTMLFormElement;
+      msg('Creating…', false);
+      const { data, error } = await sb.rpc('create_campaign', {
+        p_name: (f.name as any).value, p_description: (f.description as any).value,
+      });
+      if (error) return msg('Could not create it: ' + error.message);
+      location.href = `${base}campaign?id=${(data as any).id}`;
+    });
+
+    el('form-join').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const f = ev.target as HTMLFormElement;
+      msg('Joining…', false);
+      const { data, error } = await sb.rpc('join_campaign', { p_code: (f.code as any).value });
+      if (error) return msg(/invalid code/i.test(error.message) ? 'No campaign has that code.' : error.message);
+      location.href = `${base}campaign?id=${(data as any).id}`;
+    });
+  })();
+</script>

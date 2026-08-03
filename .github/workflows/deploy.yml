@@ -27,7 +27,20 @@ jobs:
 
       - run: npm ci
 
+      # Astro inlines PUBLIC_* into the client bundle at build time, so the keys have to
+      # exist during the build. They live in Settings > Secrets and variables > Actions >
+      # Variables (not Secrets: the anon key is public by design and Secrets get masked).
+      # With the variables unset the build still succeeds and the GM area shows its
+      # "not configured" notice.
+      - name: Write Supabase env
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ vars.PUBLIC_SUPABASE_URL }}" >> .env
+          echo "PUBLIC_SUPABASE_ANON_KEY=${{ vars.PUBLIC_SUPABASE_ANON_KEY }}" >> .env
+
       - run: npm run build
+        env:
+          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

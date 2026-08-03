@@ -1,0 +1,375 @@
+---
+import Base from '../layouts/Base.astro';
+import SheetSkeleton from '../components/SheetSkeleton.astro';
+---
+
+<Base title="Character — Exalted 2e">
+  <div class="notice" id="setup" hidden>
+    <h2>The campaign area is not switched on yet</h2>
+    <p class="muted">This build has no Supabase keys. See <code>supabase/README.md</code>.</p>
+  </div>
+
+  <p class="muted" id="loading">Loading…</p>
+  <div class="notice bad" id="error" hidden></div>
+
+  <div id="wrap" hidden>
+    <div class="char-head">
+      <a class="back" id="back" href="#">← Campaign</a>
+      <h1 class="char-name" id="char-name">Character</h1>
+      <span class="seal" id="status-seal">Draft</span>
+    </div>
+
+    <div class="notice bad" id="review" hidden></div>
+    <div class="notice bad" id="xp-warn" hidden></div>
+
+    <div class="status-bar" id="status-bar">
+      <span class="muted" id="status-text"></span>
+      <span class="status-actions" id="status-actions"></span>
+    </div>
+
+    <div class="panel-card gm-xp" id="gm-xp" hidden>
+      <h2>Storyteller: experience for this character</h2>
+      <div class="row">
+        <input type="number" id="xp-input" min="0" step="1" />
+        <button class="btn primary" id="xp-save" type="button">Set XP</button>
+        <span class="muted" id="xp-saved"></span>
+      </div>
+    </div>
+
+    <SheetSkeleton />
+
+    <h2 class="barh barh-tog" data-sec="prose"><span class="sec-caret">▾</span> Description, backstory &amp; notes</h2>
+    <div class="sec-body" id="sec-prose">
+      <div class="cols3 prose-grid">
+        <label><span>Description</span><textarea data-field="description"></textarea></label>
+        <label><span>Backstory</span><textarea data-field="backstory"></textarea></label>
+        <label><span>Notes</span><textarea data-field="notes"></textarea></label>
+      </div>
+      <p class="muted saved-flash" id="prose-saved"></p>
+    </div>
+  </div>
+
+  <style>
+    .char-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin: 1rem 0 .5rem; }
+    .char-head .back { font-family: 'Cinzel'; font-size: .72rem; letter-spacing: .05em; text-decoration: none; color: var(--ink-soft); }
+    .char-head .back:hover { color: var(--accent); }
+    .char-name { font-size: 1.5rem; letter-spacing: .05em; color: var(--accent); margin: 0; }
+    .status-bar { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; margin: 0 0 .8rem; font-size: .9rem; }
+    .status-actions { display: flex; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
+    .gm-xp { margin: 0 0 1rem; }
+    .gm-xp .row { display: flex; gap: .5rem; align-items: center; }
+    .gm-xp input { width: 6rem; }
+    .prose-grid label { display: flex; flex-direction: column; gap: .2rem; }
+    .prose-grid > label > span { font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+    .prose-grid textarea { width: 100%; min-height: 9rem; resize: vertical; }
+    .saved-flash { font-size: .8rem; min-height: 1.1rem; }
+    @media print { .char-head .back, .status-bar, .gm-xp, .notice { display: none !important; } }
+  </style>
+</Base>
+
+<script>
+  import { getSupabase } from '../lib/supabase';
+  import { requireLogin, supabaseConfigured } from '../lib/auth';
+  import { mountSheet, type GalleryItem, type PortraitPos } from '../lib/engine';
+  import { uiConfirm, uiError, uiPrompt } from '../lib/dialog';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  const CHAR_BUCKET = 'characters';
+
+  /** Trailing debounce that also exposes a flush, so a closing tab cannot eat the last edit. */
+  function debounce<T extends any[]>(fn: (...a: T) => void, ms: number) {
+    let timer: any, pending: T | null = null;
+    const run = (...a: T) => { pending = a; clearTimeout(timer); timer = setTimeout(() => { pending = null; fn(...a); }, ms); };
+    run.flush = () => { if (pending) { clearTimeout(timer); const a = pending; pending = null; fn(...a); } };
+    return run as typeof run & { flush: () => void };
+  }
+
+  const safeName = (n: string) => n.replace(/[^\w.\-]+/g, '_');
+  const safeLink = (u: string) => (/^https?:\/\//i.test((u || '').trim()) ? u.trim() : '');
+
+  (async () => {
+    if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
+    const user = await requireLogin(base);
+    if (!user) return;
+
+    const sb = getSupabase();
+    const q = new URLSearchParams(location.search);
+    let id = q.get('id');
+
+    const fail = (text: string) => { el('loading').hidden = true; el('error').hidden = false; el('error').textContent = text; };
+
+    // /character?new=1&campaign=<id> creates then swaps the URL for the real id.
+    if (!id && q.get('new')) {
+      const campaign = q.get('campaign');
+      const { data, error } = await sb.from('characters')
+        .insert({ owner_id: user.id, campaign_id: campaign || null, name: 'New character' })
+        .select('id').single();
+      if (error) return fail('Could not create the character: ' + error.message);
+      location.replace(`${base}character?id=${data.id}`);
+      return;
+    }
+    if (!id) return fail('No character selected.');
+
+    const { data: ch, error } = await sb.from('characters').select('*').eq('id', id).maybeSingle();
+    if (error) return fail('Could not load the character: ' + error.message);
+    if (!ch) return fail('That character does not exist, or is not yours to see.');
+
+    const isOwner = ch.owner_id === user.id;
+    let isGm = false;
+    let campaign: any = null;
+    if (ch.campaign_id) {
+      const { data: c } = await sb.from('campaigns').select('id, name, gm_id, starting_xp').eq('id', ch.campaign_id).maybeSingle();
+      campaign = c;
+      isGm = !!c && c.gm_id === user.id;
+    }
+    const status: string = ch.status || 'draft';
+
+    // The owner writes only while drafting. A Storyteller looking at someone else's sheet
+    // is read-only until they say otherwise, so a stray click cannot rewrite a player's
+    // character; the database would allow it, the interface does not invite it.
+    const gmEditing = isGm && sessionStorage.getItem(`gm-edit:${id}`) === '1';
+    const canEdit = (isOwner && status === 'draft') || gmEditing;
+
+    (el('back') as HTMLAnchorElement).href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}campaigns`;
+    if (!ch.campaign_id) el('back').textContent = '← Campaigns';
+    el('char-name').textContent = ch.name || 'Character';
+
+    /* ---- experience -------------------------------------------------- */
+    let budgetValue: number | null = null;
+    let budgetLocked = false;
+    if (ch.campaign_id) {
+      budgetLocked = true;
+      const { data: xpRow } = await sb.from('character_xp').select('xp').eq('character_id', id).maybeSingle();
+      budgetValue = xpRow?.xp ?? (Number(campaign?.starting_xp) || 0);
+    }
+
+    /* ---- the sheet itself -------------------------------------------- */
+    const saveSheet = debounce(async (state: any) => {
+      const name = state.id?.name || ch.name || 'Character';
+      await sb.from('characters').update({
+        sheet: state, name, concept: state.id?.concept || '',
+        updated_at: new Date().toISOString(),
+      }).eq('id', id);
+      el('char-name').textContent = name;
+    }, 900);
+
+    const saveProse = debounce(async (field: string, value: string) => {
+      await sb.from('characters').update({ [field]: value }).eq('id', id);
+      const flash = el('prose-saved');
+      flash.textContent = 'Saved';
+      setTimeout(() => (flash.textContent = ''), 1200);
+    }, 700);
+
+    const savePos = debounce(async (pos: PortraitPos) => {
+      await sb.from('characters').update({ portrait_pos: pos }).eq('id', id);
+    }, 500);
+
+    window.addEventListener('beforeunload', () => { saveSheet.flush(); saveProse.flush(); savePos.flush(); });
+
+    /* ---- portrait and gallery ---------------------------------------- */
+    let portraitPath: string | null = ch.portrait_path || null;
+
+    const signed = async (bucket: string, path: string) => {
+      const { data } = await sb.storage.from(bucket).createSignedUrl(path, 3600);
+      return data?.signedUrl || '';
+    };
+
+    const media = {
+      canEdit,
+      async getPortrait() {
+        if (!portraitPath) return null;
+        const url = await signed(CHAR_BUCKET, portraitPath);
+        if (!url) return null;
+        const p = ch.portrait_pos || {};
+        return { url, pos: { x: p.x ?? 50, y: p.y ?? 50, z: p.z ?? 1 } };
+      },
+      async setPortrait(file: File) {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${id}/portrait-${Date.now()}.${ext}`;
+        const { error } = await sb.storage.from(CHAR_BUCKET).upload(path, file, { contentType: file.type });
+        if (error) { await uiError('Could not upload the image: ' + error.message); return null; }
+        const previous = portraitPath;
+        portraitPath = path;
+        await sb.from('characters').update({ portrait_path: path, portrait_pos: { x: 50, y: 50, z: 1 } }).eq('id', id);
+        // Replacing must not leave the old object behind, paying storage forever.
+        if (previous) await sb.storage.from(CHAR_BUCKET).remove([previous]);
+        return { url: await signed(CHAR_BUCKET, path) };
+      },
+      async clearPortrait() {
+        if (!portraitPath) return;
+        await sb.storage.from(CHAR_BUCKET).remove([portraitPath]);
+        await sb.from('characters').update({ portrait_path: null, portrait_pos: null }).eq('id', id);
+        portraitPath = null;
+      },
+      savePortraitPos: (pos: PortraitPos) => savePos(pos),
+      async listItems(): Promise<GalleryItem[]> {
+        const { data } = await sb.from('files').select('*')
+          .eq('character_id', id).order('created_at', { ascending: false });
+        return (data || []).map((f: any) => ({
+          id: f.id,
+          name: f.name,
+          kind: f.url ? 'link' : 'file',
+          open: async () => {
+            if (f.url) { const href = safeLink(f.url); if (href) window.open(href, '_blank', 'noopener'); return; }
+            const url = await signed(f.bucket || CHAR_BUCKET, f.storage_path);
+            if (url) window.open(url, '_blank', 'noopener');
+          },
+        }));
+      },
+      async addFile(file: File) {
+        const path = `${id}/file-${Date.now()}-${safeName(file.name)}`;
+        const { error } = await sb.storage.from(CHAR_BUCKET).upload(path, file, { contentType: file.type });
+        if (error) return uiError('Could not upload: ' + error.message);
+        const { error: e2 } = await sb.from('files').insert({
+          campaign_id: ch.campaign_id, character_id: id, owner_id: user.id,
+          name: file.name, storage_path: path, bucket: CHAR_BUCKET,
+          mime: file.type, category: 'attachment',
+        });
+        if (e2) await uiError('Uploaded, but could not record it: ' + e2.message);
+      },
+      async addLink() {
+        const url = await uiPrompt('Link', '', {
+          title: 'Add a link', message: 'A map, a reference image, anything on the web.',
+          placeholder: 'https://…', required: true,
+        });
+        if (!url) return;
+        const href = safeLink(url);
+        if (!href) return uiError('That link must start with http:// or https://');
+        const name = await uiPrompt('Label', href, { title: 'Name it' });
+        await sb.from('files').insert({
+          campaign_id: ch.campaign_id, character_id: id, owner_id: user.id,
+          name: (name || href).trim(), url: href, mime: 'link', category: 'attachment',
+        });
+      },
+      async removeItem(itemId: string) {
+        const { data: f } = await sb.from('files').select('storage_path, bucket').eq('id', itemId).maybeSingle();
+        if (f?.storage_path) await sb.storage.from(f.bucket || CHAR_BUCKET).remove([f.storage_path]);
+        await sb.from('files').delete().eq('id', itemId);
+      },
+    };
+
+    el('loading').hidden = true;
+    el('wrap').hidden = false;
+
+    mountSheet({
+      load: () => (ch.sheet && Object.keys(ch.sheet).length ? ch.sheet : null),
+      save: canEdit ? (state) => saveSheet(state) : () => {},
+      readOnly: !canEdit,
+      budgetLocked, budgetValue,
+      media,
+      onChange: ({ remaining }) => {
+        const warn = el('xp-warn');
+        if (remaining < 0) {
+          warn.hidden = false;
+          warn.innerHTML = `<strong>Over budget by ${-remaining}.</strong> `
+            + (isGm ? 'You can approve anyway, raise the XP, or send it back.'
+                    : 'Trim something, or ask your Storyteller for more XP.');
+        } else warn.hidden = true;
+      },
+    });
+
+    /* ---- prose ------------------------------------------------------- */
+    for (const field of ['description', 'backstory', 'notes']) {
+      const ta = document.querySelector<HTMLTextAreaElement>(`textarea[data-field="${field}"]`)!;
+      ta.value = ch[field] || '';
+      if (!canEdit) { ta.readOnly = true; continue; }
+      ta.addEventListener('input', () => saveProse(field, ta.value));
+    }
+
+    /* ---- status and approval ------------------------------------------ */
+    const SEALS: Record<string, string> = { draft: 'Draft', submitted: 'Awaiting approval', approved: 'Approved' };
+    el('status-seal').textContent = SEALS[status] || 'Draft';
+    el('status-seal').className = 'seal ' + status;
+
+    const actions = el('status-actions');
+    const addBtn = (label: string, cls = '') => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn ' + cls; b.textContent = label;
+      actions.appendChild(b); return b;
+    };
+    const callRpc = async (fn: string, args: any = {}) => {
+      const { error } = await sb.rpc(fn, { p_id: id, ...args });
+      if (error) return uiError('Could not do that: ' + error.message);
+      location.reload();
+    };
+
+    if (isOwner && status === 'draft' && (ch.review_note || '').trim()) {
+      el('review').hidden = false;
+      el('review').innerHTML = `<strong>Your Storyteller asked for changes:</strong> ${esc(ch.review_note)}`;
+    }
+
+    el('status-text').textContent = isGm && !isOwner
+      ? (gmEditing ? 'Editing as Storyteller.' : 'Storyteller view. Read-only until you choose to edit.')
+      : status === 'draft' ? 'You are editing. Send it over when it is ready.'
+      : status === 'submitted' ? 'Sent. Waiting for approval; read-only until then.'
+      : 'Approved and locked by your Storyteller.';
+
+    if (isOwner && !isGm) {
+      if (status === 'draft') addBtn('Send for approval', 'primary').onclick = () => callRpc('submit_sheet');
+      else if (status === 'submitted') addBtn('Take it back').onclick = () => callRpc('cancel_submission');
+    }
+
+    if (isGm) {
+      if (!isOwner) {
+        addBtn(gmEditing ? 'Stop editing' : 'Edit as Storyteller').onclick = () => {
+          if (gmEditing) sessionStorage.removeItem(`gm-edit:${id}`);
+          else sessionStorage.setItem(`gm-edit:${id}`, '1');
+          location.reload();
+        };
+      }
+      if (status !== 'approved') {
+        addBtn('Approve', 'primary').onclick = async () => {
+          if (!el('xp-warn').hidden
+              && !await uiConfirm('This sheet is over budget. Approve it anyway?', { title: 'Approve', ok: 'Approve anyway' })) return;
+          callRpc('approve_sheet');
+        };
+      }
+      if (status === 'submitted') {
+        addBtn('Send back').onclick = async () => {
+          const note = await uiPrompt('Message for the player', '', {
+            title: 'Send the sheet back',
+            message: 'It goes back to draft and your message shows at the top of their sheet.',
+            placeholder: 'What needs changing…', long: true, ok: 'Send back',
+          });
+          if (note === null) return;
+          callRpc('return_sheet', { p_note: note });
+        };
+      }
+      if (status === 'approved') addBtn('Reopen for editing').onclick = () => callRpc('reopen_sheet');
+    }
+
+    if ((isOwner && status === 'draft') || isGm) {
+      addBtn('Delete', 'danger').onclick = async () => {
+        if (!await uiConfirm('Delete this character for good?', { title: 'Delete character', ok: 'Delete', danger: true })) return;
+        const { data: files } = await sb.from('files').select('storage_path, bucket').eq('character_id', id);
+        const paths = (files || []).filter((f: any) => f.storage_path).map((f: any) => f.storage_path);
+        if (portraitPath) paths.push(portraitPath);
+        if (paths.length) await sb.storage.from(CHAR_BUCKET).remove(paths);
+        const { error } = await sb.from('characters').delete().eq('id', id);
+        if (error) return uiError('Could not delete it: ' + error.message);
+        location.href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}campaigns`;
+      };
+    }
+
+    /* ---- the Storyteller's XP control ---------------------------------- */
+    if (isGm && ch.campaign_id) {
+      el('gm-xp').hidden = false;
+      const input = el('xp-input') as HTMLInputElement;
+      input.value = String(budgetValue ?? 0);
+      el('xp-save').addEventListener('click', async () => {
+        const xp = Math.max(0, +input.value || 0);
+        const { error } = await sb.from('character_xp').upsert(
+          { character_id: id, xp, set_by: user.id, updated_at: new Date().toISOString() },
+          { onConflict: 'character_id' });
+        const flash = el('xp-saved');
+        if (error) { flash.textContent = 'Error: ' + error.message; return; }
+        flash.textContent = 'Saved, reloading…';
+        setTimeout(() => location.reload(), 600);
+      });
+    }
+  })();
+</script>

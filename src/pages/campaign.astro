@@ -1,0 +1,456 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Campaign — Exalted 2e">
+  <div class="notice" id="setup" hidden>
+    <h2>The campaign area is not switched on yet</h2>
+    <p class="muted">This build has no Supabase keys. See <code>supabase/README.md</code>.</p>
+  </div>
+
+  <p class="muted" id="loading">Loading…</p>
+  <div class="notice bad" id="error" hidden></div>
+
+  <div id="wrap" hidden>
+    <div class="camp-head">
+      <a class="back" href="#" id="back">← Campaigns</a>
+      <h1 class="camp-title" id="camp-name"></h1>
+      <span class="seal" id="role-seal"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="edit-camp" type="button" hidden>Rename</button>
+      <button class="btn danger" id="leave" type="button" hidden>Leave</button>
+      <button class="btn danger" id="delete-camp" type="button" hidden>Delete campaign</button>
+    </div>
+    <p class="muted" id="camp-desc"></p>
+
+    <div class="panel-card invite" id="invite" hidden>
+      <h2>Invite code</h2>
+      <p class="muted">Give this to your players. They enter it on the Campaigns page.</p>
+      <div class="row">
+        <span class="code-chip" id="code"></span>
+        <button class="btn" id="copy-code" type="button">Copy</button>
+        <button class="btn" id="new-code" type="button" title="Retire this code and make a new one">New code</button>
+      </div>
+    </div>
+
+    <h2 class="barh">Members</h2>
+    <div id="members"></div>
+
+    <h2 class="barh">Characters <small id="pending-note"></small></h2>
+    <div class="panel-card starting-xp" id="starting-xp" hidden>
+      <div class="row">
+        <span class="lbl">Starting XP for new sheets</span>
+        <input type="number" id="start-xp" min="0" step="1" />
+        <button class="btn" id="start-xp-save" type="button">Save</button>
+        <span class="muted" id="start-xp-flash"></span>
+      </div>
+    </div>
+    <div id="characters"></div>
+    <button class="btn primary" id="new-char" type="button">+ New character</button>
+
+    <h2 class="barh">Session summaries <small>(uploaded by the Storyteller, visible to everyone)</small></h2>
+    <div class="row gm-only" id="summary-tools" hidden>
+      <label class="btn">Upload a summary<input type="file" id="summary-file" hidden /></label>
+    </div>
+    <div id="summaries"></div>
+
+    <h2 class="barh">Handouts</h2>
+    <div class="row gm-only" id="handout-tools" hidden>
+      <label class="btn">Upload<input type="file" id="handout-file" hidden /></label>
+      <button class="btn" id="handout-link" type="button">+ link</button>
+    </div>
+    <div id="handouts"></div>
+
+    <h2 class="barh">Session notes</h2>
+    <div class="row gm-only" id="notes-tools" hidden>
+      <button class="btn" id="note-add" type="button">+ note</button>
+    </div>
+    <div id="notes"></div>
+  </div>
+
+  <!-- is:global because the member, character, file and note rows are built with
+       innerHTML, which never receives Astro's scoping attribute. -->
+  <style is:global>
+    .camp-head { display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; margin: 1rem 0 .3rem; }
+    .camp-head .spacer { flex: 1; }
+    .camp-head .back { font-family: 'Cinzel'; font-size: .72rem; text-decoration: none; color: var(--ink-soft); }
+    .camp-head .back:hover { color: var(--accent); }
+    .camp-title { font-size: 1.5rem; letter-spacing: .05em; color: var(--accent); margin: 0; }
+    .invite { margin: 1rem 0; }
+    .invite .row, .row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+    .starting-xp { margin-bottom: .8rem; }
+    .starting-xp input { width: 6rem; }
+    .lbl { font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+    .mrow, .frow {
+      display: flex; align-items: center; gap: .6rem; padding: .35rem 0;
+      border-bottom: 1px dotted var(--rule); font-size: .94rem;
+    }
+    .mrow .who { flex: 1; }
+    .mrow .btn.tiny, .frow .btn.tiny { flex: none; }
+    .frow .gal-kind { flex: none; }
+    .frow a { color: var(--ink); text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .frow a:hover { color: var(--accent); text-decoration: underline; }
+    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .7rem; margin-bottom: .8rem; }
+    .char-card {
+      display: flex; flex-direction: column; gap: .25rem; text-decoration: none; color: var(--ink);
+      border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
+      background: var(--panel); border-radius: 6px; padding: .6rem .75rem;
+    }
+    .char-card:hover { border-color: var(--accent); }
+    .char-card .cname { font-family: 'Cinzel'; color: var(--accent); }
+    .char-card .cwho { font-size: .82rem; color: var(--ink-soft); }
+    .note-card { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 6px; padding: .6rem .7rem; margin-bottom: .5rem; }
+    .note-card input.title { width: 100%; font-family: 'Cinzel'; margin-bottom: .3rem; }
+    .note-card textarea { width: 100%; min-height: 5rem; resize: vertical; }
+    .note-card .foot { display: flex; align-items: center; gap: .6rem; margin-top: .3rem; font-size: .8rem; }
+    .note-card .foot label { display: inline-flex; align-items: center; gap: .3rem; color: var(--ink-soft); }
+    .note-read h3 { font-family: 'Cinzel'; font-size: .9rem; color: var(--accent-strong); margin: 0 0 .2rem; }
+    .note-read p { margin: 0; white-space: pre-wrap; }
+    .vis-list { margin-top: .3rem; font-size: .8rem; }
+    .vis-list summary { cursor: pointer; color: var(--ink-soft); }
+    .vis-list label { display: inline-flex; align-items: center; gap: .3rem; margin-right: .8rem; }
+    .empty { font-size: .88rem; color: var(--ink-soft); font-style: italic; padding: .3rem 0; }
+  </style>
+</Base>
+
+<script>
+  import { getSupabase } from '../lib/supabase';
+  import { requireLogin, supabaseConfigured } from '../lib/auth';
+  import { uiConfirm, uiError, uiForm, uiPrompt } from '../lib/dialog';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  const CAMP_BUCKET = 'campaign';
+  const safeName = (n: string) => n.replace(/[^\w.\-]+/g, '_');
+  const safeLink = (u: string) => (/^https?:\/\//i.test((u || '').trim()) ? u.trim() : '');
+
+  function debounce<T extends any[]>(fn: (...a: T) => void, ms: number) {
+    let t: any; return (...a: T) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+
+  (async () => {
+    if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
+    const user = await requireLogin(base);
+    if (!user) return;
+
+    const sb = getSupabase();
+    const id = new URLSearchParams(location.search).get('id');
+    const fail = (t: string) => { el('loading').hidden = true; el('error').hidden = false; el('error').textContent = t; };
+    if (!id) return fail('No campaign selected.');
+
+    const { data: camp, error } = await sb.from('campaigns').select('*').eq('id', id).maybeSingle();
+    if (error) return fail('Could not load it: ' + error.message);
+    if (!camp) return fail('That campaign does not exist, or you are not a member.');
+
+    const isGm = camp.gm_id === user.id;
+    (el('back') as HTMLAnchorElement).href = `${base}campaigns`;
+    el('camp-name').textContent = camp.name;
+    el('camp-desc').textContent = camp.description || '';
+    el('role-seal').textContent = isGm ? 'Storyteller' : 'Player';
+    el('role-seal').className = 'seal ' + (isGm ? 'gm' : '');
+    el('loading').hidden = true;
+    el('wrap').hidden = false;
+
+    for (const gmBit of ['invite', 'summary-tools', 'handout-tools', 'notes-tools', 'starting-xp']) {
+      el(gmBit).hidden = !isGm;
+    }
+    el('edit-camp').hidden = !isGm;
+    el('delete-camp').hidden = !isGm;
+    el('leave').hidden = isGm;
+
+    /* ---- invite code -------------------------------------------------- */
+    if (isGm) {
+      el('code').textContent = camp.join_code;
+      el('copy-code').addEventListener('click', async () => {
+        await navigator.clipboard?.writeText(camp.join_code);
+        const b = el('copy-code'); const old = b.textContent;
+        b.textContent = 'Copied'; setTimeout(() => (b.textContent = old), 1200);
+      });
+      el('new-code').addEventListener('click', async () => {
+        if (!await uiConfirm('Make a new code? The old one stops working immediately.',
+                             { title: 'New invite code', ok: 'Replace it' })) return;
+        const { data, error } = await sb.rpc('regenerate_code', { p_campaign: id });
+        if (error) return uiError(error.message);
+        camp.join_code = data as string;
+        el('code').textContent = camp.join_code;
+      });
+
+      el('edit-camp').addEventListener('click', async () => {
+        const out = await uiForm('Rename campaign', [
+          { name: 'name', label: 'Name', value: camp.name, required: true },
+          { name: 'description', label: 'Description', value: camp.description },
+        ]);
+        if (!out) return;
+        await sb.from('campaigns').update({ name: out.name, description: out.description }).eq('id', id);
+        location.reload();
+      });
+
+      el('delete-camp').addEventListener('click', async () => {
+        if (!await uiConfirm('Delete this campaign, its characters, files and notes? This cannot be undone.',
+                             { title: 'Delete campaign', ok: 'Delete', danger: true })) return;
+        const { error } = await sb.from('campaigns').delete().eq('id', id);
+        if (error) return uiError(error.message);
+        location.href = `${base}campaigns`;
+      });
+
+      const startXp = el('start-xp') as HTMLInputElement;
+      startXp.value = String(camp.starting_xp ?? 0);
+      el('start-xp-save').addEventListener('click', async () => {
+        const { error } = await sb.from('campaigns').update({ starting_xp: Math.max(0, +startXp.value || 0) }).eq('id', id);
+        const flash = el('start-xp-flash');
+        flash.textContent = error ? 'Error: ' + error.message : 'Saved';
+        setTimeout(() => (flash.textContent = ''), 1400);
+      });
+    } else {
+      el('leave').addEventListener('click', async () => {
+        if (!await uiConfirm('Leave this campaign? Your characters stay, but lose their table.',
+                             { title: 'Leave campaign', ok: 'Leave', danger: true })) return;
+        await sb.from('campaign_members').delete().eq('campaign_id', id).eq('user_id', user.id);
+        location.href = `${base}campaigns`;
+      });
+    }
+
+    /* ---- members ------------------------------------------------------ */
+    let memberNames: Record<string, string> = {};
+
+    async function loadMembers() {
+      const { data } = await sb.from('campaign_members')
+        .select('user_id, role, joined_at, profile:profiles(name)')
+        .eq('campaign_id', id).order('joined_at', { ascending: true });
+      memberNames = Object.fromEntries((data || []).map((m: any) => [m.user_id, m.profile?.name || 'Unnamed']));
+      el('members').innerHTML = (data || []).map((m: any) => {
+        const isCreator = m.user_id === camp.gm_id;
+        const you = m.user_id === user.id ? ' <span class="muted">(you)</span>' : '';
+        const controls = isGm && !isCreator
+          ? `<button class="btn tiny" data-role="${m.user_id}" data-next="${m.role === 'gm' ? 'player' : 'gm'}">`
+            + `${m.role === 'gm' ? 'Make player' : 'Make Storyteller'}</button>`
+            + `<button class="btn tiny danger" data-kick="${m.user_id}">Remove</button>`
+          : '';
+        return `<div class="mrow"><span class="who">${esc(m.profile?.name || 'Unnamed')}${you}</span>`
+          + `<span class="seal ${m.role === 'gm' ? 'gm' : ''}">${m.role === 'gm' ? 'Storyteller' : 'Player'}</span>`
+          + controls + '</div>';
+      }).join('') || '<div class="empty">No members yet.</div>';
+
+      for (const b of Array.from(el('members').querySelectorAll<HTMLElement>('[data-role]'))) {
+        b.addEventListener('click', async () => {
+          await sb.from('campaign_members').update({ role: b.dataset.next })
+            .eq('campaign_id', id).eq('user_id', b.dataset.role);
+          loadMembers();
+        });
+      }
+      for (const b of Array.from(el('members').querySelectorAll<HTMLElement>('[data-kick]'))) {
+        b.addEventListener('click', async () => {
+          if (!await uiConfirm('Remove this player from the campaign?', { title: 'Remove', ok: 'Remove', danger: true })) return;
+          await sb.from('campaign_members').delete().eq('campaign_id', id).eq('user_id', b.dataset.kick);
+          loadMembers();
+        });
+      }
+    }
+    await loadMembers();
+
+    /* ---- characters ---------------------------------------------------- */
+    const SEALS: Record<string, string> = { draft: 'Draft', submitted: 'Awaiting approval', approved: 'Approved' };
+
+    async function loadCharacters() {
+      // RLS shows the Storyteller every character and a player only their own.
+      const { data } = await sb.from('characters')
+        .select('id, name, concept, owner_id, status')
+        .eq('campaign_id', id).order('updated_at', { ascending: false });
+      const pending = (data || []).filter((c: any) => c.status === 'submitted').length;
+      el('pending-note').textContent = isGm && pending ? `· ${pending} waiting for you` : '';
+      el('characters').innerHTML = (data || []).length
+        ? '<div class="char-grid">' + (data || []).map((c: any) => `
+            <a class="char-card" href="${base}character?id=${c.id}">
+              <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+              <span class="cname">${esc(c.name || 'Unnamed')}</span>
+              ${c.concept ? `<span class="cwho">${esc(c.concept)}</span>` : ''}
+              <span class="cwho">${esc(memberNames[c.owner_id] || '')}</span>
+            </a>`).join('') + '</div>'
+        : '<div class="empty">No characters yet.</div>';
+    }
+    await loadCharacters();
+    el('new-char').addEventListener('click', () => { location.href = `${base}character?new=1&campaign=${id}`; });
+
+    /* ---- files: summaries and handouts ----------------------------------- */
+    const signed = async (path: string) => {
+      const { data } = await sb.storage.from(CAMP_BUCKET).createSignedUrl(path, 3600);
+      return data?.signedUrl || '';
+    };
+
+    async function upload(file: File, category: string, extra: Record<string, any> = {}) {
+      const path = `${id}/${category}-${Date.now()}-${safeName(file.name)}`;
+      const { error } = await sb.storage.from(CAMP_BUCKET).upload(path, file, { contentType: file.type });
+      if (error) return uiError('Could not upload: ' + error.message);
+      const { error: e2 } = await sb.from('files').insert({
+        campaign_id: id, owner_id: user.id, name: file.name, storage_path: path,
+        bucket: CAMP_BUCKET, mime: file.type, category, ...extra,
+      });
+      if (e2) await uiError('Uploaded, but could not record it: ' + e2.message);
+    }
+
+    async function removeFile(fileId: string) {
+      const { data: f } = await sb.from('files').select('storage_path').eq('id', fileId).maybeSingle();
+      if (f?.storage_path) await sb.storage.from(CAMP_BUCKET).remove([f.storage_path]);
+      await sb.from('files').delete().eq('id', fileId);
+    }
+
+    function fileRow(f: any, controls: string) {
+      const kind = f.url ? 'link' : (f.mime || '').split('/')[1] || 'file';
+      return `<div class="frow" data-file="${f.id}">`
+        + `<a href="#" data-open>${esc(f.name)}</a>`
+        + `<span class="gal-kind">${esc(kind)}</span>${controls}</div>`;
+    }
+
+    function wireOpen(root: HTMLElement, rows: any[]) {
+      for (const node of Array.from(root.querySelectorAll<HTMLElement>('[data-file]'))) {
+        const f = rows.find((x) => x.id === node.dataset.file);
+        node.querySelector('[data-open]')!.addEventListener('click', async (ev) => {
+          ev.preventDefault();
+          if (f.url) { const href = safeLink(f.url); if (href) window.open(href, '_blank', 'noopener'); return; }
+          const url = await signed(f.storage_path);
+          if (url) window.open(url, '_blank', 'noopener');
+        });
+        node.querySelector('[data-del]')?.addEventListener('click', async () => {
+          if (!await uiConfirm(`Remove "${f.name}"?`, { title: 'Remove', ok: 'Remove', danger: true })) return;
+          await removeFile(f.id);
+          await loadFiles();
+        });
+      }
+    }
+
+    async function loadFiles() {
+      const { data } = await sb.from('files').select('*')
+        .eq('campaign_id', id).is('character_id', null).order('created_at', { ascending: false });
+      const rows = data || [];
+
+      const summaries = rows.filter((f: any) => f.category === 'session-summary')
+        .sort((a: any, b: any) => (b.session_no || 0) - (a.session_no || 0));
+      el('summaries').innerHTML = summaries.length
+        ? summaries.map((f: any) => fileRow(f,
+            `<span class="gal-kind">session ${f.session_no ?? '?'}</span>`
+            + (isGm ? '<button type="button" class="rowx" data-del title="Remove">×</button>' : '')
+          )).join('')
+        : '<div class="empty">No session summaries yet.</div>';
+      wireOpen(el('summaries'), summaries);
+
+      const handouts = rows.filter((f: any) => f.category === 'handout');
+      el('handouts').innerHTML = handouts.length
+        ? handouts.map((f: any) => {
+            if (!isGm) return fileRow(f, '');
+            const shared = (f.visible_to || []) as string[];
+            const perPlayer = Object.entries(memberNames)
+              .filter(([uid]) => uid !== camp.gm_id)
+              .map(([uid, name]) => `<label><input type="checkbox" data-share="${f.id}" data-user="${uid}"`
+                + `${shared.includes(uid) ? ' checked' : ''} /> ${esc(name)}</label>`).join('');
+            return fileRow(f,
+              `<label class="gal-kind"><input type="checkbox" data-all="${f.id}"`
+              + `${f.visible_to_players ? ' checked' : ''} /> everyone</label>`
+              + '<button type="button" class="rowx" data-del title="Remove">×</button>')
+              + `<details class="vis-list"><summary>share with…</summary>${perPlayer}</details>`;
+          }).join('')
+        : '<div class="empty">No handouts yet.</div>';
+      wireOpen(el('handouts'), handouts);
+
+      for (const cb of Array.from(el('handouts').querySelectorAll<HTMLInputElement>('[data-all]'))) {
+        cb.addEventListener('change', async () => {
+          await sb.from('files').update({ visible_to_players: cb.checked }).eq('id', cb.dataset.all);
+        });
+      }
+      for (const cb of Array.from(el('handouts').querySelectorAll<HTMLInputElement>('[data-share]'))) {
+        cb.addEventListener('change', async () => {
+          const fileId = cb.dataset.share!;
+          const boxes = Array.from(el('handouts').querySelectorAll<HTMLInputElement>(`[data-share="${fileId}"]`));
+          const list = boxes.filter((b) => b.checked).map((b) => b.dataset.user);
+          await sb.from('files').update({ visible_to: list }).eq('id', fileId);
+        });
+      }
+    }
+    await loadFiles();
+
+    if (isGm) {
+      (el('summary-file') as HTMLInputElement).addEventListener('change', async (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        (ev.target as HTMLInputElement).value = '';
+        if (!file) return;
+        const n = await uiPrompt('Session number', '', {
+          title: 'Session summary', message: 'Which session is this?', placeholder: 'e.g. 4', required: true,
+        });
+        if (n === null) return;
+        await upload(file, 'session-summary', { session_no: Math.max(0, parseInt(n, 10) || 0), visible_to_players: true });
+        await loadFiles();
+      });
+
+      (el('handout-file') as HTMLInputElement).addEventListener('change', async (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        (ev.target as HTMLInputElement).value = '';
+        if (file) { await upload(file, 'handout'); await loadFiles(); }
+      });
+
+      el('handout-link').addEventListener('click', async () => {
+        const url = await uiPrompt('Link', '', { title: 'Add a link', placeholder: 'https://…', required: true });
+        if (!url) return;
+        const href = safeLink(url);
+        if (!href) return uiError('That link must start with http:// or https://');
+        const name = await uiPrompt('Label', href, { title: 'Name it' });
+        await sb.from('files').insert({
+          campaign_id: id, owner_id: user.id, name: (name || href).trim(),
+          url: href, mime: 'link', category: 'handout',
+        });
+        await loadFiles();
+      });
+    }
+
+    /* ---- session notes ---------------------------------------------------- */
+    async function loadNotes() {
+      const { data } = await sb.from('session_notes').select('*')
+        .eq('campaign_id', id).order('position', { ascending: true }).order('created_at', { ascending: false });
+      const rows = data || [];
+      if (!rows.length) { el('notes').innerHTML = '<div class="empty">No notes yet.</div>'; return; }
+
+      el('notes').innerHTML = rows.map((n: any) => isGm
+        ? `<div class="note-card" data-note="${n.id}">
+             <input class="title" data-title value="${esc(n.title)}" placeholder="Title" />
+             <textarea data-body placeholder="Notes for this session…">${esc(n.body)}</textarea>
+             <div class="foot">
+               <label><input type="checkbox" data-share${n.visible_to_players ? ' checked' : ''} /> share with players</label>
+               <span class="muted" data-flash></span>
+               <button type="button" class="btn tiny danger" data-del style="margin-left:auto">Delete</button>
+             </div>
+           </div>`
+        : `<div class="note-card note-read"><h3>${esc(n.title || 'Untitled')}</h3><p>${esc(n.body)}</p></div>`
+      ).join('');
+
+      if (!isGm) return;
+      for (const card of Array.from(el('notes').querySelectorAll<HTMLElement>('[data-note]'))) {
+        const noteId = card.dataset.note!;
+        const flash = card.querySelector<HTMLElement>('[data-flash]')!;
+        const save = debounce(async (patch: any) => {
+          await sb.from('session_notes').update(patch).eq('id', noteId);
+          flash.textContent = 'Saved';
+          setTimeout(() => (flash.textContent = ''), 1200);
+        }, 700);
+        card.querySelector<HTMLInputElement>('[data-title]')!
+          .addEventListener('input', (e) => save({ title: (e.target as HTMLInputElement).value }));
+        card.querySelector<HTMLTextAreaElement>('[data-body]')!
+          .addEventListener('input', (e) => save({ body: (e.target as HTMLTextAreaElement).value }));
+        card.querySelector<HTMLInputElement>('[data-share]')!
+          .addEventListener('change', (e) => save({ visible_to_players: (e.target as HTMLInputElement).checked }));
+        card.querySelector<HTMLElement>('[data-del]')!.addEventListener('click', async () => {
+          if (!await uiConfirm('Delete this note?', { title: 'Delete note', ok: 'Delete', danger: true })) return;
+          await sb.from('session_notes').delete().eq('id', noteId);
+          await loadNotes();
+        });
+      }
+    }
+    await loadNotes();
+
+    if (isGm) {
+      el('note-add').addEventListener('click', async () => {
+        await sb.from('session_notes').insert({ campaign_id: id, title: 'New note', body: '' });
+        await loadNotes();
+      });
+    }
+  })();
+</script>

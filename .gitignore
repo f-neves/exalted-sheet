@@ -21,3 +21,11 @@ Thumbs.db
 *.stackdump
 .vscode/*
 !.vscode/extensions.json
+
+# test output
+sheet.png
+full.png
+lunar.png
+mortal.png
+sidereal.png
+*.pdf

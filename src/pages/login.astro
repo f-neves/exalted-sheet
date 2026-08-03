@@ -1,0 +1,118 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Sign in — Exalted 2e">
+  <h1 class="page-h">Sign in</h1>
+
+  <div class="notice" id="setup" hidden>
+    <h2>The campaign area is not switched on yet</h2>
+    <p class="muted">
+      This build has no Supabase keys. See <code>supabase/README.md</code>; the character
+      sheet itself works without them.
+    </p>
+  </div>
+
+  <div id="signed-in" class="notice" hidden>
+    <h2>You are already signed in</h2>
+    <p><a href="#" id="go-campaigns">Go to your campaigns</a></p>
+  </div>
+
+  <div id="forms" class="auth-wrap" hidden>
+    <div class="tabs" role="tablist">
+      <button class="btn primary" data-tab="in" type="button">Sign in</button>
+      <button class="btn" data-tab="up" type="button">Create account</button>
+    </div>
+
+    <form class="panel-card" id="form-in">
+      <h2>Sign in</h2>
+      <label><span>Email</span><input name="email" type="email" required autocomplete="email" /></label>
+      <label><span>Password</span><input name="password" type="password" required autocomplete="current-password" /></label>
+      <div class="row">
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn" type="button" id="forgot">Forgot password</button>
+      </div>
+    </form>
+
+    <form class="panel-card" id="form-up" hidden>
+      <h2>Create account</h2>
+      <label><span>Name</span><input name="name" required maxlength="60" autocomplete="name" /></label>
+      <label><span>Email</span><input name="email" type="email" required autocomplete="email" /></label>
+      <label><span>Password</span><input name="password" type="password" required minlength="6" autocomplete="new-password" /></label>
+      <button class="btn primary" type="submit">Create account</button>
+    </form>
+
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </div>
+
+  <style>
+    .page-h { font-size: 1.6rem; letter-spacing: .06em; color: var(--accent); margin: 1.2rem 0 1rem; }
+    .auth-wrap { max-width: 26rem; }
+    .tabs { display: flex; gap: .4rem; margin-bottom: .8rem; }
+    .row { display: flex; gap: .5rem; align-items: center; }
+  </style>
+</Base>
+
+<script>
+  import { signIn, signUp, resetPassword, currentUser, supabaseConfigured } from '../lib/auth';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
+  const msg = (text: string, bad = true) => {
+    const m = el('msg');
+    m.textContent = text;
+    m.className = 'msg' + (bad ? ' bad' : '');
+  };
+
+  // Only same-site paths, so ?next= cannot be turned into an open redirect.
+  const raw = new URLSearchParams(location.search).get('next');
+  const next = raw && raw.startsWith('/') ? location.origin + raw : base + 'campaigns';
+
+  (async () => {
+    if (!supabaseConfigured) { el('setup').hidden = false; return; }
+
+    if (await currentUser()) {
+      el('signed-in').hidden = false;
+      (el('go-campaigns') as HTMLAnchorElement).href = next;
+      return;
+    }
+    el('forms').hidden = false;
+
+    for (const tab of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-tab]'))) {
+      tab.addEventListener('click', () => {
+        const wantSignUp = tab.dataset.tab === 'up';
+        el('form-in').hidden = wantSignUp;
+        el('form-up').hidden = !wantSignUp;
+        document.querySelectorAll('[data-tab]').forEach((b) => b.classList.toggle('primary', b === tab));
+        msg('');
+      });
+    }
+
+    el('form-in').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const f = ev.target as HTMLFormElement;
+      msg('Signing in…', false);
+      const { error } = await signIn((f.email as any).value, (f.password as any).value);
+      if (error) return msg(error);
+      location.href = next;
+    });
+
+    el('form-up').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const f = ev.target as HTMLFormElement;
+      msg('Creating your account…', false);
+      const { error } = await signUp((f.email as any).value, (f.password as any).value, (f.name as any).value);
+      if (error) return msg(error);
+      // With email confirmation switched on there is no session yet.
+      if (await currentUser()) location.href = next;
+      else msg('Account created. Click the link in your email, then sign in.', false);
+    });
+
+    el('forgot').addEventListener('click', async () => {
+      const email = (document.querySelector('#form-in [name=email]') as HTMLInputElement).value;
+      if (!email) return msg('Type your email above first.');
+      const { error } = await resetPassword(email, `${location.origin}${base}login`);
+      msg(error || 'If that email has an account, a reset link is on its way.', !!error);
+    });
+  })();
+</script>
