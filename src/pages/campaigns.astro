@@ -32,6 +32,11 @@ import Base from '../layouts/Base.astro';
       </form>
     </div>
 
+    <div id="loose" hidden>
+      <h2 class="barh">Characters without a campaign</h2>
+      <div id="loose-list"></div>
+    </div>
+
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
   </div>
 
@@ -94,6 +99,20 @@ import Base from '../layouts/Base.astro';
           ${gm ? `<span class="camp-code">Code ${esc(c.join_code)}</span>` : ''}
         </a>`;
       }).join('') + '</div>';
+    }
+
+    // A character outlives the campaign it was made in, so it needs somewhere to be found
+    // afterwards; otherwise deleting a campaign would strand it with no route back.
+    const { data: loose } = await sb.from('characters')
+      .select('id, name, concept').is('campaign_id', null).eq('owner_id', user.id)
+      .order('updated_at', { ascending: false });
+    if (loose?.length) {
+      el('loose').hidden = false;
+      el('loose-list').innerHTML = '<div class="camp-grid">' + loose.map((c: any) =>
+        `<a class="camp-card" href="${base}character?id=${c.id}">
+           <span class="camp-name">${esc(c.name || 'Unnamed')}</span>
+           ${c.concept ? `<span class="camp-desc">${esc(c.concept)}</span>` : ''}
+         </a>`).join('') + '</div>';
     }
 
     el('form-create').addEventListener('submit', async (ev) => {

@@ -274,6 +274,16 @@ try {
   await gm.page.waitForFunction(() => location.href.includes('campaigns'), { timeout: 20000 });
   check('the Storyteller can delete the campaign', true);
 
+  // The character survives its campaign, so the player must still be able to reach it.
+  await player.page.goto(BASE + 'campaigns', { waitUntil: 'networkidle0' });
+  await player.page.waitForSelector('#content:not([hidden])');
+  const loose = await player.page.evaluate(() => ({
+    shown: !document.getElementById('loose').hidden,
+    text: document.getElementById('loose-list').textContent,
+  }));
+  check('a character outliving its campaign is still reachable',
+        loose.shown && /Smoke Solar/.test(loose.text), JSON.stringify(loose));
+
   const pageErrors = [...gm.errors, ...player.errors].filter((e) => !/favicon/i.test(e));
   check('no uncaught errors in either browser', pageErrors.length === 0, pageErrors.join(' | '));
 } catch (err) {

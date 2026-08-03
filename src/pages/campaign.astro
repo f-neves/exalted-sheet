@@ -188,7 +188,10 @@ import Base from '../layouts/Base.astro';
       });
 
       el('delete-camp').addEventListener('click', async () => {
-        if (!await uiConfirm('Delete this campaign, its characters, files and notes? This cannot be undone.',
+        // Characters are deliberately not deleted with the campaign: they belong to their
+        // players. They come loose and show up under "Characters without a campaign".
+        if (!await uiConfirm('Delete this campaign, along with its handouts, summaries and notes? '
+                             + 'Characters are kept and go back to their players. This cannot be undone.',
                              { title: 'Delete campaign', ok: 'Delete', danger: true })) return;
         const { error } = await sb.from('campaigns').delete().eq('id', id);
         if (error) return uiError(error.message);

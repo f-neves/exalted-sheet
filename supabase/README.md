@@ -80,5 +80,18 @@ npm run check:migration   # applies it twice to a throwaway Postgres in Docker
 
 `smoke:db` is the one that matters: it signs up three throwaway accounts and proves the
 boundaries hold — a player cannot read a table-mate's sheet, cannot raise their own XP, and
-cannot write a sheet they have submitted. It cleans up the campaign afterwards; the test
-accounts remain, which is harmless.
+cannot write a sheet they have submitted. It removes the campaign afterwards, but the test
+accounts stay, since deleting an account needs the service-role key. To sweep them:
+
+```sql
+delete from auth.users
+ where email like 'exalted-test-%@example.com'
+    or email like 'gm-smoke-%@example.com';
+```
+
+That cascades to their profiles, memberships and characters.
+
+Note that **characters deliberately outlive their campaign**: `characters.campaign_id` is
+`on delete set null`, so deleting a campaign leaves each player's character intact and
+unattached, listed under "Characters without a campaign". Deleting the *account* is what
+removes them.
