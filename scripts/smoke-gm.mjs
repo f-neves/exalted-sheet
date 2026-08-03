@@ -88,7 +88,10 @@ try {
     gm.page.click('#form-create button[type=submit]'),
   ]);
   campaignUrl = gm.page.url();
-  check('creating a campaign opens it', /campaign\?id=/.test(campaignUrl), campaignUrl);
+  // The dev server serves /campaign?id=, the built site /campaign/?id=.
+  const CAMPAIGN_URL = /campaign\/?\?id=/;
+  const CHARACTER_URL = /character\/?\?id=/;
+  check('creating a campaign opens it', CAMPAIGN_URL.test(campaignUrl), campaignUrl);
 
   await gm.page.waitForSelector('#wrap:not([hidden])');
   code = (await gm.page.$eval('#code', (e) => e.textContent)).trim();
@@ -107,7 +110,7 @@ try {
     player.page.click('#form-join button[type=submit]'),
   ]);
   await player.page.waitForSelector('#wrap:not([hidden])');
-  check('a player joins with the code', player.page.url().includes('campaign?id='), player.page.url());
+  check('a player joins with the code', CAMPAIGN_URL.test(player.page.url()), player.page.url());
 
   const inviteHidden = await player.page.$eval('#invite', (e) => e.hidden);
   check('players never see the invite panel', inviteHidden === true);
@@ -125,7 +128,7 @@ try {
   ]);
   await player.page.waitForSelector('#attrs .dot', { timeout: 20000 });
   charUrl = player.page.url();
-  check('a new character opens the sheet', /character\?id=/.test(charUrl), charUrl);
+  check('a new character opens the sheet', CHARACTER_URL.test(charUrl), charUrl);
 
   const mediaShown = await player.page.$eval('#media', (e) => !e.hidden);
   check('the portrait and gallery block appears on a campaign sheet', mediaShown === true);
