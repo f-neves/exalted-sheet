@@ -6,8 +6,10 @@
   "_doc": "Dark mirror of the Solar: same XP costs, same pools, castes map 1:1 onto the Solar castes.",
 
   "casteLabel": "Caste",
-  "favoredKind": "ability",
-  "favoredPicks": 5,
+  "casteKind": "ability",
+  "favoredAbilities": { "picks": 5, "always": [] },
+  "favoredAttributes": { "picks": 0, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Glamour"],
   "accent": "#b9b2a4",
   "accentSoft": "#6b6459",
 

@@ -12,12 +12,22 @@
     "otherwise 'normal'. Abilities additionally use firstDot / favoredFirstDot for the 0 -> 1 step.",
     "",
     "POOLS: linear coefficient maps. Available keys: essence, willpower, virtuesSum, highestVirtue,",
-    "twoHighestVirtues, lowestVirtue, breeding, flat. Anything absent counts as 0."
+    "twoHighestVirtues, lowestVirtue, breeding, flat. Anything absent counts as 0.",
+    "",
+    "CASTE vs FAVORED: casteKind says what the caste grants (\"ability\", \"attribute\" or \"none\").",
+    "favoredAbilities / favoredAttributes each carry `picks` (how many the player may choose) and",
+    "`always` (ids that are favored for every character of this type, e.g. Survival for Lunars).",
+    "",
+    "ABILITY GROUPS: the Abilities block is laid out by `abilityGroups`. When that field is absent",
+    "and casteKind is \"ability\", the caste list is used as the layout, which is what every",
+    "Celestial and Terrestrial sheet does."
   ],
 
   "casteLabel": "Caste",
-  "favoredKind": "ability",
-  "favoredPicks": 5,
+  "casteKind": "ability",
+  "favoredAbilities": { "picks": 5, "always": [] },
+  "favoredAttributes": { "picks": 0, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Glamour"],
   "accent": "#e0a83c",
   "accentSoft": "#8a6416",
 

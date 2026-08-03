@@ -2,32 +2,32 @@
   "id": "infernal",
   "name": "Infernal",
   "order": 6,
-  "verified": false,
+  "verified": true,
   "_doc": [
-    "Green Sun Princes. Like Lunars, Infernals favour ATTRIBUTES rather than Abilities, because",
-    "Yozi Charm sets are organised by Attribute."
+    "Green Sun Princes. Their caste Abilities mirror the Solar castes one for one:",
+    "Slayer = Dawn, Malefactor = Zenith, Defiler = Twilight, Scourge = Night, Fiend = Eclipse."
   ],
-  "_todo": [
-    "CASTE ATTRIBUTES ARE NOT FILLED IN. Every caste below has an empty 'traits' array, so no",
-    "Attribute is auto-marked as caste; you can still tick Favored by hand and the XP maths is correct.",
-    "Fill each 'traits' array with the three Attribute ids from The Manual of Exalted Power: Infernals",
-    "and flip 'verified' to true. Valid ids: strength, dexterity, stamina, charisma, manipulation,",
-    "appearance, perception, intelligence, wits.",
-    "XP costs and pools are copied from the Solar table pending your cost sheet."
-  ],
+  "_todo": "XP costs and pools are copied from the Solar table pending your cost sheet.",
 
   "casteLabel": "Caste",
-  "favoredKind": "attribute",
-  "favoredPicks": 2,
+  "casteKind": "ability",
+  "favoredAbilities": { "picks": 5, "always": [] },
+  "favoredAttributes": { "picks": 0, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Glamour"],
   "accent": "#7fc04a",
   "accentSoft": "#4a7028",
 
   "castes": [
-    { "id": "slayer",     "name": "Slayer",     "yozi": "Malfeas",                     "traits": [] },
-    { "id": "malefactor", "name": "Malefactor", "yozi": "Cecelyne",                    "traits": [] },
-    { "id": "defiler",    "name": "Defiler",    "yozi": "She Who Lives In Her Name",   "traits": [] },
-    { "id": "scourge",    "name": "Scourge",    "yozi": "Adorjan",                     "traits": [] },
-    { "id": "fiend",      "name": "Fiend",      "yozi": "The Ebon Dragon",             "traits": [] }
+    { "id": "slayer",     "name": "Slayer",     "yozi": "Malfeas",
+      "traits": ["archery", "martial-arts", "melee", "thrown", "war"] },
+    { "id": "malefactor", "name": "Malefactor", "yozi": "Cecelyne",
+      "traits": ["integrity", "performance", "presence", "resistance", "survival"] },
+    { "id": "defiler",    "name": "Defiler",    "yozi": "She Who Lives In Her Name",
+      "traits": ["craft", "investigation", "lore", "medicine", "occult"] },
+    { "id": "scourge",    "name": "Scourge",    "yozi": "Adorjan",
+      "traits": ["athletics", "awareness", "dodge", "larceny", "stealth"] },
+    { "id": "fiend",      "name": "Fiend",      "yozi": "The Ebon Dragon",
+      "traits": ["bureaucracy", "linguistics", "ride", "sail", "socialize"] }
   ],
 
   "floors": {

@@ -1,7 +1,7 @@
 # Exalted 2e Character Sheet
 
-A static, self-calculating character sheet for Exalted Second Edition, covering Solar,
-Abyssal, Lunar, Sidereal, Dragon-Blooded and Infernal characters.
+A static, self-calculating character sheet for Exalted Second Edition, covering heroic
+mortals plus Solar, Abyssal, Lunar, Sidereal, Dragon-Blooded and Infernal characters.
 
 Live: <https://f-neves.github.io/exalted-sheet/>
 
@@ -47,11 +47,23 @@ src/data/splats/<exalt>.json     everything that differs per Exalt type
 
 `src/data/splats/solar.json` is the reference file and is commented. A splat file defines:
 
-- **`castes`** — each with the `traits` it grants. For Solars, Abyssals, Sidereals and
-  Dragon-Blooded those are Ability ids; for Lunars and Infernals (`favoredKind:
-  "attribute"`) they are Attribute ids.
-- **`favoredPicks`** — how many extra Favored traits the player may tick beyond the caste set.
+- **`casteKind`** — what the caste grants: `"ability"` (every type except Lunars),
+  `"attribute"` (Lunars), or `"none"` (heroic mortals, whose Caste selector is hidden).
+- **`castes`** — each with the `traits` it grants, named by Ability or Attribute id to match
+  `casteKind`.
+- **`favoredAbilities`** / **`favoredAttributes`** — `{ picks, always }` each. `picks` is how
+  many the player may tick freely; `always` is favored for every character of that type.
+  The two are independent, which is how a Lunar holds caste Attributes, two favored
+  Attributes, Survival always favored, and two more favored Abilities all at once.
+- **`abilityGroups`** — the layout of the Abilities block. Omit it and the caste list is used,
+  which is what every Celestial and Terrestrial sheet does. Lunars (War / Life / Wisdom) and
+  mortals (Warrior / Priest / Savant / Criminal / Broker) set it explicitly.
+- **`craftTypes`** — Craft carries no rating of its own. Its row in the Abilities block only
+  shows the caste and favored marks; the dots live on these types, each a full Ability. The
+  list is a starting point, and `+ craft type` adds more.
 - **`floors`** — the free baseline for each kind of trait.
+- **`maxRating`** — optional per-splat override of how many dots a row draws
+  (heroic mortals cap Essence at 3).
 - **`xp`** — cost of the dot that takes a trait from `n-1` to `n` is
   **`mult × (n − 1) + base`**, using the `favored` spec when the trait is caste or favored
   and `normal` otherwise. Abilities use `firstDot` / `favoredFirstDot` for the `0 → 1` step.
@@ -73,12 +85,12 @@ and that the Solar numbers still reproduce the spreadsheet.
 
 ### Known gaps
 
-- **Infernal caste Attributes are empty.** The five castes are listed with their Yozis but
-  no caste Attributes, because I could not verify them against *The Manual of Exalted
-  Power: Infernals*. Favored can still be ticked by hand and all XP maths is correct. Fill
-  the `traits` arrays and flip `verified` to `true`.
-- **Lunar, Sidereal, Dragon-Blooded and Infernal XP tables** currently carry the Solar
-  numbers. Castes, aspects and Essence pools for those four are canonical.
+- **XP tables for Lunar, Sidereal, Dragon-Blooded, Infernal and mortal** currently carry the
+  Solar numbers. Castes, aspects, ability layouts and Essence pools for all of them are
+  correct.
+- **The mortal Attribute floor is 1** (Exalted use 2) and **the mortal Charm price is a
+  guess**. Both are one line each in `mortal.json`.
+- **Sidereal Craft types** end in Fate, which is a guess; the other five are the elements.
 - Charm *selection* is deliberately out of scope. Charms are a free-text list with a
   Favored checkbox; only the count drives XP.
 

@@ -6,8 +6,10 @@
   "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and castes are canonical 2e.",
 
   "casteLabel": "Caste",
-  "favoredKind": "ability",
-  "favoredPicks": 4,
+  "casteKind": "ability",
+  "favoredAbilities": { "picks": 4, "always": [] },
+  "favoredAttributes": { "picks": 0, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Fate"],
   "accent": "#9b7fd4",
   "accentSoft": "#5c4a86",
 

@@ -61,13 +61,27 @@ const counts = await page.evaluate(() => ({
   casteOpts: document.querySelectorAll('#caste-sel option').length,
 }));
 check('9 attribute rows', counts.attrRows === 9, JSON.stringify(counts));
-check('23 ability rows (25 minus craft/martial-arts sublists)', counts.abilRows === 23);
+check('25 ability rows (Craft is a marker row)', counts.abilRows === 25);
 check('6 power rows (4 virtues + willpower + essence)', counts.virtueRows === 6);
 check('derived panel populated', counts.derived >= 10);
 check('health track rendered', counts.healthBoxes === 7);
 check('3 sorcery circles for Solar', counts.circles === 3);
-check('6 exalt types', counts.splatOpts === 6);
+check('7 exalt types', counts.splatOpts === 7);
 check('5 solar castes', counts.casteOpts === 5);
+
+// Ability layout follows the caste names, and Craft is seeded per type
+const layout = await page.evaluate(() => ({
+  groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+  craftMarker: !!document.querySelector('#abils .trow-marker'),
+  craftRows: [...document.querySelectorAll('#crafts [data-subname]')].map((i) => i.value),
+}));
+check('solar groups are the caste names',
+      JSON.stringify(layout.groups) === JSON.stringify(['Dawn', 'Zenith', 'Twilight', 'Night', 'Eclipse']),
+      JSON.stringify(layout.groups));
+check('Craft renders as a marker row, not a rated one', layout.craftMarker === true);
+check('Craft types seeded from the splat',
+      JSON.stringify(layout.craftRows) === JSON.stringify(['Air', 'Earth', 'Fire', 'Water', 'Wood', 'Glamour']),
+      JSON.stringify(layout.craftRows));
 
 // Baseline XP is zero at the floors
 const xp0 = await page.$eval('#xpSpent', (e) => e.textContent);
@@ -126,7 +140,7 @@ const favInfo = await page.$eval('#caste-info', (e) => e.textContent);
 check('favored pick registered', favInfo.includes('1/5'), favInfo.slice(0, 120));
 check('favoring an empty ability changes nothing', (await page.$eval('#xpSpent', (e) => e.textContent)) === favBefore);
 
-// Switch splat: Lunar favors attributes, has 4 castes and 2 circles
+// Switch splat: Lunar has caste Attributes AND favored Abilities at the same time
 await page.select('#splat-sel', 'lunar');
 await new Promise((r) => setTimeout(r, 200));
 const lunar = await page.evaluate(() => ({
@@ -134,14 +148,81 @@ const lunar = await page.evaluate(() => ({
   circles: document.querySelectorAll('#circles .lrow').length,
   attrTags: document.querySelectorAll('#attrs [data-fav]').length,
   abilTags: document.querySelectorAll('#abils [data-fav]').length,
+  groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+  survivalLocked: document.querySelector('[data-fav="ability:survival"]')?.classList.contains('locked'),
+  survivalOn: document.querySelector('[data-fav="ability:survival"]')?.classList.contains('on'),
+  strengthCaste: [...document.querySelectorAll('#attrs .trow')]
+    .find((r) => r.textContent.trim().startsWith('Strength'))?.querySelector('.tag')?.classList.contains('on'),
+  craftRows: [...document.querySelectorAll('#crafts [data-subname]')].map((i) => i.value),
   personal: [...document.querySelectorAll('#derived .derv')]
     .find((d) => d.querySelector('.dl').textContent === 'Personal Essence')?.querySelector('.dv').textContent,
 }));
 check('lunar has 4 castes', lunar.castes === 4, JSON.stringify(lunar));
 check('lunar has 2 sorcery circles', lunar.circles === 2);
-check('lunar favors attributes, not abilities', lunar.attrTags === 9 && lunar.abilTags === 0);
+check('lunar can favor both attributes and abilities', lunar.attrTags === 9 && lunar.abilTags === 25,
+      `${lunar.attrTags} attrs / ${lunar.abilTags} abils`);
+check('lunar groups are War / Life / Wisdom',
+      JSON.stringify(lunar.groups) === JSON.stringify(['War', 'Life', 'Wisdom']), JSON.stringify(lunar.groups));
+check('Survival is always favored and locked for Lunars',
+      lunar.survivalLocked === true && lunar.survivalOn === true);
+check('Full Moon grants Strength as a caste attribute', lunar.strengthCaste === true);
+check('lunar Craft types swap to Magitech',
+      lunar.craftRows.includes('Magitech'), JSON.stringify(lunar.craftRows));
 // Essence is 3 at this point (granted), Willpower 5 -> 1*3 + 2*5 = 13
 check('lunar personal = Ess 3 + WP*2 10 = 13', lunar.personal === '13', String(lunar.personal));
+
+// Survival costs the favored price without any pick being spent
+const survivalXp = await page.evaluate(() => {
+  const before = Number(document.getElementById('xpSpent').textContent);
+  const row = [...document.querySelectorAll('#abils .trow')].find((r) => r.textContent.trim().startsWith('Survival'));
+  row.querySelector('.dots [data-v="3"]').click();
+  return Number(document.getElementById('xpSpent').textContent) - before;
+});
+check('Survival 0->3 costs the favored 3+1+3 = 7', survivalXp === 7, String(survivalXp));
+
+// Infernal now mirrors the Solar castes with abilities
+await page.select('#splat-sel', 'infernal');
+await new Promise((r) => setTimeout(r, 200));
+const infernal = await page.evaluate(() => ({
+  groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+  slayerTraits: [...document.querySelectorAll('#abils > div')][0]?.textContent,
+  warn: !!document.querySelector('#caste-info .warn-todo'),
+}));
+check('infernal groups are the five castes',
+      JSON.stringify(infernal.groups) === JSON.stringify(['Slayer', 'Malefactor', 'Defiler', 'Scourge', 'Fiend']),
+      JSON.stringify(infernal.groups));
+check('Slayer holds the Dawn abilities',
+      ['Archery', 'Martial Arts', 'Melee', 'Thrown', 'War'].every((n) => infernal.slayerTraits.includes(n)),
+      infernal.slayerTraits);
+
+// Heroic mortal: no caste, peripheral-only pool at Essence x 10, Essence capped at 3
+await page.select('#splat-sel', 'mortal');
+await new Promise((r) => setTimeout(r, 200));
+const mortal = await page.evaluate(() => {
+  const derv = Object.fromEntries([...document.querySelectorAll('#derived .derv')]
+    .map((d) => [d.querySelector('.dl').textContent, d.querySelector('.dv').textContent]));
+  const essRow = [...document.querySelectorAll('#power .trow')].find((r) => r.textContent.includes('Essence'));
+  return {
+    casteHidden: document.getElementById('caste-label-wrap').style.display === 'none',
+    groups: [...document.querySelectorAll('#abils h3')].map((h) => h.textContent),
+    essenceDots: essRow.querySelectorAll('.dot').length,
+    limitTrack: document.querySelectorAll('#power .box.limit').length,
+    hasPersonal: 'Personal Essence' in derv,
+    peripheral: derv['Peripheral Essence'],
+    poolRows: [...document.querySelectorAll('#pools .cmb b')].map((b) => b.textContent),
+  };
+});
+check('mortal hides the caste selector', mortal.casteHidden === true, JSON.stringify(mortal));
+check('mortal groups are Warrior / Priest / Savant / Criminal / Broker',
+      JSON.stringify(mortal.groups) === JSON.stringify(['Warrior', 'Priest', 'Savant', 'Criminal', 'Broker']),
+      JSON.stringify(mortal.groups));
+check('mortal Essence caps at 3 dots', mortal.essenceDots === 3, String(mortal.essenceDots));
+check('mortal has no Limit track', mortal.limitTrack === 0);
+check('mortal has no personal pool row', mortal.hasPersonal === false);
+check('mortal peripheral = Essence 3 x 10 = 30', mortal.peripheral === '30', String(mortal.peripheral));
+check('mortal pool panel drops Personal and Total',
+      !mortal.poolRows.includes('Personal') && !mortal.poolRows.includes('Total'),
+      JSON.stringify(mortal.poolRows));
 
 // Add a weapon and confirm the combat panel computes
 await page.select('#splat-sel', 'solar');
@@ -225,6 +306,23 @@ check('state persisted to localStorage', persisted === 'Daiklave', String(persis
 await page.click('h2.barh-tog[data-sec="abils"]');
 const collapsed = await page.$eval('#sec-abils', (e) => e.classList.contains('sec-hidden'));
 check('sections collapse', collapsed === true);
+
+// No block may push the page wider than the viewport
+const overflow = await page.evaluate(() => {
+  const bad = [];
+  for (const id of ['attrs', 'abils', 'crafts', 'power', 'derived', 'pools', 'health', 'weapons', 'armor']) {
+    const n = document.getElementById(id);
+    if (!n) continue;
+    const box = n.getBoundingClientRect();
+    for (const child of n.querySelectorAll('*')) {
+      const c = child.getBoundingClientRect();
+      if (c.width && c.right > box.right + 1) { bad.push(`${id}: ${child.className || child.tagName}`); break; }
+    }
+  }
+  return { bad, bodyScroll: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+});
+check('no block overflows its container', overflow.bad.length === 0, overflow.bad.join(' | '));
+check('page does not scroll horizontally', overflow.bodyScroll <= 0, String(overflow.bodyScroll));
 
 await page.screenshot({ path: process.argv[3] || 'sheet.png', fullPage: true });
 

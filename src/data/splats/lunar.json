@@ -4,17 +4,33 @@
   "order": 3,
   "verified": true,
   "_doc": [
-    "Lunars favour ATTRIBUTES, not Abilities: favoredKind = 'attribute'. The caste grants the three",
-    "Attributes listed below; favoredPicks are additional Attributes chosen freely.",
-    "Casteless Lunars have no caste Attributes, so all five picks are free."
+    "Lunars are the only type whose caste grants ATTRIBUTES while they also favour Abilities.",
+    "Every Lunar has Survival favoured, plus two Abilities and two Attributes of their choice.",
+    "Casteless Lunars have no caste Attributes, so nothing is granted automatically.",
+    "",
+    "Their Abilities are laid out in three groups (War, Life, Wisdom) rather than by caste,",
+    "hence the explicit abilityGroups below."
   ],
-  "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and castes are canonical 2e.",
+  "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools, castes and groups are canonical 2e.",
 
   "casteLabel": "Caste",
-  "favoredKind": "attribute",
-  "favoredPicks": 2,
+  "casteKind": "attribute",
+  "favoredAbilities": { "picks": 2, "always": ["survival"] },
+  "favoredAttributes": { "picks": 2, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Magitech"],
   "accent": "#8fb8d8",
   "accentSoft": "#4a6f8c",
+
+  "abilityGroups": [
+    { "id": "war",    "name": "War",
+      "abilities": ["archery", "athletics", "awareness", "dodge", "integrity",
+                    "martial-arts", "melee", "resistance", "thrown", "war"] },
+    { "id": "life",   "name": "Life",
+      "abilities": ["craft", "larceny", "linguistics", "performance", "presence",
+                    "ride", "sail", "socialize", "stealth", "survival"] },
+    { "id": "wisdom", "name": "Wisdom",
+      "abilities": ["bureaucracy", "investigation", "lore", "medicine", "occult"] }
+  ],
 
   "castes": [
     { "id": "full-moon",     "name": "Full Moon",     "traits": ["strength", "dexterity", "stamina"] },

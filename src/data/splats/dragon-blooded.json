@@ -11,8 +11,10 @@
   "_todo": "XP costs copied from the Solar table pending your cost sheet. Pools and aspects are canonical 2e.",
 
   "casteLabel": "Aspect",
-  "favoredKind": "ability",
-  "favoredPicks": 3,
+  "casteKind": "ability",
+  "favoredAbilities": { "picks": 3, "always": [] },
+  "favoredAttributes": { "picks": 0, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood", "Glamour"],
   "accent": "#5fa87d",
   "accentSoft": "#356b4d",
 

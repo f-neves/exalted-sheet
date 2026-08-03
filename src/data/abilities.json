@@ -1,6 +1,6 @@
 [
   { "id": "archery",       "name": "Archery",       "group": "war",     "attr": "dexterity" },
-  { "id": "martial-arts",  "name": "Martial Arts",  "group": "war",     "attr": "dexterity", "sub": "style" },
+  { "id": "martial-arts",  "name": "Martial Arts",  "group": "war",     "attr": "dexterity" },
   { "id": "melee",         "name": "Melee",         "group": "war",     "attr": "dexterity" },
   { "id": "thrown",        "name": "Thrown",        "group": "war",     "attr": "dexterity" },
   { "id": "war",           "name": "War",           "group": "war",     "attr": "charisma" },
@@ -11,7 +11,7 @@
   { "id": "resistance",    "name": "Resistance",    "group": "virtue",  "attr": "stamina" },
   { "id": "survival",      "name": "Survival",      "group": "virtue",  "attr": "perception" },
 
-  { "id": "craft",         "name": "Craft",         "group": "lore",    "attr": "intelligence", "sub": "type" },
+  { "id": "craft",         "name": "Craft",         "group": "lore",    "attr": "intelligence", "sub": "craft" },
   { "id": "investigation", "name": "Investigation", "group": "lore",    "attr": "perception" },
   { "id": "lore",          "name": "Lore",          "group": "lore",    "attr": "intelligence" },
   { "id": "medicine",      "name": "Medicine",      "group": "lore",    "attr": "intelligence" },

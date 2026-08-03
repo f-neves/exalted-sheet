@@ -1,0 +1,85 @@
+{
+  "id": "mortal",
+  "name": "Heroic Mortal",
+  "order": 0,
+  "verified": true,
+  "_doc": [
+    "Heroic mortals. No caste, so casteKind is \"none\" and the Caste selector is hidden.",
+    "They may favour Abilities and Attributes freely; `picks` is set to the usual one of each,",
+    "but the sheet never blocks extra picks, so unusual mortals still work.",
+    "",
+    "Essence can be awakened up to 3 (maxRating below overrides the shared cap). Their motes are",
+    "always Peripheral, at Essence x 10, so pools.personal is empty and the sheet hides that row.",
+    "",
+    "Attribute floor is 1 rather than the Exalted 2 — change it here if your table differs."
+  ],
+  "_todo": "XP costs are the Solar table pending your cost sheet. The Charm price for mortals is a guess.",
+
+  "casteLabel": "Caste",
+  "casteKind": "none",
+  "favoredAbilities": { "picks": 1, "always": [] },
+  "favoredAttributes": { "picks": 1, "always": [] },
+  "craftTypes": ["Air", "Earth", "Fire", "Water", "Wood"],
+  "accent": "#a8a29a",
+  "accentSoft": "#5e5a53",
+
+  "castes": [],
+
+  "abilityGroups": [
+    { "id": "warrior",  "name": "Warrior",
+      "abilities": ["archery", "martial-arts", "melee", "thrown", "war"] },
+    { "id": "priest",   "name": "Priest",
+      "abilities": ["integrity", "performance", "presence", "resistance", "survival"] },
+    { "id": "savant",   "name": "Savant",
+      "abilities": ["craft", "investigation", "lore", "medicine", "occult"] },
+    { "id": "criminal", "name": "Criminal",
+      "abilities": ["athletics", "awareness", "dodge", "larceny", "stealth"] },
+    { "id": "broker",   "name": "Broker",
+      "abilities": ["bureaucracy", "linguistics", "ride", "sail", "socialize"] }
+  ],
+
+  "floors": {
+    "attribute": 1,
+    "ability": 0,
+    "virtue": 1,
+    "willpower": 5,
+    "essence": 1,
+    "background": 0
+  },
+
+  "maxRating": { "essence": 3 },
+
+  "xp": {
+    "attribute":  { "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "ability":    { "firstDot": 3, "favoredFirstDot": 3,
+                    "normal": { "mult": 2, "base": 0 }, "favored": { "mult": 2, "base": -1 } },
+    "virtue":     { "normal": { "mult": 3, "base": 0 } },
+    "willpower":  { "normal": { "mult": 2, "base": 0 } },
+    "essence":    { "normal": { "mult": 8, "base": 0 } },
+    "background": { "normal": { "mult": 0, "base": 3 } },
+    "specialty":  { "normal": 3, "favored": 3 },
+    "charm":      { "normal": 10, "favored": 8 },
+    "combo":      { "normal": 0, "favored": 0 },
+    "spell": {
+      "terrestrial": { "normal": 8, "favored": 6 }
+    }
+  },
+
+  "sorcery": {
+    "favoredAbility": "occult",
+    "circles": [
+      { "id": "terrestrial", "name": "Terrestrial Circle Sorcery", "kind": "sorcery" }
+    ]
+  },
+
+  "pools": {
+    "personal":   {},
+    "peripheral": { "essence": 10 }
+  },
+
+  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 0 },
+
+  "limit": { "enabled": false, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
+
+  "anima": []
+}

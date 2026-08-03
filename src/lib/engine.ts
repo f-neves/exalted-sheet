@@ -8,7 +8,7 @@
  * a server-backed store later without changing anything here.
  */
 import * as calc from './calc.js';
-import { SPLATS, SPLAT_BY_ID, DATA, RULES, BACKGROUNDS, ATTRIBUTE_GROUPS, ABILITY_GROUPS } from './data';
+import { SPLATS, SPLAT_BY_ID, DATA, RULES, BACKGROUNDS, ATTRIBUTE_GROUPS } from './data';
 
 export interface SheetOpts {
   load: () => any | null | Promise<any | null>;
@@ -19,8 +19,7 @@ export interface SheetOpts {
   readOnly?: boolean;
 }
 
-const SCHEMA = 1;
-const DOT_MAX = RULES.maxRating;
+const SCHEMA = 2;
 
 export function mountSheet(opts: SheetOpts) {
   let S: any = {};
@@ -38,19 +37,32 @@ export function mountSheet(opts: SheetOpts) {
   const abilityById = (id: string) => DATA.abilities.find((a) => a.id === id);
   const ro = () => !!opts.readOnly;
 
+  /** How many dots a row draws. A splat may override the shared cap (mortal Essence 3). */
+  const dotMax = (kind: string) =>
+    (splat().maxRating?.[kind] ?? (RULES.maxRating as any)[kind] ?? 5) as number;
+  const picksFor = (kind: string) =>
+    (kind === 'ability' ? S.favored.abilities : S.favored.attributes) as string[];
+
   /* ------------------------------------------------------ default state */
+
+  /** Craft has no rating of its own; each Craft type is a full Ability. */
+  function seedCrafts(sp: any) {
+    return (sp.craftTypes || []).map((name: string) => ({
+      name, v: sp.floors.ability, granted: 0, specialties: [],
+    }));
+  }
+
   function fresh() {
     const sp = SPLAT_BY_ID[RULES.defaultSplat] || SPLATS[0];
     const st: any = {
       meta: { schema: SCHEMA },
       id: { name: '', player: '', concept: '', motivation: '', anima: '', sobriquet: '' },
       splat: sp.id,
-      caste: sp.castes[0].id,
+      caste: sp.castes[0]?.id || '',
       favored: { abilities: [], attributes: [] },
       attrs: {},
       abils: {},
-      crafts: [],
-      styles: [],
+      crafts: seedCrafts(sp),
       virtues: {},
       virtueFlaw: '',
       limit: 0,
@@ -85,7 +97,7 @@ export function mountSheet(opts: SheetOpts) {
 
     if (SPLAT_BY_ID[raw.splat]) st.splat = raw.splat;
     const sp = SPLAT_BY_ID[st.splat];
-    st.caste = sp.castes.some((c: any) => c.id === raw.caste) ? raw.caste : sp.castes[0].id;
+    st.caste = sp.castes.some((c: any) => c.id === raw.caste) ? raw.caste : (sp.castes[0]?.id || '');
 
     Object.assign(st.id, raw.id || {});
     st.favored = {
@@ -100,7 +112,7 @@ export function mountSheet(opts: SheetOpts) {
       };
       if (withSpec) {
         t.specialties = (Array.isArray(src?.specialties) ? src.specialties : [])
-          .map((s: any) => ({ name: String(s?.name ?? ''), v: clamp(num(s?.v, 1), 0, DOT_MAX.specialty) }));
+          .map((s: any) => ({ name: String(s?.name ?? ''), v: clamp(num(s?.v, 1), 0, RULES.maxRating.specialty) }));
       }
       return t;
     };
@@ -112,11 +124,23 @@ export function mountSheet(opts: SheetOpts) {
     }
     for (const v of DATA.virtues) st.virtues[v.id] = trait(raw.virtues?.[v.id], sp.floors.virtue);
 
-    const subList = (arr: any) => (Array.isArray(arr) ? arr : []).map((c: any) => ({
-      name: String(c?.name ?? ''), ...trait(c, sp.floors.ability, true),
-    }));
-    st.crafts = subList(raw.crafts);
-    st.styles = subList(raw.styles);
+    // Craft types: keep whatever the character has, then top up with any of this splat's
+    // standard types that are missing, so switching Exalt type never drops a rating.
+    const seen = new Set<string>();
+    st.crafts = (Array.isArray(raw.crafts) ? raw.crafts : []).map((c: any) => {
+      const name = String(c?.name ?? '');
+      seen.add(name.toLowerCase());
+      return { name, ...trait(c, sp.floors.ability, true) };
+    });
+    for (const c of seedCrafts(sp)) {
+      if (!seen.has(c.name.toLowerCase())) st.crafts.push(c);
+    }
+
+    // Schema 1 tracked Martial Arts as a list of styles; it is a plain Ability now.
+    if (Array.isArray(raw.styles) && raw.styles.length) {
+      const best = raw.styles.reduce((m: number, s: any) => Math.max(m, num(s?.v, 0)), 0);
+      if (best > st.abils['martial-arts'].v) st.abils['martial-arts'].v = best;
+    }
 
     st.virtueFlaw = String(raw.virtueFlaw ?? '');
     st.limit = clamp(num(raw.limit, 0), 0, sp.limit.boxes);
@@ -190,7 +214,6 @@ export function mountSheet(opts: SheetOpts) {
       case 'attr': return { t: S.attrs[key], kind: 'attribute', id: key };
       case 'abil': return { t: S.abils[key], kind: 'ability', id: key };
       case 'craft': return { t: S.crafts[+key], kind: 'ability', id: 'craft' };
-      case 'style': return { t: S.styles[+key], kind: 'ability', id: 'martial-arts' };
       case 'virtue': return { t: S.virtues[key], kind: 'virtue', id: key };
       case 'wp': return { t: S.willpower, kind: 'willpower', id: 'willpower' };
       case 'ess': return { t: S.essence, kind: 'essence', id: 'essence' };
@@ -232,6 +255,8 @@ export function mountSheet(opts: SheetOpts) {
     const sp = splat();
     (el('splat-sel') as HTMLSelectElement).innerHTML =
       SPLATS.map((s: any) => `<option value="${s.id}"${s.id === S.splat ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+    const hasCaste = sp.casteKind !== 'none' && sp.castes.length > 0;
+    el('caste-label-wrap').style.display = hasCaste ? '' : 'none';
     el('caste-label-wrap').childNodes[0].nodeValue = sp.casteLabel;
     (el('caste-sel') as HTMLSelectElement).innerHTML =
       sp.castes.map((c: any) => `<option value="${c.id}"${c.id === S.caste ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
@@ -240,45 +265,78 @@ export function mountSheet(opts: SheetOpts) {
       inp.disabled = ro();
     }
 
-    const kindLabel = sp.favoredKind === 'ability' ? 'Abilities' : 'Attributes';
     const caste = sp.castes.find((c: any) => c.id === S.caste);
-    const names = (caste?.traits || []).map((t: string) => {
-      const rec = sp.favoredKind === 'ability' ? abilityById(t) : DATA.attributes.find((a) => a.id === t);
-      return rec ? rec.name : t;
-    });
-    const picks = sp.favoredKind === 'ability' ? S.favored.abilities : S.favored.attributes;
-    let info = `<b>${esc(caste?.name || '')}</b> ${sp.casteLabel} ${kindLabel.toLowerCase()}: `
-      + (names.length ? esc(names.join(', ')) : '<i>none defined</i>')
-      + ` · Favored picks <b>${picks.length}/${sp.favoredPicks}</b>`
-      + ` · Floors: Attribute ${sp.floors.attribute}, Ability ${sp.floors.ability}, Virtue ${sp.floors.virtue},`
-      + ` Willpower ${sp.floors.willpower}, Essence ${sp.floors.essence}`;
+    const nameOf = (kind: string, id: string) => {
+      const rec = kind === 'ability' ? abilityById(id) : DATA.attributes.find((a) => a.id === id);
+      return rec ? rec.name : id;
+    };
+
+    let info = '';
+    if (hasCaste) {
+      const kindLabel = sp.casteKind === 'ability' ? 'abilities' : 'attributes';
+      const names = (caste?.traits || []).map((t: string) => nameOf(sp.casteKind, t));
+      info += `<b>${esc(caste?.name || '')}</b> ${sp.casteLabel} ${kindLabel}: `
+        + (names.length ? esc(names.join(', ')) : '<i>none</i>');
+    } else {
+      info += `<b>${esc(sp.name)}</b> · no caste`;
+    }
+
+    // One counter per kind the type can favor, so Lunars see both at once.
+    for (const kind of ['ability', 'attribute']) {
+      const cfg = calc.favoredConfig(sp, kind);
+      if (!cfg || (!cfg.picks && !(cfg.always || []).length)) continue;
+      const label = kind === 'ability' ? 'Favored abilities' : 'Favored attributes';
+      const always = (cfg.always || []).map((id: string) => nameOf(kind, id));
+      info += ` · ${label} <b>${picksFor(kind).length}/${cfg.picks}</b>`
+        + (always.length ? ` (plus ${esc(always.join(', '))} always)` : '');
+    }
+
+    info += ` · Floors: Attribute ${sp.floors.attribute}, Ability ${sp.floors.ability},`
+      + ` Virtue ${sp.floors.virtue}, Willpower ${sp.floors.willpower}, Essence ${sp.floors.essence}`;
+
     if (!sp.verified || sp._todo) {
       info += `<div class="warn-todo"><b>Unverified data.</b> ${esc(
         Array.isArray(sp._todo) ? sp._todo.join(' ') : sp._todo || 'This splat still carries placeholder numbers.')}</div>`;
     }
     el('caste-info').innerHTML = info;
 
-    el('attr-hint').textContent = sp.favoredKind === 'attribute'
-      ? `(floor ${sp.floors.attribute} · C = ${sp.casteLabel}, F = Favored)`
-      : `(floor ${sp.floors.attribute})`;
-    el('abil-hint').textContent = sp.favoredKind === 'ability'
-      ? `(floor ${sp.floors.ability} · C = ${sp.casteLabel}, F = Favored · ✦ specialties)`
-      : `(floor ${sp.floors.ability} · ✦ specialties)`;
+    const marks = (kind: string) => {
+      const cfg = calc.favoredConfig(sp, kind);
+      const canFavor = !!cfg && (cfg.picks > 0 || (cfg.always || []).length > 0);
+      if (sp.casteKind === kind) return ` · C = ${sp.casteLabel}, F = Favored`;
+      return canFavor ? ' · F = Favored' : '';
+    };
+    el('attr-hint').textContent = `(floor ${sp.floors.attribute}${marks('attribute')})`;
+    el('abil-hint').textContent = `(floor ${sp.floors.ability}${marks('ability')} · ◆ specialties)`;
 
     document.documentElement.style.setProperty('--accent', caste?.accent || sp.accent);
     document.documentElement.style.setProperty('--accent-soft', sp.accentSoft);
   }
 
-  /** C / F tags. Only rendered live for the kind this splat favors. */
+  /**
+   * C / F tags. The C column only appears for the kind the caste grants; the F column
+   * appears whenever the type can favor that kind at all, which is how a Lunar ends up
+   * with caste Attributes and favored Abilities side by side.
+   */
   function tags(kind: string, id: string) {
     const sp = splat();
-    if (kind !== sp.favoredKind) return '<span class="tag ghost">C</span><span class="tag ghost">F</span>';
+    const cfg = calc.favoredConfig(sp, kind);
+    const canFavor = !!cfg && (cfg.picks > 0 || (cfg.always || []).length > 0);
+    const casteKind = sp.casteKind === kind;
+    if (!casteKind && !canFavor) {
+      return '<span class="tag ghost">C</span><span class="tag ghost">F</span>';
+    }
     const isCaste = calc.isCaste(id, kind, sp, S.caste);
-    const picks = kind === 'ability' ? S.favored.abilities : S.favored.attributes;
-    const isPick = picks.includes(id);
-    return `<span class="tag${isCaste ? ' on locked' : ''}" title="${esc(sp.casteLabel)}">C</span>`
-      + `<button type="button" class="tag${isPick ? ' on' : ''}${isCaste ? ' locked' : ''}"
-           data-fav="${kind}:${id}" title="Favored">F</button>`;
+    const isAlways = (cfg?.always || []).includes(id);
+    const isPick = picksFor(kind).includes(id);
+    const locked = isCaste || isAlways;
+    const cTag = casteKind
+      ? `<span class="tag${isCaste ? ' on locked' : ''}" title="${esc(sp.casteLabel)}">C</span>`
+      : '<span class="tag ghost">C</span>';
+    return cTag
+      + `<button type="button" class="tag${isPick || locked ? ' on' : ''}${locked ? ' locked' : ''}"
+           data-fav="${kind}:${id}"
+           title="${isAlways ? 'Always favored for this Exalt type' : 'Favored'}">F</button>`;
   }
 
   function renderAttrs() {
@@ -293,7 +351,7 @@ export function mountSheet(opts: SheetOpts) {
         h += `<div class="trow">`
           + `<span class="nm${fav ? ' fav' : ''}">${esc(a.name)}</span>`
           + tags('attribute', a.id)
-          + dots(`attr:${a.id}`, t.v, free, DOT_MAX.attribute)
+          + dots(`attr:${a.id}`, t.v, free, dotMax('attribute'))
           + grantInput(`attr:${a.id}`, t.granted)
           + xpChip(traitXpOf('attribute', a.id, t))
           + `</div>`;
@@ -309,11 +367,11 @@ export function mountSheet(opts: SheetOpts) {
     const fav = favOf('ability', id);
     const specCount = (t.specialties || []).reduce((a: number, s: any) => a + (s.v || 0), 0);
     const nameCell = editableName
-      ? `<input class="lname nm" data-subname="${path}" value="${esc(t.name || '')}" placeholder="name" />`
+      ? `<input class="lname nm" data-subname="${path}" value="${esc(t.name || '')}" placeholder="Craft type" />`
       : `<span class="nm${fav ? ' fav' : ''}">${esc(name)}</span>`;
     return `<div class="trow">${nameCell}`
       + tags('ability', id)
-      + dots(path, t.v, free, DOT_MAX.ability)
+      + dots(path, t.v, free, dotMax('ability'))
       + `<button type="button" class="specbtn${specCount ? ' has' : ''}" data-spec="${path}"
            title="Specialties">◆</button>`
       + grantInput(path, t.granted)
@@ -322,25 +380,33 @@ export function mountSheet(opts: SheetOpts) {
       + `</div>`;
   }
 
+  /** Craft holds no rating of its own; the row only carries the caste / favored marks. */
+  function craftMarkerRow() {
+    const fav = favOf('ability', 'craft');
+    return `<div class="trow trow-marker">`
+      + `<span class="nm${fav ? ' fav' : ''}">Craft</span>`
+      + tags('ability', 'craft')
+      + `<span class="marker-note">rated per type below</span>`
+      + `</div>`;
+  }
+
   function renderAbils() {
+    const sp = splat();
     let h = '';
-    for (const g of ABILITY_GROUPS) {
-      const list = DATA.abilities.filter((x) => x.group === g.id && !x.sub);
-      if (!list.length) continue;
-      h += `<div><h3 class="grph">${g.name}</h3>`;
-      for (const a of list) h += abilityRow(`abil:${a.id}`, a.name, a.id, S.abils[a.id]);
+    for (const g of calc.abilityGroups(sp)) {
+      h += `<div><h3 class="grph">${esc(g.name)}</h3>`;
+      for (const id of g.abilities) {
+        const rec = abilityById(id);
+        if (!rec) continue;
+        h += rec.sub === 'craft' ? craftMarkerRow() : abilityRow(`abil:${id}`, rec.name, id, S.abils[id]);
+      }
       h += '</div>';
     }
     el('abils').innerHTML = h;
 
-    const sub = (key: 'crafts' | 'styles', id: string, target: string, empty: string) => {
-      const arr = S[key];
-      el(target).innerHTML = arr.length
-        ? arr.map((t: any, i: number) => abilityRow(`${key === 'crafts' ? 'craft' : 'style'}:${i}`, '', id, t, true)).join('')
-        : `<div class="empty">${empty}</div>`;
-    };
-    sub('crafts', 'craft', 'crafts', 'No Craft types yet.');
-    sub('styles', 'martial-arts', 'styles', 'No Martial Arts styles yet.');
+    el('crafts').innerHTML = S.crafts.length
+      ? S.crafts.map((t: any, i: number) => abilityRow(`craft:${i}`, '', 'craft', t, true)).join('')
+      : '<div class="empty">No Craft types yet.</div>';
   }
 
   function renderPower() {
@@ -350,7 +416,7 @@ export function mountSheet(opts: SheetOpts) {
       const t = S.virtues[v.id];
       h += `<div class="trow"><span class="nm">${esc(v.name)}</span>`
         + '<span class="tag ghost">C</span><span class="tag ghost">F</span>'
-        + dots(`virtue:${v.id}`, t.v, Math.max(sp.floors.virtue, t.granted), DOT_MAX.virtue)
+        + dots(`virtue:${v.id}`, t.v, Math.max(sp.floors.virtue, t.granted), dotMax('virtue'))
         + grantInput(`virtue:${v.id}`, t.granted)
         + xpChip(traitXpOf('virtue', v.id, t))
         + '</div>';
@@ -370,7 +436,7 @@ export function mountSheet(opts: SheetOpts) {
     const wp = S.willpower;
     h += `<div class="trow"><span class="nm">Willpower</span>`
       + '<span class="tag ghost">C</span><span class="tag ghost">F</span>'
-      + dots('wp:x', wp.v, Math.max(sp.floors.willpower, wp.granted), DOT_MAX.willpower)
+      + dots('wp:x', wp.v, Math.max(sp.floors.willpower, wp.granted), dotMax('willpower'))
       + grantInput('wp:x', wp.granted)
       + xpChip(traitXpOf('willpower', 'willpower', wp))
       + '</div>';
@@ -384,7 +450,7 @@ export function mountSheet(opts: SheetOpts) {
     const ess = S.essence;
     h += `<div class="trow"><span class="nm">Essence</span>`
       + '<span class="tag ghost">C</span><span class="tag ghost">F</span>'
-      + dots('ess:x', ess.v, Math.max(sp.floors.essence, ess.granted), DOT_MAX.essence)
+      + dots('ess:x', ess.v, Math.max(sp.floors.essence, ess.granted), dotMax('essence'))
       + grantInput('ess:x', ess.granted)
       + xpChip(traitXpOf('essence', 'essence', ess))
       + '</div>';
@@ -402,7 +468,7 @@ export function mountSheet(opts: SheetOpts) {
     el('backgrounds').innerHTML = S.backgrounds.length
       ? S.backgrounds.map((b: any, i: number) => `<div class="trow">`
           + `<input class="lname" list="bg-list" data-bgname="${i}" value="${esc(b.name)}" placeholder="Background" />`
-          + dots(`bg:${i}`, b.v, Math.max(sp.floors.background, b.granted), DOT_MAX.background)
+          + dots(`bg:${i}`, b.v, Math.max(sp.floors.background, b.granted), dotMax('background'))
           + grantInput(`bg:${i}`, b.granted)
           + xpChip(calc.traitXp('background', b.v, b.granted, false, sp))
           + `<button type="button" class="rowx" data-del="bg:${i}" title="Remove">×</button></div>`).join('')
@@ -433,10 +499,14 @@ export function mountSheet(opts: SheetOpts) {
     const total = personal.value + peripheral.value;
     const row = (l: string, v: any, f: string) =>
       `<div class="cmb"><b>${l}</b> <span class="val" data-calc="${esc(f)}">${v}</span></div>`;
+    // Heroic mortals have no personal pool at all, so that row is dropped rather than shown as 0.
+    const hasPersonal = Object.keys(sp.pools.personal || {}).length > 0;
     el('pools').innerHTML =
-      row('Personal', personal.value, personal.formula)
+      (hasPersonal ? row('Personal', personal.value, personal.formula) : '')
       + row('Peripheral', peripheral.value, peripheral.formula)
-      + row('Total', total, `Personal ${personal.value} + Peripheral ${peripheral.value} = ${total}`)
+      + (hasPersonal
+        ? row('Total', total, `Personal ${personal.value} + Peripheral ${peripheral.value} = ${total}`)
+        : '')
       + row('Committed', committed, S.commitments.length
           ? S.commitments.map((c: any) => `${c.name || 'unnamed'} ${c.motes}`).join(' + ') + ` = ${committed}`
           : 'Nothing committed')
@@ -684,7 +754,8 @@ export function mountSheet(opts: SheetOpts) {
       + r('Soak B / L / A', `${sk.bashing.value} / ${sk.lethal.value} / ${sk.aggravated.value}`,
           `${sk.bashing.formula} · ${sk.lethal.formula} · ${sk.aggravated.formula}`)
       + r('Hardness', arm.hardness, arm.count ? `Highest hardness among ${arm.count} worn piece(s) = ${arm.hardness}` : 'No armour worn')
-      + r('Personal Essence', personal.value, personal.formula)
+      + (Object.keys(sp.pools.personal || {}).length
+        ? r('Personal Essence', personal.value, personal.formula) : '')
       + r('Peripheral Essence', peripheral.value, peripheral.formula)
       + r('Essence available', personal.value + peripheral.value - committed,
           `Personal ${personal.value} + Peripheral ${peripheral.value} − committed ${committed} = ${personal.value + peripheral.value - committed}`)
@@ -957,7 +1028,6 @@ export function mountSheet(opts: SheetOpts) {
     const idx = +i;
     switch (k) {
       case 'craft': S.crafts.splice(idx, 1); renderAbils(); break;
-      case 'style': S.styles.splice(idx, 1); renderAbils(); break;
       case 'bg': S.backgrounds.splice(idx, 1); renderBackgrounds(); break;
       case 'commit': S.commitments.splice(idx, 1); renderCommitments(); break;
       case 'charm': S.charms.list.splice(idx, 1); renderCharms(); break;
@@ -989,7 +1059,7 @@ export function mountSheet(opts: SheetOpts) {
     list.forEach((s: any, i: number) => {
       h += `<div class="specpop-row"><input data-specname="${i}" value="${esc(s.name)}" placeholder="Specialty" />`
         + '<span class="sqs">';
-      for (let v = 1; v <= DOT_MAX.specialty; v++) {
+      for (let v = 1; v <= RULES.maxRating.specialty; v++) {
         h += `<button type="button" class="sq${v <= s.v ? ' on' : ''}" data-row="${i}" data-v="${v}" aria-label="${v}"></button>`;
       }
       h += `</span><button type="button" class="rowx" data-specdel="${i}" title="Remove">×</button></div>`;
@@ -1032,8 +1102,10 @@ export function mountSheet(opts: SheetOpts) {
 
   /* ------------------------------------------------------- add buttons */
   const adders: Record<string, () => void> = {
-    'craft-add': () => { S.crafts.push({ name: '', v: 0, granted: 0, specialties: [] }); renderAbils(); },
-    'style-add': () => { S.styles.push({ name: '', v: 0, granted: 0, specialties: [] }); renderAbils(); },
+    'craft-add': () => {
+      S.crafts.push({ name: '', v: splat().floors.ability, granted: 0, specialties: [] });
+      renderAbils();
+    },
     'bg-add': () => { S.backgrounds.push({ name: '', v: 1, granted: 0 }); renderBackgrounds(); },
     'commit-add': () => { S.commitments.push({ name: '', motes: 0 }); renderCommitments(); },
     'charm-add': () => { S.charms.list.push({ name: '', favored: false, note: '' }); renderCharms(); },
@@ -1060,7 +1132,7 @@ export function mountSheet(opts: SheetOpts) {
     const next = (ev.target as HTMLSelectElement).value;
     S.splat = next;
     const sp = SPLAT_BY_ID[next];
-    S.caste = sp.castes[0].id;
+    S.caste = sp.castes[0]?.id || '';
     S.favored = { abilities: [], attributes: [] };
     // Re-clamp anything that sits below the new splat's floors.
     for (const a of DATA.attributes) S.attrs[a.id].v = Math.max(S.attrs[a.id].v, sp.floors.attribute);

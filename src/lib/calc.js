@@ -73,24 +73,43 @@ export function spellCost(circleId, favoredOccult, splat) {
  * ------------------------------------------------------------------ */
 
 export function casteTraits(splat, casteId) {
+  if (splat.casteKind === 'none') return [];
   const caste = (splat.castes || []).find((c) => c.id === casteId);
   return caste ? caste.traits || [] : [];
 }
 
-/**
- * Is `traitId` favored for XP purposes?
- * Caste traits always are; picks in state.favored count too, but only for the kind
- * of trait this splat favors (abilities for Solars, attributes for Lunars/Infernals).
- */
-export function isFavored(traitId, kind, splat, casteId, picks) {
-  if (kind !== splat.favoredKind) return false;
-  if (casteTraits(splat, casteId).includes(traitId)) return true;
-  return (picks || []).includes(traitId);
+/** The favored config for one kind of trait, or null when the type cannot favor it. */
+export function favoredConfig(splat, kind) {
+  return (kind === 'ability' ? splat.favoredAbilities : splat.favoredAttributes) || null;
 }
 
 export function isCaste(traitId, kind, splat, casteId) {
-  if (kind !== splat.favoredKind) return false;
+  if (kind !== splat.casteKind) return false;
   return casteTraits(splat, casteId).includes(traitId);
+}
+
+/**
+ * Is `traitId` favored for XP purposes?
+ *
+ * Caste traits always are. Beyond those, each kind has its own `always` list (Survival for
+ * every Lunar) and its own free picks, so a Lunar can hold caste Attributes and favored
+ * Abilities at the same time.
+ */
+export function isFavored(traitId, kind, splat, casteId, picks) {
+  if (isCaste(traitId, kind, splat, casteId)) return true;
+  const cfg = favoredConfig(splat, kind);
+  if (!cfg) return false;
+  if ((cfg.always || []).includes(traitId)) return true;
+  return (picks || []).includes(traitId);
+}
+
+/** Ability layout: explicit when given, otherwise the caste list. */
+export function abilityGroups(splat) {
+  if (Array.isArray(splat.abilityGroups) && splat.abilityGroups.length) return splat.abilityGroups;
+  if (splat.casteKind === 'ability') {
+    return (splat.castes || []).map((c) => ({ id: c.id, name: c.name, abilities: c.traits || [] }));
+  }
+  return [];
 }
 
 /* ------------------------------------------------------------------ *
@@ -309,11 +328,12 @@ export function totalXp(S, splat, data) {
     }
   };
   for (const a of data.abilities) {
-    if (a.sub) continue; // Craft and Martial Arts are tracked as sub-trait lists
+    // Craft carries no rating of its own: the dots live on the individual Craft types,
+    // and the Craft row only marks whether the whole group is caste or favored.
+    if (a.sub) continue;
     abilityEntry(a.id, S.abils?.[a.id] || {});
   }
   for (const c of S.crafts || []) abilityEntry('craft', c);
-  for (const m of S.styles || []) abilityEntry('martial-arts', m);
 
   for (const v of data.virtues) {
     const t = S.virtues?.[v.id] || {};

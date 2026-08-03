@@ -49,15 +49,9 @@
 <h2 class="barh barh-tog" data-sec="abils"><span class="sec-caret">▾</span> Abilities <small id="abil-hint"></small></h2>
 <div class="sec-body" id="sec-abils">
   <div class="cols3" id="abils"></div>
-  <div class="cols2 sublists">
-    <div>
-      <div class="sub-head">Craft <small>(one rating per Craft type)</small><button class="btn tiny" id="craft-add" type="button">+ craft</button></div>
-      <div id="crafts"></div>
-    </div>
-    <div>
-      <div class="sub-head">Martial Arts <small>(one rating per style)</small><button class="btn tiny" id="style-add" type="button">+ style</button></div>
-      <div id="styles"></div>
-    </div>
+  <div class="sublists">
+    <div class="sub-head">Craft <small>(Craft carries no rating of its own: buy each type separately)</small><button class="btn tiny" id="craft-add" type="button">+ craft type</button></div>
+    <div class="cols2" id="crafts"></div>
   </div>
 </div>
 
@@ -190,6 +184,12 @@
   .trow .tag.on { background: var(--accent); border-color: transparent; color: var(--on-accent); }
   .trow .tag.locked { background: var(--accent-soft); border-color: transparent; color: var(--ink); cursor: default; }
   .trow .tag.ghost { visibility: hidden; cursor: default; }
+  .trow-marker .marker-note { font-size: .74rem; font-style: italic; color: var(--ink-soft); margin-left: .4rem; }
+  .trow-marker .nm { flex: 0 1 auto; }
+  /* Editable trait names (Craft types) must be free to shrink, or the grid track
+     inherits the input's intrinsic width and the row overflows its column. */
+  .trow { min-width: 0; }
+  .trow input.nm { flex: 1 1 3rem; min-width: 0; width: 100%; font-size: .92rem; padding: .12rem .3rem; }
   .trow .tag:not(.locked):not(.ghost):hover { border-color: var(--accent); }
 
   .dots { display: inline-flex; gap: 3px; align-items: center; flex: none; }

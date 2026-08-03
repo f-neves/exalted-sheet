@@ -39,8 +39,10 @@ const splatSchema = z.object({
   order: z.number().int(),
   verified: z.boolean(),
   casteLabel: z.string().min(1),
-  favoredKind: z.enum(['ability', 'attribute']),
-  favoredPicks: z.number().int().min(0),
+  casteKind: z.enum(['ability', 'attribute', 'none']),
+  favoredAbilities: z.object({ picks: z.number().int().min(0), always: z.array(z.string()) }),
+  favoredAttributes: z.object({ picks: z.number().int().min(0), always: z.array(z.string()) }),
+  craftTypes: z.array(z.string().min(1)),
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   accentSoft: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   castes: z.array(z.object({
@@ -49,7 +51,13 @@ const splatSchema = z.object({
     traits: z.array(z.string()),
     accent: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
     yozi: z.string().optional(),
-  })).min(1),
+  })),
+  abilityGroups: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9-]+$/),
+    name: z.string().min(1),
+    abilities: z.array(z.string()),
+  })).optional(),
+  maxRating: z.record(z.string(), z.number().int().min(1)).optional(),
   floors: z.object({
     attribute: z.number().int().min(0),
     ability: z.number().int().min(0),
@@ -112,7 +120,7 @@ for (const a of rules.attackAbilities) {
 
 const splatDir = join(ROOT, 'src/data/splats');
 const files = readdirSync(splatDir).filter((f) => f.endsWith('.json'));
-if (files.length !== 6) errors.push(`splats: expected 6 files, found ${files.length}`);
+if (files.length !== 7) errors.push(`splats: expected 7 files, found ${files.length}`);
 
 for (const f of files) {
   const label = `splats/${f}`;
@@ -125,15 +133,46 @@ for (const f of files) {
   }
   if (splat.id !== f.replace(/\.json$/, '')) errors.push(`${label}: id "${splat.id}" does not match the filename`);
 
-  const valid = splat.favoredKind === 'ability' ? abilIds : attrIds;
+  if (splat.casteKind === 'none') {
+    if (splat.castes.length) errors.push(`${label}: casteKind is "none" but castes is not empty`);
+    if (!splat.abilityGroups) errors.push(`${label}: casteKind is "none", so abilityGroups is required`);
+  } else if (!splat.castes.length) {
+    errors.push(`${label}: casteKind is "${splat.casteKind}" but no castes are defined`);
+  }
+
+  const valid = splat.casteKind === 'attribute' ? attrIds : abilIds;
   const seen = new Set();
   for (const caste of splat.castes) {
     for (const t of caste.traits) {
-      if (!valid.has(t)) errors.push(`${label}: caste "${caste.id}" lists unknown ${splat.favoredKind} "${t}"`);
+      if (!valid.has(t)) errors.push(`${label}: caste "${caste.id}" lists unknown ${splat.casteKind} "${t}"`);
       if (seen.has(t)) warnings.push(`${label}: "${t}" appears in more than one caste`);
       seen.add(t);
     }
-    if (caste.traits.length === 0) warnings.push(`${label}: caste "${caste.id}" has no caste ${splat.favoredKind}s`);
+    if (caste.traits.length === 0) warnings.push(`${label}: caste "${caste.id}" has no caste ${splat.casteKind}s`);
+  }
+
+  for (const id of splat.favoredAbilities.always) {
+    if (!abilIds.has(id)) errors.push(`${label}: favoredAbilities.always names unknown ability "${id}"`);
+  }
+  for (const id of splat.favoredAttributes.always) {
+    if (!attrIds.has(id)) errors.push(`${label}: favoredAttributes.always names unknown attribute "${id}"`);
+  }
+
+  // The Abilities block must lay out all 25 abilities exactly once, whether the layout is
+  // explicit or inherited from the caste list.
+  const groups = splat.abilityGroups
+    || (splat.casteKind === 'ability' ? splat.castes.map((c) => ({ id: c.id, name: c.name, abilities: c.traits })) : null);
+  if (!groups) {
+    errors.push(`${label}: no ability layout — add abilityGroups`);
+  } else {
+    const laid = groups.flatMap((g) => g.abilities);
+    for (const id of laid) {
+      if (!abilIds.has(id)) errors.push(`${label}: abilityGroups names unknown ability "${id}"`);
+    }
+    const dupes = laid.filter((id, i) => laid.indexOf(id) !== i);
+    if (dupes.length) errors.push(`${label}: abilities laid out more than once: ${[...new Set(dupes)].join(', ')}`);
+    const missing = [...abilIds].filter((id) => !laid.includes(id));
+    if (missing.length) errors.push(`${label}: abilities missing from the layout: ${missing.join(', ')}`);
   }
 
   for (const c of splat.sorcery.circles) {
