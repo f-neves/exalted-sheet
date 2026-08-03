@@ -470,17 +470,20 @@ export function mountSheet(opts: SheetOpts) {
     const detail = calc.spellsXp(S.sorcery, sp, favOccult).detail;
     const byCircle = Object.fromEntries(detail.map((d: any) => [d.circle, d]));
 
+    const charmCost = calc.flatCost('charm', favOccult, sp);
     el('circles').innerHTML = sp.sorcery.circles.map((c: any) => {
       const d = byCircle[c.id];
       const each = calc.spellCost(c.id, favOccult, sp);
+      const bought = !!S.sorcery.circles[c.id];
+      const spellXp = d ? d.xp : 0;
       return `<div class="lrow">`
         + `<label class="lname" style="display:flex;align-items:center;gap:.4rem">`
-        + `<input type="checkbox" data-circle="${c.id}"${S.sorcery.circles[c.id] ? ' checked' : ''} />`
+        + `<input type="checkbox" data-circle="${c.id}"${bought ? ' checked' : ''} />`
         + `<span>${esc(c.name)}</span></label>`
         + `<span class="lbl">${esc(c.kind)}</span>`
-        + `<span class="xpc">${d ? d.spells : 0} spell(s) · ${each} xp each`
-        + `${S.sorcery.circles[c.id] ? ' · first free' : ''}</span>`
-        + `<span class="xpc paid" style="width:3rem">${d ? d.xp : 0}</span></div>`;
+        + `<span class="xpc">${bought ? `Charm ${charmCost} · ` : ''}${d ? d.spells : 0} spell(s) × ${each} xp`
+        + `${bought ? ' · first free' : ''}</span>`
+        + `<span class="xpc paid" style="width:3rem">${(bought ? charmCost : 0) + spellXp}</span></div>`;
     }).join('');
 
     el('spells').innerHTML = S.sorcery.spells.length

@@ -327,14 +327,16 @@ export function totalXp(S, splat, data) {
     b.backgrounds += traitXp('background', bg.v, bg.granted, false, splat);
   }
 
+  const favOccult = isFavored(splat.sorcery?.favoredAbility || 'occult', 'ability', splat, S.caste, picksAbil);
+
   const circles = S.sorcery?.circles || {};
   const circlesBought = Object.values(circles).filter(Boolean).length;
   for (const ch of S.charms?.list || []) {
     b.charms += flatCost('charm', !!ch.favored, splat);
   }
-  b.charms += circlesBought * flatCost('charm', false, splat);
+  // Circle initiations are Occult Charms, so they follow the favoured-Occult price.
+  b.charms += circlesBought * flatCost('charm', favOccult, splat);
 
-  const favOccult = isFavored(splat.sorcery?.favoredAbility || 'occult', 'ability', splat, S.caste, picksAbil);
   b.spells = spellsXp(S.sorcery || {}, splat, favOccult).total;
 
   for (const c of S.combos || []) b.combos += c.xp || 0;

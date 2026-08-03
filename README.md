@@ -89,9 +89,15 @@ npm install
 npm run dev        # http://localhost:4321/exalted-sheet/
 npm run validate   # data schema + Solar.xlsx golden test
 npm run build      # validate, test, then build to dist/
+npm run smoke      # 40 browser checks against a running dev server
 ```
 
 `npm run build` runs the validator and the golden test first, so bad data cannot ship.
+
+`npm run smoke` drives the real page in headless Chrome and asserts the XP arithmetic,
+derived values, splat switching, equipment, health and persistence all behave. It needs a
+dev server plus a local Chrome and `puppeteer-core`, which is not a dependency here — point
+`PUPPETEER_FROM` at a `package.json` that has it, and `CHROME_PATH` at the browser.
 
 Pushing to `main` builds and deploys to GitHub Pages via `.github/workflows/deploy.yml`.
 
