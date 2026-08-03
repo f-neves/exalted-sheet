@@ -18,7 +18,12 @@ const floor = Math.floor;
 
 /**
  * Cost of the single dot that takes a trait from (v-1) to v.
- * Ability dot 1 is a flat "new ability" price; everything else is mult*(v-1) + base.
+ *
+ * The table prices a dot by the rating the character is AT, so buying dot v costs
+ * mult * (v - 1) + base. Ability dot 1 is a flat "new ability" price instead.
+ *
+ * A spec may carry `tiers`, each { from, mult, base }: the highest `from` that is still
+ * <= v wins. That is how mystic Backgrounds cost 3 a dot up to 3 and 6 a dot at 4 and 5.
  */
 export function dotCost(kind, v, favored, splat) {
   const cfg = splat.xp[kind];
@@ -29,7 +34,12 @@ export function dotCost(kind, v, favored, splat) {
   }
   const spec = (favored && cfg.favored) || cfg.normal;
   if (!spec) return 0;
-  return spec.mult * (v - 1) + spec.base;
+  let best = null;
+  for (const tier of spec.tiers || []) {
+    if (v >= tier.from && (!best || tier.from > best.from)) best = tier;
+  }
+  const { mult, base } = best || spec;
+  return mult * (v - 1) + base;
 }
 
 /** Total cost of every dot from 1 up to `rating`, ignoring floors and grants. */
@@ -60,6 +70,26 @@ export function flatCost(kind, favored, splat) {
   return (favored && cfg.favored !== undefined ? cfg.favored : cfg.normal) || 0;
 }
 
+/**
+ * Per-item cost driven by the level being bought rather than the level already held.
+ * The table calls these out explicitly: Thaumaturgy procedures, Mutations, Merits and Flaws.
+ */
+export function levelCost(kind, level, favored, splat) {
+  return flatCost(kind, favored, splat) * (level || 0);
+}
+
+/** Charm price by category: native, Sidereal Martial Arts, or out-of-type. */
+export const CHARM_CATEGORIES = [
+  { id: 'native', name: 'Charm', xp: 'charm' },
+  { id: 'sidereal-ma', name: 'Sidereal Martial Arts', xp: 'charmSiderealMA' },
+  { id: 'other', name: 'Other Charm', xp: 'charmOther' },
+];
+
+export function charmCost(category, favored, splat) {
+  const cat = CHARM_CATEGORIES.find((c) => c.id === category) || CHARM_CATEGORIES[0];
+  return flatCost(cat.xp, favored, splat);
+}
+
 /** Cost of one spell of the given circle. */
 export function spellCost(circleId, favoredOccult, splat) {
   const cfg = splat.xp.spell?.[circleId];
@@ -78,9 +108,17 @@ export function casteTraits(splat, casteId) {
   return caste ? caste.traits || [] : [];
 }
 
-/** The favored config for one kind of trait, or null when the type cannot favor it. */
-export function favoredConfig(splat, kind) {
-  return (kind === 'ability' ? splat.favoredAbilities : splat.favoredAttributes) || null;
+/**
+ * The favored config for one kind of trait, or null when the type cannot favor it.
+ * A caste may override `picks`, which is how Casteless Lunars choose three Attributes
+ * where every other Lunar chooses one.
+ */
+export function favoredConfig(splat, kind, casteId) {
+  const base = (kind === 'ability' ? splat.favoredAbilities : splat.favoredAttributes) || null;
+  if (!base) return null;
+  const caste = (splat.castes || []).find((c) => c.id === casteId);
+  const override = caste?.picks?.[kind === 'ability' ? 'abilities' : 'attributes'];
+  return override === undefined ? base : { ...base, picks: override };
 }
 
 export function isCaste(traitId, kind, splat, casteId) {
@@ -97,7 +135,7 @@ export function isCaste(traitId, kind, splat, casteId) {
  */
 export function isFavored(traitId, kind, splat, casteId, picks) {
   if (isCaste(traitId, kind, splat, casteId)) return true;
-  const cfg = favoredConfig(splat, kind);
+  const cfg = favoredConfig(splat, kind, casteId);
   if (!cfg) return false;
   if ((cfg.always || []).includes(traitId)) return true;
   return (picks || []).includes(traitId);
@@ -301,6 +339,72 @@ export function spellsXp(sorceryState, splat, favoredOccult) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Starting-sheet rules
+ * ------------------------------------------------------------------ */
+
+/**
+ * Advisory checks on a starting character. Nothing here blocks anything: the sheet has no
+ * creation mode, so these are reported and the player decides.
+ */
+export function creationChecks(S, splat, data) {
+  const rules = splat.creation || {};
+  const out = [];
+
+  if (rules.willpowerCapFromVirtues) {
+    const vs = virtueStats(S.virtues);
+    const cap = vs.twoHighestVirtues;
+    const wp = S.willpower?.v || 0;
+    out.push({
+      id: 'willpower-cap',
+      ok: wp <= cap,
+      text: `Willpower ${wp} must not exceed the two highest Virtues (${cap})`,
+    });
+  }
+
+  if (rules.minVirtueDotsBought) {
+    const floor = splat.floors.virtue;
+    const bought = (data.virtues || []).reduce(
+      (a, v) => a + Math.max(0, (S.virtues?.[v.id]?.v || 0) - floor), 0);
+    out.push({
+      id: 'virtue-dots',
+      ok: bought >= rules.minVirtueDotsBought,
+      text: `At least ${rules.minVirtueDotsBought} Virtue dots must be bought (${bought} so far)`,
+    });
+  }
+
+  if (rules.favoredNeedOneDot) {
+    const cfg = favoredConfig(splat, 'ability', S.caste);
+    const ids = [...new Set([...(cfg?.always || []), ...(S.favored?.abilities || [])])];
+    const missing = ids
+      .filter((id) => !isCaste(id, 'ability', splat, S.caste))
+      .filter((id) => (S.abils?.[id]?.v || 0) < 1)
+      .map((id) => (data.abilities || []).find((a) => a.id === id)?.name || id);
+    out.push({
+      id: 'favored-dot',
+      ok: missing.length === 0,
+      text: missing.length
+        ? `Every favored ability needs at least 1 dot: ${missing.join(', ')}`
+        : 'Every favored ability has at least 1 dot',
+    });
+  }
+
+  const picks = (kind, list) => {
+    const cfg = favoredConfig(splat, kind, S.caste);
+    if (!cfg || !cfg.picks) return;
+    const n = (list || []).length;
+    out.push({
+      id: `picks-${kind}`,
+      ok: n === cfg.picks,
+      text: `${cfg.picks} favored ${kind === 'ability' ? 'abilities' : 'attributes'} to choose (${n} chosen)`,
+    });
+  };
+  picks('ability', S.favored?.abilities);
+  picks('attribute', S.favored?.attributes);
+
+  return out;
+}
+
+/* ------------------------------------------------------------------ *
  * Full XP roll-up
  * ------------------------------------------------------------------ */
 
@@ -312,7 +416,8 @@ export function totalXp(S, splat, data) {
   const picksAbil = S.favored?.abilities || [];
   const picksAttr = S.favored?.attributes || [];
   const b = { attributes: 0, abilities: 0, specialties: 0, virtues: 0, willpower: 0,
-              essence: 0, backgrounds: 0, charms: 0, spells: 0, combos: 0, adjustment: 0 };
+              essence: 0, backgrounds: 0, charms: 0, spells: 0, combos: 0,
+              colleges: 0, thaumaturgy: 0, mutations: 0, meritsFlaws: 0, adjustment: 0 };
 
   for (const a of data.attributes) {
     const t = S.attrs?.[a.id] || {};
@@ -343,8 +448,10 @@ export function totalXp(S, splat, data) {
   b.willpower = traitXp('willpower', S.willpower?.v, S.willpower?.granted, false, splat);
   b.essence = traitXp('essence', S.essence?.v, S.essence?.granted, false, splat);
 
+  // Mystic Backgrounds jump from 3 a dot to 6 a dot at rating 4.
   for (const bg of S.backgrounds || []) {
-    b.backgrounds += traitXp('background', bg.v, bg.granted, false, splat);
+    const kind = bg.mystic ? 'backgroundMystic' : 'background';
+    b.backgrounds += traitXp(kind, bg.v, bg.granted, false, splat);
   }
 
   const favOccult = isFavored(splat.sorcery?.favoredAbility || 'occult', 'ability', splat, S.caste, picksAbil);
@@ -352,7 +459,7 @@ export function totalXp(S, splat, data) {
   const circles = S.sorcery?.circles || {};
   const circlesBought = Object.values(circles).filter(Boolean).length;
   for (const ch of S.charms?.list || []) {
-    b.charms += flatCost('charm', !!ch.favored, splat);
+    b.charms += charmCost(ch.category, !!ch.favored, splat);
   }
   // Circle initiations are Occult Charms, so they follow the favoured-Occult price.
   b.charms += circlesBought * flatCost('charm', favOccult, splat);
@@ -360,6 +467,26 @@ export function totalXp(S, splat, data) {
   b.spells = spellsXp(S.sorcery || {}, splat, favOccult).total;
 
   for (const c of S.combos || []) b.combos += c.xp || 0;
+
+  for (const c of S.colleges || []) {
+    b.colleges += traitXp('college', c.v, c.granted, !!c.favored, splat);
+  }
+
+  for (const t of S.thaumaturgy || []) {
+    b.thaumaturgy += t.kind === 'procedure'
+      ? levelCost('thaumaturgyProcedure', t.level, !!t.favored, splat)
+      : levelCost('thaumaturgyDegree', t.level, !!t.favored, splat);
+  }
+
+  // Positive mutations cost; negative ones hand experience back.
+  for (const m of S.mutations || []) {
+    b.mutations += levelCost('mutation', m.level, false, splat) * (m.negative ? -1 : 1);
+  }
+
+  // A Merit costs three times its bonus-point price; a Flaw refunds the same.
+  for (const m of S.meritsFlaws || []) {
+    b.meritsFlaws += levelCost('meritFlaw', m.points, false, splat) * (m.flaw ? -1 : 1);
+  }
 
   b.adjustment = S.adjustment || 0;
 

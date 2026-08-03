@@ -307,6 +307,141 @@ await page.click('h2.barh-tog[data-sec="abils"]');
 const collapsed = await page.$eval('#sec-abils', (e) => e.classList.contains('sec-hidden'));
 check('sections collapse', collapsed === true);
 
+// A rating can never be pushed below its splat floor
+const floorClamp = await page.evaluate(() => {
+  const row = [...document.querySelectorAll('#attrs .trow')].find((r) => r.textContent.trim().startsWith('Stamina'));
+  row.querySelector('.dots [data-v="2"]').click();   // already at the floor of 2
+  const afterFloorClick = Number(row.querySelector('.dots').getAttribute('aria-valuenow'));
+  row.querySelector('.dots [data-v="1"]').click();
+  const afterBelowClick = Number(
+    [...document.querySelectorAll('#attrs .trow')].find((r) => r.textContent.trim().startsWith('Stamina'))
+      .querySelector('.dots').getAttribute('aria-valuenow'));
+  return { afterFloorClick, afterBelowClick };
+});
+check('clicking the floor dot does not drop below it', floorClamp.afterFloorClick === 2, JSON.stringify(floorClamp));
+check('clicking under the floor does not drop below it', floorClamp.afterBelowClick === 2);
+
+// Mystic backgrounds: 3 a dot up to 3, then 6
+const bg = await page.evaluate(() => {
+  const xp = () => Number(document.getElementById('xpSpent').textContent);
+  const before = xp();
+  document.getElementById('bg-add').click();
+  const n = document.querySelector('[data-bgname="0"]');
+  n.value = 'Artifact'; n.dispatchEvent(new Event('input', { bubbles: true }));
+  const mysticAuto = document.querySelector('[data-bgmystic="0"]').checked;
+  document.querySelector('#backgrounds .dots [data-v="5"]').click();
+  const atFive = xp() - before;
+  document.querySelector('[data-bgmystic="0"]').click();
+  const mundaneAtFive = xp() - before;
+  return { mysticAuto, atFive, mundaneAtFive };
+});
+check('Artifact is auto-flagged mystic from the list', bg.mysticAuto === true, JSON.stringify(bg));
+check('mystic Artifact 5 costs 3+3+3+6+6 = 21', bg.atFive === 21, String(bg.atFive));
+check('unticking mystic drops it to 5 x 3 = 15', bg.mundaneAtFive === 15, String(bg.mundaneAtFive));
+
+// Charm categories: 10 native, 12 Sidereal MA, 20 other; favored 8 / 10 / 16
+const charmXp = await page.evaluate(() => {
+  const xp = () => Number(document.getElementById('xpSpent').textContent);
+  const base = xp();
+  document.getElementById('charm-add').click();
+  const out = {};
+  for (const cat of ['native', 'sidereal-ma', 'other']) {
+    const sel = document.querySelector('[data-chcat="0"]');
+    sel.value = cat; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    out[cat] = xp() - base;
+    const fav = document.querySelector('[data-chfav="0"]');
+    fav.click();
+    out[cat + '-fav'] = xp() - base;
+    document.querySelector('[data-chfav="0"]').click();
+  }
+  document.querySelector('[data-del="charm:0"]').click();
+  return out;
+});
+check('native Charm 10 / favored 8', charmXp.native === 10 && charmXp['native-fav'] === 8, JSON.stringify(charmXp));
+check('Sidereal Martial Arts 12 / favored 10', charmXp['sidereal-ma'] === 12 && charmXp['sidereal-ma-fav'] === 10);
+check('other Charm 20 / favored 16', charmXp.other === 20 && charmXp['other-fav'] === 16);
+
+// Thaumaturgy, mutations, merits and flaws
+const other = await page.evaluate(() => {
+  const xp = () => Number(document.getElementById('xpSpent').textContent);
+  const set = (sel, v, ev = 'input') => { const n = document.querySelector(sel); n.value = v; n.dispatchEvent(new Event(ev, { bubbles: true })); };
+  const base = xp();
+  document.getElementById('thaum-add').click();
+  set('[data-thlevel="0"]', '3');
+  const degree3 = xp() - base;
+  set('[data-thkind="0"]', 'procedure', 'change');
+  const procedure3 = xp() - base;
+
+  const afterThaum = xp();
+  document.getElementById('mut-add').click();
+  set('[data-mutlevel="0"]', '4', 'change');
+  const mutation4 = xp() - afterThaum;
+  document.querySelector('[data-mutneg="0"]').click();
+  const defect4 = xp() - afterThaum;
+
+  const afterMut = xp();
+  document.getElementById('mf-add').click();
+  set('[data-mfpoints="0"]', '3');
+  const merit3 = xp() - afterMut;
+  document.querySelector('[data-mfflaw="0"]').click();
+  const flaw3 = xp() - afterMut;
+  return { degree3, procedure3, mutation4, defect4, merit3, flaw3 };
+});
+check('thaumaturgy degree 3 costs 30', other.degree3 === 30, JSON.stringify(other));
+check('thaumaturgy procedure 3 costs 6', other.procedure3 === 6);
+check('mutation grade 4 costs 12', other.mutation4 === 12);
+check('a grade 4 defect refunds 12', other.defect4 === -12);
+check('a 3-point Merit costs 9', other.merit3 === 9);
+check('a 3-point Flaw refunds 9', other.flaw3 === -9);
+
+// Astrological Colleges are Sidereal-only
+const astroSolar = await page.$eval('#sec-astro-wrap', (e) => e.style.display);
+check('colleges hidden for Solars', astroSolar === 'none', astroSolar);
+await page.select('#splat-sel', 'sidereal');
+await new Promise((r) => setTimeout(r, 200));
+const astro = await page.evaluate(() => {
+  const xp = () => Number(document.getElementById('xpSpent').textContent);
+  const shown = document.getElementById('sec-astro-wrap').style.display !== 'none';
+  const base = xp();
+  document.getElementById('college-add').click();
+  document.querySelector('#colleges .dots [data-v="3"]').click();
+  const three = xp() - base;
+  document.querySelector('[data-colfav="0"]').click();
+  const threeFav = xp() - base;
+  return { shown, three, threeFav };
+});
+check('colleges shown for Sidereals', astro.shown === true, JSON.stringify(astro));
+check('college 3 costs 5+4+8 = 17', astro.three === 17, String(astro.three));
+check('favored college 3 costs 5+3+6 = 14', astro.threeFav === 14, String(astro.threeFav));
+
+// Starting-sheet checks report without blocking
+const checksPanel = await page.evaluate(() => {
+  document.getElementById('checks-toggle').click();
+  return {
+    visible: !document.getElementById('checks').classList.contains('hidden'),
+    lines: [...document.querySelectorAll('#checks .chk')].map((c) => c.textContent),
+    failing: document.querySelectorAll('#checks .chk.bad').length,
+  };
+});
+check('checks panel opens', checksPanel.visible === true);
+check('willpower cap rule is listed',
+      checksPanel.lines.some((l) => /two highest Virtues/.test(l)), JSON.stringify(checksPanel.lines));
+check('virtue dot minimum is listed', checksPanel.lines.some((l) => /5 Virtue dots/.test(l)));
+check('favored-needs-a-dot rule is listed', checksPanel.lines.some((l) => /at least 1 dot/.test(l)));
+check('checks flag problems without blocking', checksPanel.failing > 0, String(checksPanel.failing));
+
+// Casteless Lunars choose three Attributes where the others choose one
+await page.select('#splat-sel', 'lunar');
+await new Promise((r) => setTimeout(r, 200));
+const lunarPicks = await page.$eval('#caste-info', (e) => e.textContent);
+await page.select('#caste-sel', 'casteless');
+await new Promise((r) => setTimeout(r, 200));
+const castelessPicks = await page.$eval('#caste-info', (e) => e.textContent);
+check('a Full Moon chooses 1 favored attribute', /Favored attributes 0\/1/.test(lunarPicks), lunarPicks.slice(0, 160));
+check('a Casteless Lunar chooses 3', /Favored attributes 0\/3/.test(castelessPicks), castelessPicks.slice(0, 160));
+await page.select('#splat-sel', 'solar');
+await new Promise((r) => setTimeout(r, 200));
+
 // No block may push the page wider than the viewport
 const overflow = await page.evaluate(() => {
   const bad = [];

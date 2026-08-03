@@ -15,6 +15,58 @@ concession, and it is what replaces the manual `-16` adjustment in the original
 There is no separate character-creation mode. The XP total, the budget and the remaining
 balance sit in the bar at the top; overspending is allowed and simply turns red.
 
+## The cost table
+
+`(rating)` is always the rating the character is **at**, not the one being bought. The three
+rows marked · use the level being bought instead.
+
+| | Unfavored | Favored |
+| --- | --- | --- |
+| Attribute | 4 × rating | 3 × rating |
+| Ability (first dot) | 3 | 3 |
+| Ability | 2 × rating | (2 × rating) − 1 |
+| Specialty | 3 | 3 |
+| Essence | — | 8 × rating |
+| Charm | 10 | 8 |
+| Sidereal Martial Arts | 12 | 10 |
+| Other Charms | 20 | 16 |
+| Spell | 2 × circle + 6 | 2 × circle + 4 |
+| Astrological College (first dot) | 5 | 5 |
+| Astrological College | 4 × rating | 3 × rating |
+| Thaumaturgy — Degree | 10 | 8 |
+| Thaumaturgy — Procedure · | 2 × level | level |
+| Mutation · | 3 × level | 3 × level |
+| Merit / Flaw · | 3 × bonus points | 3 × bonus points |
+| Background | 3 a dot | 3 a dot |
+| Mystic Background (4 to 5) | 6 a dot | 6 a dot |
+| Willpower | 2 × rating | 2 × rating |
+| Virtue | 3 × rating | 3 × rating |
+
+Mutations come in four grades (1, 2, 4, 6); positive ones cost, defects refund. The same
+sign rule applies to Merits and Flaws. Buying a sorcery circle spends one Charm and grants
+that circle's first spell free.
+
+Backgrounds carry a **mystic** tick that jumps them to 6 a dot at ratings 4 and 5. It is set
+automatically from the list in `backgrounds.json` and can be overridden per row, which is what
+Henchmen, Retainers and Spies need when the servants themselves are mystic. Sifu is the same
+as Mentor; Influence is replaced by Backing and Connections; Savant is not listed.
+
+## Starting-sheet rules
+
+The sheet has no creation mode, so these are reported in the **Checks** panel and never block
+anything. They live under `creation` in each splat file:
+
+- Willpower must not exceed the sum of the two highest Virtues.
+- At least 5 Virtue dots must be bought.
+- Every favored Ability that is not a caste Ability needs at least one dot.
+- The favored picks are counted against the number the type allows.
+
+Attributes start at 2, Abilities at 0, Virtues at 1, Willpower at 5 and Essence at 2, and a
+rating can never be pushed below its floor. Solars choose 5 favored Abilities beyond their
+caste, Sidereals 4, Dragon-Blooded 3. Lunars always have Survival favored plus two more
+Abilities, and one Attribute beyond their caste; a Casteless Lunar chooses three Attributes
+instead.
+
 Derived values are canonical Exalted 2e and every one of them shows its working on hover:
 
 | Value | Formula |
@@ -85,14 +137,15 @@ and that the Solar numbers still reproduce the spreadsheet.
 
 ### Known gaps
 
-- **XP tables for Lunar, Sidereal, Dragon-Blooded, Infernal and mortal** currently carry the
-  Solar numbers. Castes, aspects, ability layouts and Essence pools for all of them are
-  correct.
+- Every splat carries the same cost table, which is what the table above specifies. If a type
+  ever diverges, change only that file.
 - **The mortal Attribute floor is 1** (Exalted use 2) and **the mortal Charm price is a
   guess**. Both are one line each in `mortal.json`.
 - **Sidereal Craft types** end in Fate, which is a guess; the other five are the elements.
-- Charm *selection* is deliberately out of scope. Charms are a free-text list with a
-  Favored checkbox; only the count drives XP.
+- The **Astrological College list** in `sidereal.json` is a starting point, not the full
+  canonical set.
+- Charm *selection* is deliberately out of scope. Charms are a free-text list with a category
+  and a Favored checkbox; only the category and count drive XP.
 
 ## Development
 

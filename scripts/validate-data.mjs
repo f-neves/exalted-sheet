@@ -11,8 +11,23 @@ import { z } from 'zod';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => JSON.parse(readFileSync(join(ROOT, p), 'utf8'));
 
-const stepSpec = z.object({ mult: z.number(), base: z.number() });
-const costSpec = z.object({ normal: z.number(), favored: z.number().optional() });
+const stepSpec = z.object({
+  mult: z.number(),
+  base: z.number(),
+  tiers: z.array(z.object({ from: z.number().int().min(1), mult: z.number(), base: z.number() })).optional(),
+});
+const costSpec = z.object({
+  _doc: z.string().optional(),
+  normal: z.number(),
+  favored: z.number().optional(),
+});
+const ratedSpec = z.object({
+  _doc: z.string().optional(),
+  firstDot: z.number().optional(),
+  favoredFirstDot: z.number().optional(),
+  normal: stepSpec,
+  favored: stepSpec.optional(),
+});
 
 const traitSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
@@ -75,13 +90,32 @@ const splatSchema = z.object({
     virtue: z.object({ normal: stepSpec, favored: stepSpec.optional() }),
     willpower: z.object({ normal: stepSpec, favored: stepSpec.optional() }),
     essence: z.object({ normal: stepSpec, favored: stepSpec.optional() }),
-    background: z.object({ normal: stepSpec, favored: stepSpec.optional() }),
+    background: ratedSpec,
+    backgroundMystic: ratedSpec,
+    college: ratedSpec,
     specialty: costSpec,
     charm: costSpec,
+    charmSiderealMA: costSpec,
+    charmOther: costSpec,
+    thaumaturgyDegree: costSpec,
+    thaumaturgyProcedure: costSpec,
+    mutation: costSpec,
+    meritFlaw: costSpec,
     knack: costSpec.optional(),
     combo: costSpec,
     spell: z.record(z.string(), costSpec),
   }),
+  creation: z.object({
+    _doc: z.string().optional(),
+    minVirtueDotsBought: z.number().int().min(0),
+    willpowerCapFromVirtues: z.boolean(),
+    favoredNeedOneDot: z.boolean(),
+  }),
+  astrology: z.object({
+    enabled: z.boolean(),
+    label: z.string().min(1),
+    colleges: z.array(z.string().min(1)),
+  }).optional(),
   sorcery: z.object({
     favoredAbility: z.string(),
     circles: z.array(z.object({
@@ -102,8 +136,28 @@ const warnings = [];
 const attributes = z.array(attributeSchema).parse(read('src/data/attributes.json'));
 const abilities = z.array(abilitySchema).parse(read('src/data/abilities.json'));
 const virtues = z.array(traitSchema.extend({ flaw: z.string() })).parse(read('src/data/virtues.json'));
-z.array(traitSchema.extend({ splats: z.array(z.string()).optional() })).parse(read('src/data/backgrounds.json'));
+const backgrounds = z.array(traitSchema.extend({
+  mystic: z.boolean(),
+  splats: z.array(z.string()).optional(),
+  note: z.string().optional(),
+})).parse(read('src/data/backgrounds.json'));
 const rules = read('src/data/rules.json');
+
+// The table lists these by name; a typo here would silently price them as mundane.
+const MUST_BE_MYSTIC = ['Allies', 'Artifact', 'Breeding', 'Cult', 'Familiar', "Heart's Blood",
+  'Manse', 'Mentor', 'Past Life', 'Salary', 'Solar Bond', 'Taboo', 'Unwoven Coadjutor',
+  'Whispers', 'Arsenal', 'Command', 'Liege', 'Panoply', 'Wealth'];
+for (const name of MUST_BE_MYSTIC) {
+  const hit = backgrounds.find((b) => b.name === name);
+  if (!hit) errors.push(`backgrounds.json: "${name}" is missing`);
+  else if (!hit.mystic) errors.push(`backgrounds.json: "${name}" should be mystic`);
+}
+for (const gone of ['Influence', 'Savant']) {
+  if (backgrounds.some((b) => b.name === gone)) errors.push(`backgrounds.json: "${gone}" should not be listed`);
+}
+if (!Array.isArray(rules.mutationLevels) || rules.mutationLevels.join() !== '1,2,4,6') {
+  errors.push('rules.json: mutationLevels should be [1, 2, 4, 6]');
+}
 
 if (abilities.length !== 25) errors.push(`abilities.json: expected 25 abilities, found ${abilities.length}`);
 if (attributes.length !== 9) errors.push(`attributes.json: expected 9 attributes, found ${attributes.length}`);

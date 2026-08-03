@@ -45,6 +45,16 @@
     "background": { "normal": { "mult": 0, "base": 3 } },
     "specialty":  { "normal": 3, "favored": 3 },
     "charm":      { "normal": 10, "favored": 8 },
+    "backgroundMystic": { "_doc": "3 a dot up to 3, then 6 a dot at 4 and 5",
+                          "normal": { "mult": 0, "base": 3, "tiers": [{ "from": 4, "mult": 0, "base": 6 }] } },
+    "charmSiderealMA": { "normal": 12, "favored": 10 },
+    "charmOther":      { "normal": 20, "favored": 16 },
+    "college":   { "_doc": "Astrological College", "firstDot": 5, "favoredFirstDot": 5,
+                   "normal": { "mult": 4, "base": 0 }, "favored": { "mult": 3, "base": 0 } },
+    "thaumaturgyDegree":    { "normal": 10, "favored": 8 },
+    "thaumaturgyProcedure": { "_doc": "per level bought", "normal": 2, "favored": 1 },
+    "mutation":  { "_doc": "per level bought; levels 1, 2, 4, 6", "normal": 3, "favored": 3 },
+    "meritFlaw": { "_doc": "per bonus point of the Merit or Flaw", "normal": 3, "favored": 3 },
     "combo":      { "normal": 0, "favored": 0 },
     "spell": {
       "terrestrial": { "normal": 8, "favored": 6 },
@@ -66,6 +76,13 @@
   },
 
   "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 1 },
+
+  "creation": {
+    "_doc": "Advisory checks on a starting sheet. None of these block spending.",
+    "minVirtueDotsBought": 5,
+    "willpowerCapFromVirtues": true,
+    "favoredNeedOneDot": true
+  },
 
   "limit": { "enabled": true, "label": "Limit", "boxes": 10, "breakLabel": "Limit Break" },
 

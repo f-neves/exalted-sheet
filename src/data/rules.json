@@ -48,6 +48,9 @@
     "hardness": 0, "mobility": 0, "fatigue": 0
   },
 
+  "_mutationDoc": "Mutations come in four grades. Positive ones cost 3 x grade; negative ones refund it.",
+  "mutationLevels": [1, 2, 4, 6],
+
   "damageTypes": [
     { "id": "B", "name": "Bashing" },
     { "id": "L", "name": "Lethal" },

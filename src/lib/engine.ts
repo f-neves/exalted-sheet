@@ -43,6 +43,12 @@ export function mountSheet(opts: SheetOpts) {
   const picksFor = (kind: string) =>
     (kind === 'ability' ? S.favored.abilities : S.favored.attributes) as string[];
 
+  /** Does this Background name appear on the mystic list? */
+  const isMysticName = (name: string) => {
+    const hit = BACKGROUNDS.find((b: any) => b.name.toLowerCase() === name.trim().toLowerCase());
+    return !!hit?.mystic;
+  };
+
   /* ------------------------------------------------------ default state */
 
   /** Craft has no rating of its own; each Craft type is a full Ability. */
@@ -72,6 +78,10 @@ export function mountSheet(opts: SheetOpts) {
       backgrounds: [],
       charms: { list: [] },
       combos: [],
+      colleges: [],
+      thaumaturgy: [],
+      mutations: [],
+      meritsFlaws: [],
       sorcery: { circles: {}, spells: [] },
       commitments: [],
       health: { extras: {}, marks: [] },
@@ -148,17 +158,41 @@ export function mountSheet(opts: SheetOpts) {
     st.essence = trait(raw.essence, sp.floors.essence);
     st.willpowerTemp = clamp(num(raw.willpowerTemp, st.willpower.v), 0, 20);
 
-    st.backgrounds = (Array.isArray(raw.backgrounds) ? raw.backgrounds : []).map((b: any) => ({
-      name: String(b?.name ?? ''), ...trait(b, sp.floors.background),
-    }));
+    st.backgrounds = (Array.isArray(raw.backgrounds) ? raw.backgrounds : []).map((b: any) => {
+      const name = String(b?.name ?? '');
+      // Schema 2 had no mystic flag: infer it from the name the first time round.
+      const mystic = b?.mystic === undefined ? isMysticName(name) : !!b.mystic;
+      return { name, mystic, ...trait(b, sp.floors.background) };
+    });
 
+    const CATS = new Set(calc.CHARM_CATEGORIES.map((c: any) => c.id));
     st.charms = {
       list: (Array.isArray(raw.charms?.list) ? raw.charms.list : []).map((c: any) => ({
-        name: String(c?.name ?? ''), favored: !!c?.favored, note: String(c?.note ?? ''),
+        name: String(c?.name ?? ''), favored: !!c?.favored,
+        category: CATS.has(c?.category) ? c.category : 'native',
+        note: String(c?.note ?? ''),
       })),
     };
     st.combos = (Array.isArray(raw.combos) ? raw.combos : []).map((c: any) => ({
       name: String(c?.name ?? ''), xp: num(c?.xp, 0),
+    }));
+
+    st.colleges = (Array.isArray(raw.colleges) ? raw.colleges : []).map((c: any) => ({
+      name: String(c?.name ?? ''), favored: !!c?.favored, ...trait(c, 0),
+    }));
+    st.thaumaturgy = (Array.isArray(raw.thaumaturgy) ? raw.thaumaturgy : []).map((t: any) => ({
+      name: String(t?.name ?? ''),
+      kind: t?.kind === 'procedure' ? 'procedure' : 'degree',
+      level: clamp(num(t?.level, 1), 0, 10),
+      favored: !!t?.favored,
+    }));
+    st.mutations = (Array.isArray(raw.mutations) ? raw.mutations : []).map((m: any) => ({
+      name: String(m?.name ?? ''),
+      level: RULES.mutationLevels.includes(num(m?.level, 1)) ? num(m?.level, 1) : RULES.mutationLevels[0],
+      negative: !!m?.negative,
+    }));
+    st.meritsFlaws = (Array.isArray(raw.meritsFlaws) ? raw.meritsFlaws : []).map((m: any) => ({
+      name: String(m?.name ?? ''), points: clamp(num(m?.points, 1), 0, 20), flaw: !!m?.flaw,
     }));
 
     const validCircles = new Set((sp.sorcery?.circles || []).map((c: any) => c.id));
@@ -212,6 +246,7 @@ export function mountSheet(opts: SheetOpts) {
     const [k, key] = path.split(':');
     switch (k) {
       case 'attr': return { t: S.attrs[key], kind: 'attribute', id: key };
+      case 'col': return { t: S.colleges[+key], kind: 'college', id: 'college' };
       case 'abil': return { t: S.abils[key], kind: 'ability', id: key };
       case 'craft': return { t: S.crafts[+key], kind: 'ability', id: 'craft' };
       case 'virtue': return { t: S.virtues[key], kind: 'virtue', id: key };
@@ -283,7 +318,7 @@ export function mountSheet(opts: SheetOpts) {
 
     // One counter per kind the type can favor, so Lunars see both at once.
     for (const kind of ['ability', 'attribute']) {
-      const cfg = calc.favoredConfig(sp, kind);
+      const cfg = calc.favoredConfig(sp, kind, S.caste);
       if (!cfg || (!cfg.picks && !(cfg.always || []).length)) continue;
       const label = kind === 'ability' ? 'Favored abilities' : 'Favored attributes';
       const always = (cfg.always || []).map((id: string) => nameOf(kind, id));
@@ -301,7 +336,7 @@ export function mountSheet(opts: SheetOpts) {
     el('caste-info').innerHTML = info;
 
     const marks = (kind: string) => {
-      const cfg = calc.favoredConfig(sp, kind);
+      const cfg = calc.favoredConfig(sp, kind, S.caste);
       const canFavor = !!cfg && (cfg.picks > 0 || (cfg.always || []).length > 0);
       if (sp.casteKind === kind) return ` · C = ${sp.casteLabel}, F = Favored`;
       return canFavor ? ' · F = Favored' : '';
@@ -320,7 +355,7 @@ export function mountSheet(opts: SheetOpts) {
    */
   function tags(kind: string, id: string) {
     const sp = splat();
-    const cfg = calc.favoredConfig(sp, kind);
+    const cfg = calc.favoredConfig(sp, kind, S.caste);
     const canFavor = !!cfg && (cfg.picks > 0 || (cfg.always || []).length > 0);
     const casteKind = sp.casteKind === kind;
     if (!casteKind && !canFavor) {
@@ -467,12 +502,102 @@ export function mountSheet(opts: SheetOpts) {
       .map((b: any) => `<option value="${esc(b.name)}"></option>`).join('');
     el('backgrounds').innerHTML = S.backgrounds.length
       ? S.backgrounds.map((b: any, i: number) => `<div class="trow">`
-          + `<input class="lname" list="bg-list" data-bgname="${i}" value="${esc(b.name)}" placeholder="Background" />`
+          + `<input class="lname nm" list="bg-list" data-bgname="${i}" value="${esc(b.name)}" placeholder="Background" />`
+          + `<label class="mystic" title="Mystic Backgrounds cost 6 a dot at ratings 4 and 5">`
+          + `<input type="checkbox" data-bgmystic="${i}"${b.mystic ? ' checked' : ''} /> mystic</label>`
           + dots(`bg:${i}`, b.v, Math.max(sp.floors.background, b.granted), dotMax('background'))
           + grantInput(`bg:${i}`, b.granted)
-          + xpChip(calc.traitXp('background', b.v, b.granted, false, sp))
+          + xpChip(calc.traitXp(b.mystic ? 'backgroundMystic' : 'background', b.v, b.granted, false, sp))
           + `<button type="button" class="rowx" data-del="bg:${i}" title="Remove">×</button></div>`).join('')
       : '<div class="empty">No backgrounds yet.</div>';
+  }
+
+  function renderColleges() {
+    const sp = splat();
+    const on = !!sp.astrology?.enabled;
+    el('sec-astro-wrap').style.display = on ? '' : 'none';
+    if (!on) return;
+    el('astro-title').textContent = sp.astrology.label;
+    (el('college-list') as HTMLDataListElement).innerHTML =
+      (sp.astrology.colleges || []).map((c: string) => `<option value="${esc(c)}"></option>`).join('');
+    el('colleges').innerHTML = S.colleges.length
+      ? S.colleges.map((c: any, i: number) => `<div class="trow">`
+          + `<input class="lname nm" list="college-list" data-colname="${i}" value="${esc(c.name)}" placeholder="College" />`
+          + `<button type="button" class="tag${c.favored ? ' on' : ''}" data-colfav="${i}" title="Favored">F</button>`
+          + dots(`col:${i}`, c.v, c.granted, dotMax('ability'))
+          + grantInput(`col:${i}`, c.granted)
+          + xpChip(calc.traitXp('college', c.v, c.granted, !!c.favored, sp))
+          + `<button type="button" class="rowx" data-del="college:${i}" title="Remove">×</button></div>`).join('')
+      : '<div class="empty">No colleges yet.</div>';
+  }
+
+  function renderOther() {
+    const sp = splat();
+
+    el('thaumaturgy').innerHTML =
+      `<div class="lrow head"><span style="flex:1">Art or procedure</span><span style="width:9rem">Kind</span>`
+      + `<span style="width:4rem;text-align:center">Level</span><span style="width:3.4rem;text-align:center">Fav</span>`
+      + `<span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
+      + (S.thaumaturgy.length
+        ? S.thaumaturgy.map((t: any, i: number) => {
+            const xp = t.kind === 'procedure'
+              ? calc.levelCost('thaumaturgyProcedure', t.level, t.favored, sp)
+              : calc.levelCost('thaumaturgyDegree', t.level, t.favored, sp);
+            return `<div class="lrow">`
+              + `<input class="lname" data-thname="${i}" value="${esc(t.name)}" placeholder="Alchemy, Warding…" />`
+              + `<select class="lsel" style="width:9rem" data-thkind="${i}">`
+              + `<option value="degree"${t.kind === 'degree' ? ' selected' : ''}>Degree</option>`
+              + `<option value="procedure"${t.kind === 'procedure' ? ' selected' : ''}>Procedure</option></select>`
+              + `<input class="lnum" style="width:4rem" type="number" min="0" max="10" step="1" data-thlevel="${i}" value="${t.level}" />`
+              + `<label style="width:3.4rem;display:flex;justify-content:center">`
+              + `<input type="checkbox" data-thfav="${i}"${t.favored ? ' checked' : ''} /></label>`
+              + `<span class="xpc paid" style="width:2.6rem">${xp}</span>`
+              + `<button type="button" class="rowx" data-del="thaum:${i}" title="Remove">×</button></div>`;
+          }).join('')
+        : '<div class="empty">No thaumaturgy yet.</div>');
+
+    el('mutations').innerHTML = S.mutations.length
+      ? S.mutations.map((m: any, i: number) => {
+          const xp = calc.levelCost('mutation', m.level, false, sp) * (m.negative ? -1 : 1);
+          return `<div class="lrow">`
+            + `<input class="lname" data-mutname="${i}" value="${esc(m.name)}" placeholder="Mutation" />`
+            + `<select class="lsel" style="width:5rem" data-mutlevel="${i}">`
+            + RULES.mutationLevels.map((l: number) =>
+                `<option value="${l}"${l === m.level ? ' selected' : ''}>${l}</option>`).join('')
+            + `</select>`
+            + `<label class="lbl" title="A defect refunds experience instead of costing it">`
+            + `<input type="checkbox" data-mutneg="${i}"${m.negative ? ' checked' : ''} /> defect</label>`
+            + `<span class="xpc paid" style="width:2.6rem">${xp}</span>`
+            + `<button type="button" class="rowx" data-del="mutation:${i}" title="Remove">×</button></div>`;
+        }).join('')
+      : '<div class="empty">No mutations yet.</div>';
+
+    el('meritsFlaws').innerHTML = S.meritsFlaws.length
+      ? S.meritsFlaws.map((m: any, i: number) => {
+          const xp = calc.levelCost('meritFlaw', m.points, false, sp) * (m.flaw ? -1 : 1);
+          return `<div class="lrow">`
+            + `<input class="lname" data-mfname="${i}" value="${esc(m.name)}" placeholder="Merit or Flaw" />`
+            + `<span class="lbl">bp</span>`
+            + `<input class="lnum" style="width:3.4rem" type="number" min="0" max="20" step="1" data-mfpoints="${i}" value="${m.points}" />`
+            + `<label class="lbl" title="A Flaw refunds experience instead of costing it">`
+            + `<input type="checkbox" data-mfflaw="${i}"${m.flaw ? ' checked' : ''} /> flaw</label>`
+            + `<span class="xpc paid" style="width:2.6rem">${xp}</span>`
+            + `<button type="button" class="rowx" data-del="meritflaw:${i}" title="Remove">×</button></div>`;
+        }).join('')
+      : '<div class="empty">No merits or flaws yet.</div>';
+  }
+
+  function renderChecks() {
+    const checks = calc.creationChecks(S, splat(), DATA);
+    const bad = checks.filter((c: any) => !c.ok).length;
+    el('checks').innerHTML =
+      `<div class="checks-h">Starting-sheet rules · ${bad ? `${bad} not met` : 'all met'} · advisory only</div>`
+      + checks.map((c: any) =>
+        `<div class="chk ${c.ok ? 'ok' : 'bad'}"><span class="mark">${c.ok ? '✓' : '!'}</span>`
+        + `<span>${esc(c.text)}</span></div>`).join('');
+    const btn = el('checks-toggle');
+    btn.textContent = bad ? `Checks (${bad})` : 'Checks';
+    btn.classList.toggle('primary', bad > 0);
   }
 
   function poolCtx() {
@@ -516,13 +641,17 @@ export function mountSheet(opts: SheetOpts) {
   function renderCharms() {
     const sp = splat();
     el('charms').innerHTML =
-      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
+      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
       + (S.charms.list.length
         ? S.charms.list.map((c: any, i: number) => `<div class="lrow">`
             + `<input class="lname" data-chname="${i}" value="${esc(c.name)}" placeholder="Charm name" />`
+            + `<select class="lsel" style="width:11rem" data-chcat="${i}">`
+            + calc.CHARM_CATEGORIES.map((cat: any) =>
+                `<option value="${cat.id}"${cat.id === c.category ? ' selected' : ''}>${esc(cat.name)}</option>`).join('')
+            + `</select>`
             + `<label class="lbl" style="width:3.2rem;justify-content:center;display:flex">`
             + `<input type="checkbox" data-chfav="${i}"${c.favored ? ' checked' : ''} /></label>`
-            + `<span class="xpc paid" style="width:2.6rem">${calc.flatCost('charm', c.favored, sp)}</span>`
+            + `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`
             + `<button type="button" class="rowx" data-del="charm:${i}" title="Remove">×</button></div>`).join('')
         : '<div class="empty">No Charms yet.</div>');
 
@@ -780,7 +909,8 @@ export function mountSheet(opts: SheetOpts) {
     const label: Record<string, string> = {
       attributes: 'Attributes', abilities: 'Abilities', specialties: 'Specialties', virtues: 'Virtues',
       willpower: 'Willpower', essence: 'Essence', backgrounds: 'Backgrounds', charms: 'Charms',
-      spells: 'Spells', combos: 'Combos', adjustment: 'Adjustment',
+      spells: 'Spells', combos: 'Combos', colleges: 'Colleges', thaumaturgy: 'Thaumaturgy',
+      mutations: 'Mutations', meritsFlaws: 'Merits & Flaws', adjustment: 'Adjustment',
     };
     el('xpBreak').textContent = Object.entries(b)
       .filter(([, v]) => v)
@@ -790,6 +920,7 @@ export function mountSheet(opts: SheetOpts) {
     renderPools();
     renderCombat();
     renderDerived();
+    renderChecks();
     save();
   }
 
@@ -799,8 +930,10 @@ export function mountSheet(opts: SheetOpts) {
     renderAbils();
     renderPower();
     renderBackgrounds();
+    renderColleges();
     renderCharms();
     renderSorcery();
+    renderOther();
     renderHealth();
     renderWeapons();
     renderArmor();
@@ -820,8 +953,10 @@ export function mountSheet(opts: SheetOpts) {
     const path = dotsEl.dataset.dots as string;
     const res = resolve(path);
     if (!res || !res.t) return;
-    res.t.v = res.t.v === v ? v - 1 : v;
-    res.t.v = clamp(res.t.v, 0, +(dotsEl.dataset.max || 10));
+    // The floor is where every character starts, so a rating can never go under it.
+    const floor = (splat().floors as any)[res.kind] ?? 0;
+    const next = res.t.v === v ? v - 1 : v;
+    res.t.v = clamp(next, floor, +(dotsEl.dataset.max || 10));
     rerenderFor(path);
   }
 
@@ -832,6 +967,7 @@ export function mountSheet(opts: SheetOpts) {
     else if (k === 'abil' || k === 'craft' || k === 'style') renderAbils();
     else if (k === 'virtue' || k === 'wp' || k === 'ess') renderPower();
     else if (k === 'bg') renderBackgrounds();
+    else if (k === 'col') renderColleges();
     recompute();
   }
 
@@ -881,6 +1017,13 @@ export function mountSheet(opts: SheetOpts) {
       const order = ['', 'B', 'L', 'A'];
       S.health.marks[i] = order[(order.indexOf(S.health.marks[i] || '') + 1) % order.length];
       renderHealth(); recompute(); return;
+    }
+
+    const colfav = target.closest<HTMLElement>('[data-colfav]');
+    if (colfav) {
+      const c = S.colleges[+(colfav.dataset.colfav as string)];
+      if (c) { c.favored = !c.favored; renderColleges(); recompute(); }
+      return;
     }
 
     const del = target.closest<HTMLElement>('[data-del]');
@@ -983,7 +1126,27 @@ export function mountSheet(opts: SheetOpts) {
       if (res?.t) { res.t.name = t.value; save(); }
       return;
     }
-    if (d.bgname !== undefined) { S.backgrounds[+d.bgname].name = t.value; recompute(); return; }
+    if (d.bgname !== undefined) {
+      const bg = S.backgrounds[+d.bgname];
+      const wasAuto = bg.mystic === isMysticName(bg.name);
+      bg.name = t.value;
+      // Keep following the list while the player has not overridden the flag by hand.
+      if (wasAuto) bg.mystic = isMysticName(t.value);
+      renderBackgrounds(); recompute(); return;
+    }
+    if (d.bgmystic !== undefined) { S.backgrounds[+d.bgmystic].mystic = t.checked; renderBackgrounds(); recompute(); return; }
+    if (d.colname !== undefined) { S.colleges[+d.colname].name = t.value; recompute(); return; }
+    if (d.thname !== undefined) { S.thaumaturgy[+d.thname].name = t.value; save(); return; }
+    if (d.thkind !== undefined) { S.thaumaturgy[+d.thkind].kind = t.value; renderOther(); recompute(); return; }
+    if (d.thlevel !== undefined) { S.thaumaturgy[+d.thlevel].level = clamp(iv(), 0, 10); renderOther(); recompute(); return; }
+    if (d.thfav !== undefined) { S.thaumaturgy[+d.thfav].favored = t.checked; renderOther(); recompute(); return; }
+    if (d.mutname !== undefined) { S.mutations[+d.mutname].name = t.value; save(); return; }
+    if (d.mutlevel !== undefined) { S.mutations[+d.mutlevel].level = iv(); renderOther(); recompute(); return; }
+    if (d.mutneg !== undefined) { S.mutations[+d.mutneg].negative = t.checked; renderOther(); recompute(); return; }
+    if (d.mfname !== undefined) { S.meritsFlaws[+d.mfname].name = t.value; save(); return; }
+    if (d.mfpoints !== undefined) { S.meritsFlaws[+d.mfpoints].points = clamp(iv(), 0, 20); renderOther(); recompute(); return; }
+    if (d.mfflaw !== undefined) { S.meritsFlaws[+d.mfflaw].flaw = t.checked; renderOther(); recompute(); return; }
+    if (d.chcat !== undefined) { S.charms.list[+d.chcat].category = t.value; renderCharms(); recompute(); return; }
     if (d.cname !== undefined) { S.commitments[+d.cname].name = t.value; recompute(); return; }
     if (d.cmotes !== undefined) { S.commitments[+d.cmotes].motes = iv(); recompute(); return; }
     if (d.chname !== undefined) { S.charms.list[+d.chname].name = t.value; save(); return; }
@@ -1029,6 +1192,10 @@ export function mountSheet(opts: SheetOpts) {
     switch (k) {
       case 'craft': S.crafts.splice(idx, 1); renderAbils(); break;
       case 'bg': S.backgrounds.splice(idx, 1); renderBackgrounds(); break;
+      case 'college': S.colleges.splice(idx, 1); renderColleges(); break;
+      case 'thaum': S.thaumaturgy.splice(idx, 1); renderOther(); break;
+      case 'mutation': S.mutations.splice(idx, 1); renderOther(); break;
+      case 'meritflaw': S.meritsFlaws.splice(idx, 1); renderOther(); break;
       case 'commit': S.commitments.splice(idx, 1); renderCommitments(); break;
       case 'charm': S.charms.list.splice(idx, 1); renderCharms(); break;
       case 'combo': S.combos.splice(idx, 1); renderCharms(); break;
@@ -1106,7 +1273,11 @@ export function mountSheet(opts: SheetOpts) {
       S.crafts.push({ name: '', v: splat().floors.ability, granted: 0, specialties: [] });
       renderAbils();
     },
-    'bg-add': () => { S.backgrounds.push({ name: '', v: 1, granted: 0 }); renderBackgrounds(); },
+    'bg-add': () => { S.backgrounds.push({ name: '', mystic: false, v: 1, granted: 0 }); renderBackgrounds(); },
+    'college-add': () => { S.colleges.push({ name: '', favored: false, v: 1, granted: 0 }); renderColleges(); },
+    'thaum-add': () => { S.thaumaturgy.push({ name: '', kind: 'degree', level: 1, favored: false }); renderOther(); },
+    'mut-add': () => { S.mutations.push({ name: '', level: RULES.mutationLevels[0], negative: false }); renderOther(); },
+    'mf-add': () => { S.meritsFlaws.push({ name: '', points: 1, flaw: false }); renderOther(); },
     'commit-add': () => { S.commitments.push({ name: '', motes: 0 }); renderCommitments(); },
     'charm-add': () => { S.charms.list.push({ name: '', favored: false, note: '' }); renderCharms(); },
     'combo-add': () => { S.combos.push({ name: '', xp: 0 }); renderCharms(); },
@@ -1226,6 +1397,10 @@ export function mountSheet(opts: SheetOpts) {
     opts.onReset?.();
     renderAll();
     save();
+  });
+
+  el('checks-toggle').addEventListener('click', () => {
+    el('checks').classList.toggle('hidden');
   });
 
   /* ---------------------------------------------------- derived toggle */

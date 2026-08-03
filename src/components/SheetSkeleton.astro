@@ -8,6 +8,7 @@
   <label>Budget <input type="number" id="xpBudget" value="0" step="1" /></label>
   <span class="big">Left <b id="xpRem" class="rem ok">0</b></span>
   <span class="breakdown" id="xpBreak"></span>
+  <button class="btn" id="checks-toggle" type="button" title="Starting-sheet rules">Checks</button>
   <span class="xp-btns">
     <button class="btn" id="f-export" type="button">Export</button>
     <button class="btn" id="f-import" type="button">Import</button>
@@ -17,6 +18,8 @@
     <input type="file" id="f-file" accept="application/json,.json" hidden />
   </span>
 </div>
+
+<div class="checks hidden" id="checks"></div>
 
 <div class="idrow">
   <label>Name<input class="txt" data-id="name" placeholder="Unconquered name" /></label>
@@ -55,11 +58,20 @@
   </div>
 </div>
 
-<h2 class="barh barh-tog" data-sec="bgs"><span class="sec-caret">▾</span> Backgrounds <small>(granted dots cost no XP)</small></h2>
+<h2 class="barh barh-tog" data-sec="bgs"><span class="sec-caret">▾</span> Backgrounds <small>(granted dots cost no XP · mystic ones cost 6 a dot at 4 and 5)</small></h2>
 <div class="sec-body" id="sec-bgs">
   <div id="backgrounds"></div>
   <button class="btn" id="bg-add" type="button">+ background</button>
   <datalist id="bg-list"></datalist>
+</div>
+
+<div id="sec-astro-wrap">
+  <h2 class="barh barh-tog" data-sec="astro"><span class="sec-caret">▾</span> <span id="astro-title">Astrological Colleges</span> <small>(5 for the first dot, then 4 × rating · 3 × rating favored)</small></h2>
+  <div class="sec-body" id="sec-astro">
+    <div class="cols2" id="colleges"></div>
+    <button class="btn" id="college-add" type="button">+ college</button>
+    <datalist id="college-list"></datalist>
+  </div>
 </div>
 
 <h2 class="barh barh-tog" data-sec="essence"><span class="sec-caret">▾</span> Essence Pools &amp; Commitments</h2>
@@ -88,6 +100,22 @@
   <div id="circles"></div>
   <div class="sub-head">Spells<button class="btn tiny" id="spell-add" type="button">+ spell</button></div>
   <div id="spells"></div>
+</div>
+
+<h2 class="barh barh-tog" data-sec="other"><span class="sec-caret">▾</span> Thaumaturgy, Mutations &amp; Merits</h2>
+<div class="sec-body" id="sec-other">
+  <div class="sub-head">Thaumaturgy <small>(degree 10 · procedure 2 × level · 8 and 1 × level when favored)</small><button class="btn tiny" id="thaum-add" type="button">+ entry</button></div>
+  <div id="thaumaturgy"></div>
+  <div class="cols2">
+    <div>
+      <div class="sub-head">Mutations <small>(3 × level · defects refund)</small><button class="btn tiny" id="mut-add" type="button">+ mutation</button></div>
+      <div id="mutations"></div>
+    </div>
+    <div>
+      <div class="sub-head">Merits &amp; Flaws <small>(3 × bonus points · flaws refund)</small><button class="btn tiny" id="mf-add" type="button">+ entry</button></div>
+      <div id="meritsFlaws"></div>
+    </div>
+  </div>
 </div>
 
 <h2 class="barh">Health</h2>
@@ -184,6 +212,9 @@
   .trow .tag.on { background: var(--accent); border-color: transparent; color: var(--on-accent); }
   .trow .tag.locked { background: var(--accent-soft); border-color: transparent; color: var(--ink); cursor: default; }
   .trow .tag.ghost { visibility: hidden; cursor: default; }
+  .trow .mystic { font-family: 'Cinzel'; font-size: .6rem; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-soft); display: inline-flex; align-items: center; gap: .2rem; flex: none; cursor: pointer; }
+  .trow .mystic input { margin: 0; }
   .trow-marker .marker-note { font-size: .74rem; font-style: italic; color: var(--ink-soft); margin-left: .4rem; }
   .trow-marker .nm { flex: 0 1 auto; }
   /* Editable trait names (Craft types) must be free to shrink, or the grid track
@@ -295,6 +326,18 @@
 
   .notes-grid textarea { width: 100%; min-height: 7rem; resize: vertical; }
   .notes-grid label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+
+  /* Starting-sheet checks: advisory only, never blocking */
+  .checks { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 5px; padding: .5rem .8rem; margin: 0 0 .9rem; }
+  .checks.hidden { display: none; }
+  .checks-h { font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .3rem; }
+  .chk { display: flex; gap: .5rem; align-items: baseline; font-size: .88rem; padding: .1rem 0; }
+  .chk .mark { font-family: 'Cinzel'; font-weight: 700; flex: none; width: 1.1rem; }
+  .chk.ok .mark { color: var(--accent); }
+  .chk.bad .mark { color: var(--danger); }
+  .chk.bad { color: var(--ink); }
+  .chk.ok { color: var(--ink-soft); }
+  @media print { .checks { display: none !important; } }
 
   .warn-todo {
     border: 1px solid var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent);

@@ -50,7 +50,20 @@ const xlMdv = (integrity, wp, ess) => Math.ceil((integrity + wp + ess) / 2);
 const xlPersonal = (ess, wp) => ess * 3 + wp;
 const xlPeripheral = (ess, wp, virtuesSum) => virtuesSum + ess * 7 + wp;
 
+/** A character at every floor, so a category can be measured on its own. */
+const dawnBlank = () => ({
+  splat: 'solar', caste: 'dawn', favored: { abilities: [], attributes: [] },
+  attrs: Object.fromEntries(data.attributes.map((a) => [a.id, { v: splat.floors.attribute }])),
+  abils: Object.fromEntries(data.abilities.filter((a) => !a.sub).map((a) => [a.id, { v: 0 }])),
+  crafts: [],
+  virtues: Object.fromEntries(data.virtues.map((v) => [v.id, { v: splat.floors.virtue }])),
+  willpower: { v: splat.floors.willpower }, essence: { v: splat.floors.essence },
+  backgrounds: [], charms: { list: [] }, sorcery: { circles: {}, spells: [] }, combos: [],
+  colleges: [], thaumaturgy: [], mutations: [], meritsFlaws: [],
+});
+
 console.log('Solar.xlsx golden test');
+eq(calc.totalXp(dawnBlank(), splat, data).total, 0, 'a character at every floor costs 0');
 
 /* ---- W2: attributes ------------------------------------------------- */
 for (let n = 2; n <= 10; n++) {
@@ -184,6 +197,75 @@ eq(calc.poolValue(splat.pools.personal, { essence: 3, willpower: 7, ...vs }).val
    xlPersonal(3, 7), 'P16 personal essence');
 eq(calc.poolValue(splat.pools.peripheral, { essence: 3, willpower: 7, ...vs }).value,
    xlPeripheral(3, 7, vs.virtuesSum), 'P17 peripheral essence');
+
+/* --------------------------------------------------------------------- *
+ * The full cost table, row by row.
+ * "(nível)" is the rating the character is AT, except for Thaumaturgy procedures,
+ * Mutations and Merits/Flaws, where it is the level being bought.
+ * --------------------------------------------------------------------- */
+console.log('cost table');
+
+// Charm 10 / 8 · Sidereal Martial Arts 12 / 10 · Other Charms 20 / 16
+for (const [cat, unfav, fav] of [['native', 10, 8], ['sidereal-ma', 12, 10], ['other', 20, 16]]) {
+  eq(calc.charmCost(cat, false, splat), unfav, `charm ${cat} unfavored`);
+  eq(calc.charmCost(cat, true, splat), fav, `charm ${cat} favored`);
+}
+
+// Magia: 2 x (círculo) + 6, favored 2 x (círculo) + 4
+for (const [circle, n] of [['terrestrial', 1], ['celestial', 2], ['solar', 3]]) {
+  eq(calc.spellCost(circle, false, splat), 2 * n + 6, `spell ${circle}`);
+  eq(calc.spellCost(circle, true, splat), 2 * n + 4, `spell ${circle} favored`);
+}
+
+// Antecedente 3/ponto; místico 6/ponto nos níveis 4 e 5
+for (let n = 0; n <= 5; n++) {
+  eq(calc.traitXp('background', n, 0, false, splat), n * 3, `background ${n}`);
+  const mystic = Math.min(n, 3) * 3 + Math.max(0, n - 3) * 6;
+  eq(calc.traitXp('backgroundMystic', n, 0, false, splat), mystic, `mystic background ${n}`);
+}
+eq(calc.traitXp('backgroundMystic', 5, 0, false, splat), 21, 'mystic background 5 = 3+3+3+6+6');
+// Granted dots stay free on the mystic tier too
+eq(calc.traitXp('backgroundMystic', 5, 3, false, splat), 12, 'mystic background 5 with 3 granted');
+
+// Escola Astrológica: 5 no primeiro ponto, depois 4 x (nível) / 3 x (nível)
+const college = (n, fav) => {
+  if (n <= 0) return 0;
+  let c = 5;
+  for (let v = 2; v <= n; v++) c += (fav ? 3 : 4) * (v - 1);
+  return c;
+};
+for (let n = 0; n <= 5; n++) {
+  eq(calc.traitXp('college', n, 0, false, splat), college(n, false), `college ${n}`);
+  eq(calc.traitXp('college', n, 0, true, splat), college(n, true), `college ${n} favored`);
+}
+eq(calc.traitXp('college', 3, 0, false, splat), 5 + 4 + 8, 'college 3 = 5+4+8');
+eq(calc.traitXp('college', 3, 0, true, splat), 5 + 3 + 6, 'college 3 favored = 5+3+6');
+
+// Taumaturgia: grau 10 / 8 por grau; procedimento 2 x (nível) / (nível)
+for (let n = 0; n <= 3; n++) {
+  eq(calc.levelCost('thaumaturgyDegree', n, false, splat), n * 10, `thaumaturgy degree ${n}`);
+  eq(calc.levelCost('thaumaturgyDegree', n, true, splat), n * 8, `thaumaturgy degree ${n} favored`);
+  eq(calc.levelCost('thaumaturgyProcedure', n, false, splat), n * 2, `thaumaturgy procedure ${n}`);
+  eq(calc.levelCost('thaumaturgyProcedure', n, true, splat), n * 1, `thaumaturgy procedure ${n} favored`);
+}
+
+// Mutação 3 x (nível), níveis 1/2/4/6; Qualidade/Defeito 3 x (pontos de bônus)
+for (const n of rules.mutationLevels) {
+  eq(calc.levelCost('mutation', n, false, splat), n * 3, `mutation level ${n}`);
+}
+eq(JSON.stringify(rules.mutationLevels), '[1,2,4,6]', 'mutation grades are 1, 2, 4 and 6');
+for (let n = 0; n <= 6; n++) {
+  eq(calc.levelCost('meritFlaw', n, false, splat), n * 3, `merit worth ${n} bonus points`);
+}
+
+/* ---- Signs: defects and flaws hand experience back ------------------- */
+{
+  const S = { mutations: [{ name: 'Wings', level: 4 }, { name: 'Blind', level: 2, negative: true }],
+              meritsFlaws: [{ name: 'Ambidextrous', points: 2 }, { name: 'Deaf', points: 3, flaw: true }] };
+  const got = calc.totalXp({ ...dawnBlank(), ...S }, splat, data);
+  eq(got.breakdown.mutations, 4 * 3 - 2 * 3, 'positive mutation costs, defect refunds');
+  eq(got.breakdown.meritsFlaws, 2 * 3 - 3 * 3, 'merit costs, flaw refunds');
+}
 
 /* ---- Deliberate deviations ------------------------------------------ */
 // No refunds below a floor (the spreadsheet would hand back XP).
