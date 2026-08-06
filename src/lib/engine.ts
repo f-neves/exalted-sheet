@@ -8,6 +8,7 @@
  * a server-backed store later without changing anything here.
  */
 import * as calc from './calc.js';
+import * as charmData from './charms';
 import { SPLATS, SPLAT_BY_ID, DATA, RULES, BACKGROUNDS, ATTRIBUTE_GROUPS } from './data';
 
 export interface PortraitPos { x: number; y: number; z: number }
@@ -195,6 +196,11 @@ export function mountSheet(opts: SheetOpts) {
         name: String(c?.name ?? ''), favored: !!c?.favored,
         category: CATS.has(c?.category) ? c.category : 'native',
         note: String(c?.note ?? ''),
+        // Set here, a charm came from the published lists and can be checked
+        // against its minimums. Absent, it is a free-text row, as before.
+        set: c?.set ? String(c.set) : '',
+        cid: c?.cid ? String(c.cid) : '',
+        tree: c?.tree ? String(c.tree) : '',
       })),
     };
     st.combos = (Array.isArray(raw.combos) ? raw.combos : []).map((c: any) => ({
@@ -662,21 +668,88 @@ export function mountSheet(opts: SheetOpts) {
       + row('Available', total - committed, `${total} − ${committed} = ${total - committed}`);
   }
 
+  /** Keys of the charms taken from the published lists, as "setId:charmId". */
+  function ownedCharms(): Set<string> {
+    return new Set(S.charms.list.filter((c: any) => c.set && c.cid)
+      .map((c: any) => `${c.set}:${c.cid}`));
+  }
+
+  const traitName = (id: string) =>
+    DATA.abilities.find((a) => a.id === id)?.name
+    || DATA.attributes.find((a) => a.id === id)?.name
+    || id;
+
+  /** What a listed charm's own set says the character is short of, if it is loaded. */
+  function charmProblems(c: any): string {
+    if (!c.set || !c.cid) return '';
+    const set = charmData.cached(c.set);
+    const charm = set?.charms.find((x: any) => x.id === c.cid);
+    if (!set || !charm) return '';
+    const problems = charmData.problemsFor(charm, set, { ...S, owned: ownedCharms() }, traitName);
+    return problems.map((p: any) => p.text).join(' · ');
+  }
+
+  /**
+   * Fetch the sets the sheet already refers to, so the rows can show what a
+   * charm needs. Missing data is never fatal: the rows just lose their notes.
+   */
+  function warmCharmSets() {
+    const ids = new Set<string>(S.charms.list.map((c: any) => c.set).filter(Boolean));
+    for (const id of ids) {
+      if (charmData.cached(id)) continue;
+      charmData.warm(id).then(() => renderCharms()).catch(() => { /* offline */ });
+    }
+  }
+
+  async function pickCharms() {
+    const { openCharmPicker } = await import('./charm-picker');
+    await openCharmPicker({
+      splatId: S.splat,
+      owned: ownedCharms,
+      sheet: () => S,
+      traitName,
+      onToggle: (set, charm, add, category) => {
+        const key = `${set.id}:${charm.id}`;
+        if (!add) {
+          S.charms.list = S.charms.list.filter((c: any) => `${c.set}:${c.cid}` !== key);
+        } else {
+          const tree = set.trees.find((t: any) => t.id === charm.t);
+          S.charms.list.push({
+            name: charm.n, favored: !!(tree?.trait && favOf(tree.traitKind || 'ability', tree.trait)),
+            category, note: '', set: set.id, cid: charm.id, tree: charm.t,
+          });
+        }
+        renderCharms();
+        recompute();
+      },
+    });
+  }
+
   function renderCharms() {
     const sp = splat();
     el('charms').innerHTML =
       `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
       + (S.charms.list.length
-        ? S.charms.list.map((c: any, i: number) => `<div class="lrow">`
-            + `<input class="lname" data-chname="${i}" value="${esc(c.name)}" placeholder="Charm name" />`
-            + `<select class="lsel" style="width:11rem" data-chcat="${i}">`
-            + calc.CHARM_CATEGORIES.map((cat: any) =>
-                `<option value="${cat.id}"${cat.id === c.category ? ' selected' : ''}>${esc(cat.name)}</option>`).join('')
-            + `</select>`
-            + `<label class="lbl" style="width:3.2rem;justify-content:center;display:flex">`
-            + `<input type="checkbox" data-chfav="${i}"${c.favored ? ' checked' : ''} /></label>`
-            + `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`
-            + `<button type="button" class="rowx" data-del="charm:${i}" title="Remove">×</button></div>`).join('')
+        ? S.charms.list.map((c: any, i: number) => {
+            const short = charmProblems(c);
+            const set = c.set ? charmData.cached(c.set) : null;
+            const tree = set?.trees.find((t: any) => t.id === c.tree);
+            return `<div class="lrow${short ? ' short' : ''}">`
+              + (c.cid
+                ? `<span class="lname listed" title="${esc(set?.name || c.set)}">${esc(c.name)}`
+                  + (tree ? `<small>${esc(tree.name)}</small>` : '') + `</span>`
+                : `<input class="lname" data-chname="${i}" value="${esc(c.name)}" placeholder="Charm name" />`)
+              + `<select class="lsel" style="width:11rem" data-chcat="${i}">`
+              + calc.CHARM_CATEGORIES.map((cat: any) =>
+                  `<option value="${cat.id}"${cat.id === c.category ? ' selected' : ''}>${esc(cat.name)}</option>`).join('')
+              + `</select>`
+              + `<label class="lbl" style="width:3.2rem;justify-content:center;display:flex">`
+              + `<input type="checkbox" data-chfav="${i}"${c.favored ? ' checked' : ''} /></label>`
+              + `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`
+              + `<button type="button" class="rowx" data-del="charm:${i}" title="Remove">×</button>`
+              + (short ? `<div class="rowwarn">needs ${esc(short)}</div>` : '')
+              + `</div>`;
+          }).join('')
         : '<div class="empty">No Charms yet.</div>');
 
     el('combos').innerHTML = S.combos.length
@@ -1305,6 +1378,7 @@ export function mountSheet(opts: SheetOpts) {
     'mf-add': () => { S.meritsFlaws.push({ name: '', points: 1, flaw: false }); renderOther(); },
     'commit-add': () => { S.commitments.push({ name: '', motes: 0 }); renderCommitments(); },
     'charm-add': () => { S.charms.list.push({ name: '', favored: false, note: '' }); renderCharms(); },
+    'charm-pick': () => { void pickCharms(); },
     'combo-add': () => { S.combos.push({ name: '', xp: 0 }); renderCharms(); },
     'spell-add': () => {
       const first = splat().sorcery.circles[0];
@@ -1581,6 +1655,7 @@ export function mountSheet(opts: SheetOpts) {
     renderAll();
     booting = false;
     save();
+    warmCharmSets();
     if (opts.media) {
       try { await mountMedia(opts.media); } catch { /* storage down: the sheet still works */ }
     }

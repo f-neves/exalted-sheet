@@ -161,17 +161,52 @@ and that the Solar numbers still reproduce the spreadsheet.
 - **Sidereal Craft types** end in Fate, which is a guess; the other five are the elements.
 - The **Astrological College list** in `sidereal.json` is a starting point, not the full
   canonical set.
-- Charm *selection* is deliberately out of scope. Charms are a free-text list with a category
-  and a Favored checkbox; only the category and count drive XP.
+- Sidereal Martial Arts are the seven styles from *Scroll of the Monk*. The five Charms of
+  **Any Style** and the Sidereal-only Combo rules are not in the picker.
+
+## Charms
+
+The Charms block has two buttons. **+ from the lists** opens a picker over 2 473 Charms drawn
+from the published lists; **+ by name** adds the free-text row the sheet has always had, for
+homebrew and for anything the extraction missed.
+
+Every type may buy from every set. What changes is the price, not the availability, because
+who may learn what is the Storyteller's call and not the sheet's:
+
+| Set | Price |
+| --- | --- |
+| the character's own type, and Terrestrial or Celestial Martial Arts | Charm · 10 / 8 |
+| Sidereal Martial Arts | Sidereal Martial Arts · 12 / 10 |
+| another type's Charms | Other Charm · 20 / 16 |
+
+Picking a Charm ticks **Fav** for you when its tree is a caste or favored Ability (or, for
+Lunars, Attribute), which is what makes a Dawn Caste's Melee Charm cost 8 rather than 10. The
+checkbox stays yours to override.
+
+**Minimums and prerequisites are reported, never enforced.** A Charm whose requirements the
+character does not meet still goes on the sheet, in red, saying what is short — *needs Archery
+5 (you have 0)*, *needs Border of Kaleidoscopic Logic Form first*. The picker has an *only what
+I qualify for* filter for when you want the shorter list.
+
+```
+public/charms/index.json      the nine sets and their counts
+public/charms/<set>.json      trees and charms: minimums, cost, type, keywords,
+                              duration, prerequisites, book and page
+public/charms/<set>.text.json the rules text, fetched only when a charm is opened
+```
+
+None of it is in the bundle: a set is fetched the first time it is shown, its prose only when
+a Charm is expanded. See [`tools/README.md`](tools/README.md) for how the files are
+regenerated from the PDFs, and for the one Charm the extraction is known to lose.
 
 ## Development
 
 ```bash
 npm install
 npm run dev              # http://localhost:4321/exalted-sheet/
-npm run validate         # data schema + Solar.xlsx golden test        182 checks
+npm run validate         # data schema + charm files + Solar.xlsx      182 checks
 npm run build            # validate, test, then build to dist/
-npm run smoke            # the sheet, in a browser                      84 checks
+npm run smoke            # the sheet, in a browser                     124 checks
 npm run smoke:db         # row-level security, against live Supabase    42 checks
 node scripts/smoke-gm.mjs   # the campaign area, two users in a browser  28 checks
 npm run check:migration  # migration applied twice to Docker Postgres
@@ -202,6 +237,9 @@ src/lib/engine.ts                  state, rendering, events, persistence
 src/lib/calc.js                    pure formulas — no DOM, no imports, used by the
                                    browser and by scripts/test-solar.mjs alike
 src/lib/data.ts                    pulls the JSON into the client bundle
+src/lib/charms.ts                  fetches public/charms on demand; prices and requirements
+src/lib/charm-picker.ts            the picker overlay, in its own chunk
+tools/                             regenerates public/charms from the PDFs (Python)
 src/lib/supabase.ts                client singleton + `supabaseConfigured` guard
 src/lib/auth.ts                    sign in / up / out, requireLogin
 src/lib/dialog.ts                  themed alert / confirm / prompt / form

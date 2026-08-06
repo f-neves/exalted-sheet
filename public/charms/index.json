@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "sets": [
+  {
+   "id": "solar",
+   "name": "Solar Charms",
+   "kind": "native",
+   "splat": "solar",
+   "count": 488,
+   "trees": 26
+  },
+  {
+   "id": "abyssal",
+   "name": "Abyssal Charms",
+   "kind": "native",
+   "splat": "abyssal",
+   "count": 222,
+   "trees": 25
+  },
+  {
+   "id": "lunar",
+   "name": "Lunar Charms and Knacks",
+   "kind": "native",
+   "splat": "lunar",
+   "count": 360,
+   "trees": 65
+  },
+  {
+   "id": "sidereal",
+   "name": "Sidereal Charms",
+   "kind": "native",
+   "splat": "sidereal",
+   "count": 164,
+   "trees": 26
+  },
+  {
+   "id": "dragon-blooded",
+   "name": "Dragon-Blooded Charms",
+   "kind": "native",
+   "splat": "dragon-blooded",
+   "count": 250,
+   "trees": 26
+  },
+  {
+   "id": "infernal",
+   "name": "Infernal Charms",
+   "kind": "native",
+   "splat": "infernal",
+   "count": 308,
+   "trees": 8
+  },
+  {
+   "id": "ma-terrestrial",
+   "name": "Terrestrial Martial Arts",
+   "kind": "martial-arts",
+   "tier": "terrestrial",
+   "count": 184,
+   "trees": 20
+  },
+  {
+   "id": "ma-celestial",
+   "name": "Celestial Martial Arts",
+   "kind": "martial-arts",
+   "tier": "celestial",
+   "count": 412,
+   "trees": 31
+  },
+  {
+   "id": "ma-sidereal",
+   "name": "Sidereal Martial Arts",
+   "kind": "martial-arts",
+   "tier": "sidereal",
+   "count": 85,
+   "trees": 7
+  }
+ ]
+}

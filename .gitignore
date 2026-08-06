@@ -29,3 +29,7 @@ lunar.png
 mortal.png
 sidereal.png
 *.pdf
+
+# python
+__pycache__/
+*.pyc

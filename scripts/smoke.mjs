@@ -442,6 +442,169 @@ check('a Casteless Lunar chooses 3', /Favored attributes 0\/3/.test(castelessPic
 await page.select('#splat-sel', 'solar');
 await new Promise((r) => setTimeout(r, 200));
 
+// The Charm picker, in its own context so it starts from an untouched sheet
+{
+  const ctx = await browser.createBrowserContext();
+  const p3 = await ctx.newPage();
+  await p3.setViewport({ width: 1400, height: 1100 });
+  p3.on('pageerror', (e) => errors.push('pageerror(picker): ' + e.message));
+  p3.on('console', (m) => { if (m.type() === 'error') errors.push('console(picker): ' + m.text()); });
+  await p3.goto(URL, { waitUntil: 'networkidle0' });
+  await p3.waitForSelector('#attrs .dot', { timeout: 15000 });
+
+  const spent = () => p3.$eval('#xpSpent', (e) => Number(e.textContent));
+  const rows = () => p3.$$eval('#charms .lrow:not(.head)', (ns) => ns.map((n) => ({
+    name: n.querySelector('.lname')?.textContent || n.querySelector('.lname')?.value || '',
+    category: n.querySelector('select')?.value,
+    favored: n.querySelector('input[type=checkbox]')?.checked,
+    xp: Number(n.querySelector('.xpc')?.textContent),
+    warn: n.querySelector('.rowwarn')?.textContent || '',
+  })));
+  const pick = (name) => p3.evaluate((n) => {
+    const row = [...document.querySelectorAll('.cp-row')]
+      .find((r) => r.querySelector('.cp-name')?.textContent === n);
+    if (!row) throw new Error('no such charm in the picker: ' + n);
+    row.querySelector('.cp-take').click();
+  }, name);
+  const useSet = async (label) => {
+    await p3.evaluate((l) => [...document.querySelectorAll('.cp-chip')]
+      .find((c) => c.textContent.startsWith(l)).click(), label);
+    await p3.waitForFunction(() => document.querySelectorAll('.cp-row').length > 0, { timeout: 15000 });
+  };
+
+  await p3.click('#charm-pick');
+  await p3.waitForSelector('.cp-row', { timeout: 15000 });
+  const chips = await p3.$$eval('.cp-chip', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
+  check('picker offers all nine Charm sets', chips.length === 9, chips.join(' | '));
+  check('the character\'s own set comes first', chips[0] === 'Solar Charms', chips[0]);
+  check('martial arts follow, Terrestrial before Celestial before Sidereal',
+        chips.slice(1, 4).join('|') === 'Terrestrial Martial Arts|Celestial Martial Arts|Sidereal Martial Arts',
+        chips.slice(1, 4).join('|'));
+  check('the Solar list holds 488 charms',
+        (await p3.$eval('.cp-count', (e) => e.textContent)) === '488 of 488');
+
+  // A caste ability's charm is favored automatically and costs the favored price.
+  await pick('Hungry Tiger Technique');
+  let list = await rows();
+  check('picking a charm puts it on the sheet', list.length === 1, JSON.stringify(list));
+  check('a Dawn caste Melee charm comes in favored', list[0].favored === true);
+  check('a favored Charm costs 8', list[0].xp === 8, String(list[0].xp));
+  check('the sheet row names its tree', list[0].name.includes('Melee'), list[0].name);
+  check('XP went up by the favored Charm price', (await spent()) === 8);
+
+  // Clicking it again takes it back off.
+  await pick('Hungry Tiger Technique');
+  check('picking it again removes it', (await rows()).length === 0);
+
+  // Minimums the character does not meet are reported, never enforced.
+  await pick('Accuracy without Distance');
+  list = await rows();
+  check('a charm above the character\'s rating is still allowed', list.length === 1);
+  check('the sheet says what the charm needs', /Archery 5 \(you have 0\)/.test(list[0].warn), list[0].warn);
+
+  const warned = await p3.$eval('.cp-row.warn .cp-warn', (e) => e.textContent);
+  check('the picker says the same', /needs .*\(you have/.test(warned), warned);
+
+  // The rules text comes from the separate file, only when a charm is opened.
+  await p3.evaluate(() => [...document.querySelectorAll('.cp-row')]
+    .find((r) => r.querySelector('.cp-name').textContent === 'Hungry Tiger Technique')
+    .querySelector('.cp-more').click());
+  await p3.waitForFunction(
+    () => (document.querySelector('.cp-prose')?.textContent || '').length > 80, { timeout: 15000 });
+  const prose = await p3.$eval('.cp-prose', (e) => e.textContent);
+  check('opening a charm loads its rules text', prose.includes('raw damage'), prose.slice(0, 90));
+
+  // Search and the availability filter narrow the same list.
+  await p3.type('.cp-search', 'tiger');
+  await p3.waitForFunction(
+    () => document.querySelector('.cp-count').textContent !== '488 of 488', { timeout: 15000 });
+  const searched = await p3.$eval('.cp-count', (e) => e.textContent);
+  check('search narrows the list', /^[1-9] of 488$/.test(searched), searched);
+  await p3.$eval('.cp-search', (n) => { n.value = ''; n.dispatchEvent(new Event('input', { bubbles: true })); });
+  await p3.click('.cp-avail');
+  const avail = await p3.$eval('.cp-count', (e) => e.textContent);
+  check('the availability filter hides what the character cannot take',
+        Number(avail.split(' ')[0]) < 488, avail);
+  check('nothing shown under the filter carries a warning',
+        (await p3.$$('.cp-row.warn')).length === 0);
+  await p3.click('.cp-avail');
+
+  // Sidereal Martial Arts carry their own price, and their prerequisites resolve.
+  await useSet('Sidereal Martial Arts');
+  const smaTrees = await p3.$$eval('.cp-tree', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
+  check('the seven Sidereal styles are there', smaTrees.length === 7, smaTrees.join(' | '));
+  await pick('Reliant Soul Infiltration');
+  list = await rows();
+  const sma = list.find((r) => r.name.includes('Reliant Soul Infiltration'));
+  check('a Sidereal Martial Arts charm is priced as one', sma && sma.category === 'sidereal-ma',
+        JSON.stringify(sma));
+  check('which for a Dawn caste, Martial Arts being a caste ability, is 10',
+        sma && sma.xp === 10, String(sma?.xp));
+  check('and its missing prerequisite charm is named',
+        /Border of Kaleidoscopic Logic Form first/.test(sma.warn), sma.warn);
+
+  // Unticking Fav proves the price really is the Sidereal Martial Arts one.
+  await p3.evaluate(() => {
+    const row = [...document.querySelectorAll('#charms .lrow')]
+      .find((r) => r.textContent.includes('Reliant Soul Infiltration'));
+    row.querySelector('input[type=checkbox]').click();
+  });
+  const unfav = (await rows()).find((r) => r.name.includes('Reliant Soul Infiltration'));
+  check('unfavored it costs 12', unfav && unfav.xp === 12, String(unfav?.xp));
+  await p3.evaluate(() => {
+    const row = [...document.querySelectorAll('#charms .lrow')]
+      .find((r) => r.textContent.includes('Reliant Soul Infiltration'));
+    row.querySelector('input[type=checkbox]').click();
+  });
+
+  // The tree the compiled Sidereal list leaves out was filled in from the book.
+  await useSet('Sidereal Charms');
+  const sidTrees = await p3.$$eval('.cp-tree', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
+  check('the Sidereal Martial Arts tree is present', sidTrees.includes('Martial Arts'),
+        sidTrees.join(' | '));
+
+  // A charm from another type is an out-of-type Charm.
+  await useSet('Lunar Charms');
+  await pick('Humble Mouse Shape');
+  list = await rows();
+  const knack = list.find((r) => r.name.includes('Humble Mouse Shape'));
+  check('another type\'s charm is priced out-of-type', knack && knack.category === 'other',
+        JSON.stringify(knack));
+  check('which is 20', knack && knack.xp === 20, String(knack?.xp));
+
+  await p3.click('.charm-picker [data-close]');
+  await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
+  check('closing the picker leaves the charms on the sheet', (await rows()).length === 3);
+
+  // And they survive a reload, tree names and warnings included.
+  await p3.reload({ waitUntil: 'networkidle0' });
+  await p3.waitForFunction(
+    () => document.querySelector('#charms .rowwarn') !== null, { timeout: 15000 });
+  const after = await rows();
+  check('picked charms are saved', after.length === 3, JSON.stringify(after.map((r) => r.name)));
+  check('their prices are saved', after.map((r) => r.xp).join(',') === '8,10,20',
+        after.map((r) => r.xp).join(','));
+  check('their warnings come back once the sets reload',
+        after.filter((r) => r.warn).length === 3, JSON.stringify(after.map((r) => r.warn)));
+
+  // Heroic mortals have no Charms of their own; Terrestrial Martial Arts are theirs
+  // to buy, at the Charm price.
+  await p3.evaluate(() => { localStorage.removeItem('exalted:sheet'); });
+  await p3.goto(URL.replace(/\/?$/, '') + '?splat=mortal', { waitUntil: 'networkidle0' });
+  await p3.waitForSelector('#attrs .dot', { timeout: 15000 });
+  await p3.click('#charm-pick');
+  await p3.waitForSelector('.cp-row', { timeout: 15000 });
+  const mortalChips = await p3.$$eval('.cp-chip', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
+  check('a mortal is offered Terrestrial Martial Arts first',
+        mortalChips[0] === 'Terrestrial Martial Arts', mortalChips.slice(0, 3).join(' | '));
+  await pick('Living Shield Technique');
+  const mortalRow = (await rows())[0];
+  check('and it costs a mortal the Charm price', mortalRow && mortalRow.category === 'native',
+        JSON.stringify(mortalRow));
+
+  await ctx.close();
+}
+
 // The home page routes into the sheet
 {
   const home = URL.replace(/sheet\/?$/, '');

@@ -112,11 +112,11 @@
   <div id="commitments"></div>
 </div>
 
-<h2 class="barh barh-tog" data-sec="charms"><span class="sec-caret">▾</span> Charms &amp; Combos <small>(names are free text; only the count drives XP)</small></h2>
+<h2 class="barh barh-tog" data-sec="charms"><span class="sec-caret">▾</span> Charms &amp; Combos <small>(pick from the published lists, or type a name; the price follows the category)</small></h2>
 <div class="sec-body" id="sec-charms">
   <div class="cols2">
     <div>
-      <div class="sub-head">Charms<button class="btn tiny" id="charm-add" type="button">+ charm</button></div>
+      <div class="sub-head">Charms<button class="btn tiny" id="charm-pick" type="button">+ from the lists</button><button class="btn tiny" id="charm-add" type="button">+ by name</button></div>
       <div id="charms"></div>
     </div>
     <div>
@@ -325,6 +325,13 @@
   .lrow.head { border-bottom: 1px solid var(--rule); padding-bottom: .2rem; }
   .lrow.head span { font-family: 'Cinzel'; font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
   .empty { font-size: .85rem; color: var(--ink-soft); font-style: italic; padding: .3rem 0; }
+
+  /* a charm taken from the published lists: a fixed name, and what it still needs */
+  .lrow { flex-wrap: wrap; }
+  .lrow .lname.listed { flex: 1 1 6rem; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; padding: .1rem 0; }
+  .lrow .lname.listed small { font-size: .68rem; color: var(--ink-soft); }
+  .lrow.short { border-bottom-color: var(--danger); }
+  .rowwarn { flex: 1 0 100%; font-size: .72rem; color: var(--danger); padding: 0 0 .18rem 1.1rem; }
 
   /* ---------- power block (virtues / willpower / essence / limit) ---------- */
   .wp-track { display: flex; flex-wrap: wrap; gap: 3px; margin: .2rem 0 .5rem; }
