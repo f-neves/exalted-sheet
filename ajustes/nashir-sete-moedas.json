@@ -1,0 +1,325 @@
+{
+  "meta": {
+    "schema": 3
+  },
+  "id": {
+    "name": "Nashir Sete-Moedas",
+    "player": "",
+    "concept": "Cobrador do clã da Névoa · futuro Escolhido dos Segredos",
+    "motivation": "Entender o que as visões querem antes que elas o gastem por inteiro",
+    "anima": "—",
+    "sobriquet": "Sete-Moedas"
+  },
+  "splat": "mortal",
+  "caste": "",
+  "favored": {
+    "abilities": [
+      "martial-arts"
+    ],
+    "attributes": []
+  },
+  "attrs": {
+    "strength": {
+      "v": 2,
+      "granted": 0
+    },
+    "dexterity": {
+      "v": 4,
+      "granted": 0
+    },
+    "stamina": {
+      "v": 3,
+      "granted": 0
+    },
+    "charisma": {
+      "v": 1,
+      "granted": 0
+    },
+    "manipulation": {
+      "v": 3,
+      "granted": 0
+    },
+    "appearance": {
+      "v": 1,
+      "granted": 0
+    },
+    "perception": {
+      "v": 4,
+      "granted": 0
+    },
+    "intelligence": {
+      "v": 2,
+      "granted": 0
+    },
+    "wits": {
+      "v": 3,
+      "granted": 0
+    }
+  },
+  "abils": {
+    "archery": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "martial-arts": {
+      "v": 5,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Brigas em espaço apertado",
+          "v": 1
+        }
+      ]
+    },
+    "melee": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "thrown": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "war": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "integrity": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "performance": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "presence": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "resistance": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "survival": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "investigation": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "lore": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "medicine": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "occult": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "athletics": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "awareness": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "dodge": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "larceny": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "stealth": {
+      "v": 4,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Multidões do Undermarket",
+          "v": 1
+        }
+      ]
+    },
+    "bureaucracy": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "linguistics": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "ride": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "sail": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "socialize": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    }
+  },
+  "crafts": [],
+  "virtues": {
+    "compassion": {
+      "v": 2,
+      "granted": 0
+    },
+    "temperance": {
+      "v": 3,
+      "granted": 0
+    },
+    "conviction": {
+      "v": 3,
+      "granted": 0
+    },
+    "valor": {
+      "v": 1,
+      "granted": 0
+    }
+  },
+  "virtueFlaw": "conviction",
+  "limit": 0,
+  "willpower": {
+    "v": 6,
+    "granted": 0
+  },
+  "willpowerTemp": 6,
+  "essence": {
+    "v": 3,
+    "granted": 3
+  },
+  "backgrounds": [
+    {
+      "name": "Destiny",
+      "mystic": false,
+      "v": 4,
+      "granted": 4
+    },
+    {
+      "name": "Backing (Clã Hidden in the Mist)",
+      "mystic": false,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "Contacts (devedores da undercity)",
+      "mystic": false,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "Resources",
+      "mystic": false,
+      "v": 2,
+      "granted": 0
+    }
+  ],
+  "charms": {
+    "list": [
+      {
+        "name": "Mist Apprentice Gesture",
+        "favored": true,
+        "category": "native",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-apprentice-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Mist Adept Gesture",
+        "favored": true,
+        "category": "native",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-adept-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Fivefold Shadow Hand Form",
+        "favored": true,
+        "category": "native",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "fivefold-shadow-hand-form",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "White Breath in the Cold (Smoky Mountain Mist Kata)",
+        "favored": true,
+        "category": "native",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "white-breath-in-the-cold-smoky-mountain-mist-kata",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "The Fatal Kiss (Forgotten Mountain Mist Kata)",
+        "favored": true,
+        "category": "native",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "the-fatal-kiss-forgotten-mountain-mist-kata",
+        "tree": "fivefold-shadow-hand-style"
+      }
+    ]
+  },
+  "combos": [],
+  "colleges": [],
+  "thaumaturgy": [],
+  "mutations": [],
+  "meritsFlaws": [
+    {
+      "name": "Essência Desperta (concedida pelo mestre)",
+      "points": 0,
+      "flaw": false
+    }
+  ],
+  "sorcery": {
+    "circles": {},
+    "spells": []
+  },
+  "commitments": [],
+  "health": {
+    "extras": {},
+    "marks": []
+  },
+  "weapons": [],
+  "armor": [],
+  "notes": {
+    "intimacies": "As sete moedas · Behit (o velho do espeto) · A barcaça · \"A conta certa na hora certa\" · Medo de ser chamado de Sacerdote",
+    "backstory": "Recolhido pelo clã Hidden in the Mist ainda criança. Nunca jurou. Despertou Essência por treino e por escutar o que não devia, não pelo Pó de Ouro, embora a undercity acredite no contrário.",
+    "gear": "Faca de Névoa (arma de forma do estilo) · sete moedas de metais diferentes, uma delas sagrada da Legítima Ordem"
+  },
+  "budget": 250,
+  "adjustment": -40
+}
