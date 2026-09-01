@@ -61,7 +61,7 @@
     "enabled": true,
     "label": "Astrological Colleges",
     "colleges": ["Ascending Air", "Ascending Earth", "Ascending Fire", "Ascending Water", "Ascending Wood",
-                 "Corvus", "Crow", "Fire Ship", "Gull", "Haywain", "Hammer", "Key", "Mask",
+                 "Corvus", "Crow", "Fire Ship", "Guardians", "Gull", "Haywain", "Hammer", "Key", "Mask",
                  "Mast", "Musician", "Peacock", "Pillar", "Quiver", "Rising Smoke", "Rocket",
                  "Sorcerer", "Treasure Trove"]
   },
