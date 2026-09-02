@@ -244,6 +244,61 @@ dialog.charm-picker::backdrop { background: rgba(0, 0, 0, .6); }
 .cp-only { display: flex; align-items: center; gap: .3rem; font-size: .8rem; color: var(--ink-soft); }
 .cp-count { font-size: .72rem; color: var(--ink-soft); margin-left: auto; }
 
+/* Layout switcher. Segmented, because the three are alternatives, not toggles. */
+.cp-views { display: inline-flex; border: 1px solid var(--panel-border); border-radius: 5px; overflow: hidden; }
+.cp-view {
+  font-family: 'Cinzel'; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase;
+  background: transparent; color: var(--ink-soft); border: 0; cursor: pointer;
+  padding: .22rem .55rem; border-left: 1px solid var(--panel-border);
+}
+.cp-view:first-child { border-left: 0; }
+.cp-view:hover { color: var(--ink); }
+.cp-view[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
+
+/* Cards. The stat block is always on show, which is the whole point of this view. */
+.cp-cards {
+  display: grid; gap: .5rem; margin: .3rem 0 .2rem;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+.cp-card {
+  display: flex; flex-direction: column; gap: .15rem; min-width: 0;
+  border: 1px solid var(--panel-border); border-radius: 6px;
+  padding: .4rem .55rem .3rem; background: var(--bg-soft);
+}
+.cp-card:hover { border-color: var(--accent-soft); }
+.cp-card.has { border-color: var(--accent); }
+.cp-card.warn { border-style: dashed; }
+.cp-card .cp-take { width: 100%; padding: 0; align-items: baseline; }
+.cp-card .cp-name { font-weight: 600; }
+.cp-card .cp-stat { margin: .1rem 0 0; }
+.cp-card .cp-warn { padding: .15rem 0 0 1.5rem; }
+.cp-card .cp-detail { margin: .3rem 0 0; padding: .3rem 0 .1rem .6rem; }
+.cp-depth {
+  flex: none; font-family: 'Cinzel'; font-size: .58rem; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-soft);
+  border: 1px solid var(--panel-border); border-radius: 999px; padding: 0 .35rem;
+}
+.cp-cardfoot { display: flex; justify-content: flex-end; margin-top: auto; }
+
+/* Table. Dense on purpose: this view exists for comparing, not for reading. */
+.cp-tablewrap { overflow-x: auto; margin: .2rem 0 .4rem; }
+.cp-table { border-collapse: collapse; width: 100%; font-size: .78rem; }
+.cp-table th {
+  text-align: left; font-family: 'Cinzel'; font-size: .62rem; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink-soft); font-weight: 400;
+  padding: .2rem .4rem; border-bottom: 1px solid var(--rule); white-space: nowrap;
+}
+.cp-table td { padding: .22rem .4rem; border-bottom: 1px dotted var(--rule); vertical-align: top; }
+.cp-trow { cursor: pointer; }
+.cp-trow:hover td { background: var(--panel-2); }
+.cp-trow.has .cp-tname, .cp-trow.has .cp-tick { color: var(--accent); }
+.cp-trow.warn .cp-tname { color: var(--ink); }
+.cp-tname small { display: block; font-size: .68rem; color: var(--danger); }
+.cp-tcell-tick { width: 1.4rem; text-align: center; }
+.cp-tcell-more { width: 1.6rem; text-align: right; }
+.cp-tdetail td { padding: 0 .4rem .3rem; border-bottom: 1px solid var(--rule); }
+.cp-tdetail .cp-detail { margin: 0; }
+
 .cp-body { flex: 1 1 auto; overflow-y: auto; padding: .4rem 1rem 1rem; }
 .cp-note { font-size: .9rem; color: var(--ink-soft); font-style: italic; }
 .cp-group {
@@ -285,6 +340,18 @@ dialog.charm-picker::backdrop { background: rgba(0, 0, 0, .6); }
 .cp-stat { font-size: .78rem; color: var(--ink-soft); }
 .cp-prose { font-size: .86rem; line-height: 1.5; }
 .cp-src { font-size: .72rem; color: var(--ink-soft); font-style: italic; }
+
+/* The same block, opened from a Charm already on the sheet. */
+.sheet-detail {
+  flex: 1 0 100%; min-width: 0; margin: .1rem 0 .4rem 1.2rem;
+  border-left: 2px solid var(--accent-soft); padding: .3rem .6rem .2rem .8rem;
+}
+.chmore {
+  flex: none; font: inherit; font-size: .8rem; line-height: 1; color: var(--ink-soft);
+  background: transparent; border: 0; cursor: pointer; padding: .1rem .3rem; width: 1.4rem;
+}
+.chmore:hover { color: var(--accent); }
+.chmore[aria-expanded='true'] { color: var(--accent); }
 
 .skip {
   position: absolute;

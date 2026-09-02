@@ -617,6 +617,71 @@ await new Promise((r) => setTimeout(r, 200));
                            { timeout: 15000 });
   check('unticking it charges again', (await rows())[0].xp === 8, String((await rows())[0].xp));
 
+  // A Charm on the sheet opens into the same block the picker shows: cost, duration,
+  // keywords and the rules text. Reading one should not mean going back to the picker.
+  check('a listed Charm offers to open', await p3.$('#charms [data-chmore]') !== null);
+  await p3.click('#charms [data-chmore="0"]');
+  await p3.waitForFunction(
+    () => document.querySelector('#charms .sheet-detail .cp-prose')?.textContent?.length > 40,
+    { timeout: 15000 });
+  const detail = await p3.$eval('#charms .sheet-detail', (n) => ({
+    stat: n.querySelector('.cp-stat')?.textContent || '',
+    prose: n.querySelector('.cp-prose')?.textContent || '',
+    src: n.querySelector('.cp-src')?.textContent || '',
+  }));
+  check('the sheet shows the Charm cost', /Cost:/.test(detail.stat), detail.stat.slice(0, 60));
+  check('and its duration', /Duration:/.test(detail.stat), detail.stat.slice(0, 90));
+  check('and the rules text', detail.prose.length > 80, String(detail.prose.length));
+  check('and where it was printed', /p\.\s*\d/.test(detail.src), detail.src);
+  await p3.click('#charms [data-chmore="0"]');
+  await p3.waitForFunction(() => !document.querySelector('#charms .sheet-detail'),
+                           { timeout: 15000 });
+  check('and closes again', await p3.$('#charms .sheet-detail') === null);
+
+  // The picker can be read three ways. The list was the only one, and a Charm tree is
+  // not a list.
+  await p3.click('#charm-pick');
+  await p3.waitForSelector('.cp-row', { timeout: 15000 });
+  const views = await p3.$$eval('[data-view]', (ns) => ns.map((n) => n.dataset.view));
+  check('the picker offers three layouts', views.join(',') === 'rows,cards,table', views.join(','));
+
+  await p3.click('[data-view="cards"]');
+  await p3.waitForSelector('.cp-card', { timeout: 15000 });
+  const card = await p3.$eval('.cp-card', (n) => ({
+    stat: n.querySelector('.cp-stat')?.textContent || '',
+    depth: n.querySelector('.cp-depth')?.textContent || '',
+  }));
+  check('cards show the stat block without opening anything', /Cost:|Mins:/.test(card.stat),
+        card.stat.slice(0, 60));
+  const tiers = await p3.$$eval('.cp-cards:first-of-type .cp-depth', (ns) => ns.map((n) => n.textContent));
+  check('the first card in a tree is an entry point', tiers[0] === 'entry', tiers.slice(0, 4).join(' | '));
+  const rising = tiers.map((t) => (t === 'entry' ? 1 : Number(t.replace(/\D/g, ''))));
+  check('and tiers never go backwards', rising.every((v, i) => i === 0 || v >= rising[i - 1]),
+        rising.slice(0, 8).join(','));
+
+  await p3.click('[data-view="table"]');
+  await p3.waitForSelector('.cp-table', { timeout: 15000 });
+  // One table per tree, each repeating the header, so compare only the first five cells.
+  const heads = await p3.$$eval('.cp-table thead th',
+    (ns) => ns.map((n) => n.textContent.trim()).filter(Boolean).slice(0, 5));
+  check('the table names its columns', heads.join(',') === 'Charm,Mins,Cost,Type,Duration', heads.join(','));
+  const beforePick = (await rows()).length;
+  await p3.click('.cp-trow');
+  await p3.waitForFunction((n) => document.querySelectorAll('#charms .lrow').length !== n + 1,
+                           { timeout: 15000 }, beforePick);
+  check('a table row still adds to the sheet', (await rows()).length !== beforePick,
+        `${beforePick} -> ${(await rows()).length}`);
+
+  await p3.click('.charm-picker [data-close]');
+  await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
+  await p3.click('#charm-pick');
+  await p3.waitForSelector('.cp-table', { timeout: 15000 });
+  check('the chosen layout is remembered', await p3.$('.cp-table') !== null);
+  await p3.click('[data-view="rows"]');
+  await p3.waitForSelector('.cp-row', { timeout: 15000 });
+  await p3.click('.charm-picker [data-close]');
+  await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
+
   // Heroic mortals have no Charms of their own; Terrestrial Martial Arts are theirs
   // to buy, at the Charm price.
   await p3.evaluate(() => { localStorage.removeItem('exalted:sheet'); });

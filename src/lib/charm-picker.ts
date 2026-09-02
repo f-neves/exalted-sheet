@@ -9,10 +9,32 @@ import {
   loadIndex, loadSet, loadText, categoryFor, minsLabel, problemsFor, setsFor,
   type Charm, type CharmSet, type SetInfo,
 } from './charms';
+import { detailHtml, depths, esc, statLine } from './charm-detail';
 
-const esc = (s: any) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+/**
+ * How the list is laid out. A Charm tree is not really a list, and reading one as a
+ * list is what this exists to fix.
+ *
+ *   rows   the original: one line each, open one to read it
+ *   cards  a grid, every card already showing cost, type and duration
+ *   table  dense columns, for comparing many Charms at once
+ *
+ * Cards and table order each tree by prerequisite depth, so entry points come first
+ * and nothing appears before the Charm that opens it.
+ */
+type View = 'rows' | 'cards' | 'table';
+const VIEWS: { id: View; name: string; hint: string }[] = [
+  { id: 'rows',  name: 'List',  hint: 'One line per Charm; open one to read it' },
+  { id: 'cards', name: 'Cards', hint: 'A grid, with cost and duration always showing' },
+  { id: 'table', name: 'Table', hint: 'Dense columns, for comparing many at once' },
+];
+const VIEW_KEY = 'exalted:charm-view';
+const readView = (): View => {
+  try {
+    const v = localStorage.getItem(VIEW_KEY) as View | null;
+    return VIEWS.some((x) => x.id === v) ? v! : 'rows';
+  } catch { return 'rows'; }
+};
 
 export interface PickerOpts {
   splatId: string;
@@ -37,6 +59,10 @@ export async function openCharmPicker(opts: PickerOpts) {
     + `<div class="cp-tools">`
     + `<input type="search" class="cp-search" placeholder="Search this list" />`
     + `<label class="cp-only"><input type="checkbox" class="cp-avail" /> only what I qualify for</label>`
+    + `<span class="cp-views" role="group" aria-label="Layout">`
+    + VIEWS.map((v) => `<button type="button" class="cp-view" data-view="${v.id}"`
+        + ` title="${esc(v.hint)}" aria-pressed="false">${esc(v.name)}</button>`).join('')
+    + `</span>`
     + `<span class="cp-count"></span>`
     + `</div>`
     + `<div class="cp-body"><p class="cp-note">Loading…</p></div>`;
@@ -47,6 +73,7 @@ export async function openCharmPicker(opts: PickerOpts) {
   let current: CharmSet | null = null;
   let query = '';
   let onlyAvailable = false;
+  let view: View = readView();
   const open = new Set<string>();
 
   const body = dlg.querySelector('.cp-body') as HTMLElement;
@@ -81,6 +108,14 @@ export async function openCharmPicker(opts: PickerOpts) {
       onlyAvailable = (ev.target as HTMLInputElement).checked;
       render();
     });
+
+  dlg.querySelector('.cp-views')!.addEventListener('click', (ev) => {
+    const b = (ev.target as HTMLElement).closest<HTMLElement>('[data-view]');
+    if (!b) return;
+    view = b.dataset.view as View;
+    try { localStorage.setItem(VIEW_KEY, view); } catch { /* private window */ }
+    render();
+  });
 
   body.addEventListener('click', async (ev) => {
     const target = ev.target as HTMLElement;
@@ -150,6 +185,31 @@ export async function openCharmPicker(opts: PickerOpts) {
       byTree.get(row.charm.t)!.push(row);
     }
 
+    for (const b of Array.from(dlg.querySelectorAll<HTMLElement>('[data-view]'))) {
+      b.setAttribute('aria-pressed', String(b.dataset.view === view));
+    }
+
+    const depthOf = new Map<string, number>();
+    for (const tree of set.trees) for (const [id, d] of depths(set, tree.id)) depthOf.set(id, d);
+
+    /** Sorted the way this view reads best: by prerequisite depth, then by name. */
+    const ordered = (rows: typeof shown) =>
+      view === 'rows' ? rows
+        : [...rows].sort((a, b) =>
+            (depthOf.get(a.charm.id) ?? 0) - (depthOf.get(b.charm.id) ?? 0)
+            || a.charm.n.localeCompare(b.charm.n));
+
+    const tick = (charm: Charm, has: boolean) =>
+      `<span class="cp-tick">${has ? '✓' : '+'}</span>`;
+    const moreBtn = (charm: Charm, isOpen: boolean) =>
+      `<button type="button" class="cp-more" data-more="${esc(charm.id)}"`
+      + ` aria-expanded="${isOpen}" title="Show the rules">${isOpen ? '▾' : '▸'}</button>`;
+    const warnOf = (problems: { text: string }[]) =>
+      problems.length
+        ? `<div class="cp-warn">needs ${problems.map((p) => esc(p.text)).join(' · ')}</div>` : '';
+    const detail = (charm: Charm) =>
+      detailHtml(charm, set, { traitName: opts.traitName, prose: text?.[charm.id], category });
+
     let html = '';
     let group: string | null = null;
     for (const tree of set.trees) {
@@ -162,40 +222,69 @@ export async function openCharmPicker(opts: PickerOpts) {
       html += `<h4 class="cp-tree">${esc(tree.name)}`
         + (tree.sub ? ` <small>${esc(tree.sub)}</small>` : '')
         + `</h4>`;
-      for (const { charm, problems } of rows) {
-        const key = `${set.id}:${charm.id}`;
-        const has = owned.has(key);
-        const mins = minsLabel(charm, opts.traitName);
-        const isOpen = open.has(charm.id);
-        html += `<div class="cp-row${has ? ' has' : ''}${problems.length ? ' warn' : ''}">`
-          + `<button type="button" class="cp-take" data-charm="${esc(charm.id)}"`
-          + ` aria-pressed="${has}" title="${has ? 'Remove from the sheet' : 'Add to the sheet'}">`
-          + `<span class="cp-tick">${has ? '✓' : '+'}</span>`
-          + `<span class="cp-name">${esc(charm.n)}</span>`
-          + (mins ? `<span class="cp-mins">${esc(mins)}</span>` : '')
-          + `</button>`
-          + `<button type="button" class="cp-more" data-more="${esc(charm.id)}"`
-          + ` aria-expanded="${isOpen}" title="Show the rules">${isOpen ? '▾' : '▸'}</button>`;
-        if (problems.length) {
-          html += `<div class="cp-warn">needs ${problems.map((p) => esc(p.text)).join(' · ')}</div>`;
+
+      if (view === 'rows') {
+        for (const { charm, problems } of rows) {
+          const has = owned.has(`${set.id}:${charm.id}`);
+          const mins = minsLabel(charm, opts.traitName);
+          const isOpen = open.has(charm.id);
+          html += `<div class="cp-row${has ? ' has' : ''}${problems.length ? ' warn' : ''}">`
+            + `<button type="button" class="cp-take" data-charm="${esc(charm.id)}"`
+            + ` aria-pressed="${has}" title="${has ? 'Remove from the sheet' : 'Add to the sheet'}">`
+            + tick(charm, has)
+            + `<span class="cp-name">${esc(charm.n)}</span>`
+            + (mins ? `<span class="cp-mins">${esc(mins)}</span>` : '')
+            + `</button>`
+            + moreBtn(charm, isOpen)
+            + warnOf(problems)
+            + (isOpen ? detail(charm) : '')
+            + `</div>`;
         }
-        if (isOpen) {
-          const stat = [
-            charm.cost && `<b>Cost:</b> ${esc(charm.cost)}`,
-            mins && `<b>Mins:</b> ${esc(mins)}`,
-            charm.type && `<b>Type:</b> ${esc(charm.type)}`,
-            charm.kw && `<b>Keywords:</b> ${esc(charm.kw)}`,
-            charm.dur && `<b>Duration:</b> ${esc(charm.dur)}`,
-            charm.pre && `<b>Prerequisites:</b> ${esc(charm.pre)}`,
-          ].filter(Boolean).join(' · ');
-          const prose = text?.[charm.id];
-          html += `<div class="cp-detail"><p class="cp-stat">${stat}</p>`
-            + `<p class="cp-prose">${prose ? esc(prose) : 'Loading the text…'}</p>`
-            + `<p class="cp-src">${esc(charm.src || set.name)}${charm.p ? `, p. ${charm.p}` : ''}`
-            + ` · costs the ${category === 'sidereal-ma' ? 'Sidereal Martial Arts'
-              : category === 'other' ? 'out-of-type Charm' : 'Charm'} price</p></div>`;
+      } else if (view === 'cards') {
+        html += `<div class="cp-cards">`;
+        for (const { charm, problems } of ordered(rows)) {
+          const has = owned.has(`${set.id}:${charm.id}`);
+          const isOpen = open.has(charm.id);
+          const d = depthOf.get(charm.id) ?? 0;
+          html += `<article class="cp-card${has ? ' has' : ''}${problems.length ? ' warn' : ''}">`
+            + `<button type="button" class="cp-take" data-charm="${esc(charm.id)}"`
+            + ` aria-pressed="${has}" title="${has ? 'Remove from the sheet' : 'Add to the sheet'}">`
+            + tick(charm, has)
+            + `<span class="cp-name">${esc(charm.n)}</span>`
+            + `<span class="cp-depth" title="${d ? `Opens after ${d} Charm${d > 1 ? 's' : ''} in this tree` : 'An entry point into this tree'}">${d ? `tier ${d + 1}` : 'entry'}</span>`
+            + `</button>`
+            + `<p class="cp-stat">${statLine(charm, opts.traitName)}</p>`
+            + warnOf(problems)
+            + `<div class="cp-cardfoot">${moreBtn(charm, isOpen)}</div>`
+            + (isOpen ? detail(charm) : '')
+            + `</article>`;
         }
         html += `</div>`;
+      } else {
+        html += `<div class="cp-tablewrap"><table class="cp-table">`
+          + `<thead><tr><th></th><th>Charm</th><th>Mins</th><th>Cost</th><th>Type</th>`
+          + `<th>Duration</th><th></th></tr></thead><tbody>`;
+        for (const { charm, problems } of ordered(rows)) {
+          const has = owned.has(`${set.id}:${charm.id}`);
+          const isOpen = open.has(charm.id);
+          html += `<tr class="cp-trow${has ? ' has' : ''}${problems.length ? ' warn' : ''}"`
+            + ` data-charm="${esc(charm.id)}" title="${has ? 'Remove from the sheet' : 'Add to the sheet'}">`
+            + `<td class="cp-tcell-tick">${tick(charm, has)}</td>`
+            + `<td class="cp-tname">${esc(charm.n)}`
+            + (problems.length
+              ? `<small>needs ${problems.map((p) => esc(p.text)).join(' · ')}</small>` : '')
+            + `</td>`
+            + `<td>${esc(minsLabel(charm, opts.traitName))}</td>`
+            + `<td>${esc(charm.cost || '')}</td>`
+            + `<td>${esc(charm.type || '')}</td>`
+            + `<td>${esc(charm.dur || '')}</td>`
+            + `<td class="cp-tcell-more">${moreBtn(charm, isOpen)}</td>`
+            + `</tr>`;
+          if (isOpen) {
+            html += `<tr class="cp-tdetail"><td colspan="7">${detail(charm)}</td></tr>`;
+          }
+        }
+        html += `</tbody></table></div>`;
       }
     }
     body.innerHTML = html;

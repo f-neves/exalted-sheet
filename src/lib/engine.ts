@@ -9,6 +9,7 @@
  */
 import * as calc from './calc.js';
 import * as charmData from './charms';
+import { detailHtml } from './charm-detail';
 import { SPLATS, SPLAT_BY_ID, DATA, RULES, BACKGROUNDS, ATTRIBUTE_GROUPS } from './data';
 
 export interface PortraitPos { x: number; y: number; z: number }
@@ -671,6 +672,22 @@ export function mountSheet(opts: SheetOpts) {
       + row('Available', total - committed, `${total} − ${committed} = ${total - committed}`);
   }
 
+  /** Charm rows opened on the sheet, as "setId:charmId". Not saved: it is a reading
+   *  posture, not part of the character. */
+  const charmOpen = new Set<string>();
+  /** Prose already fetched, per set. */
+  const charmText: Record<string, Record<string, string>> = {};
+
+  function charmProse(setId: string, cid: string): string | undefined {
+    if (!(setId in charmText)) {
+      charmText[setId] = {};
+      charmData.loadText(setId)
+        .then((t) => { charmText[setId] = t; if (charmOpen.size) renderCharms(); })
+        .catch(() => {});
+    }
+    return charmText[setId][cid];
+  }
+
   /** Keys of the charms taken from the published lists, as "setId:charmId". */
   function ownedCharms(): Set<string> {
     return new Set(S.charms.list.filter((c: any) => c.set && c.cid)
@@ -731,12 +748,14 @@ export function mountSheet(opts: SheetOpts) {
   function renderCharms() {
     const sp = splat();
     el('charms').innerHTML =
-      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:3.6rem;text-align:center" title="Granted: it sits on the sheet and costs no XP">Free</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
+      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:3.6rem;text-align:center" title="Granted: it sits on the sheet and costs no XP">Free</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span><span style="width:1.4rem"></span></div>`
       + (S.charms.list.length
         ? S.charms.list.map((c: any, i: number) => {
             const short = charmProblems(c);
             const set = c.set ? charmData.cached(c.set) : null;
             const tree = set?.trees.find((t: any) => t.id === c.tree);
+            const listed = set?.charms.find((x: any) => x.id === c.cid) || null;
+            const isOpen = charmOpen.has(`${c.set}:${c.cid}`);
             return `<div class="lrow${short ? ' short' : ''}">`
               + (c.cid
                 ? `<span class="lname listed" title="${esc(set?.name || c.set)}">${esc(c.name)}`
@@ -755,8 +774,18 @@ export function mountSheet(opts: SheetOpts) {
                 ? `<span class="xpc granted" style="width:2.6rem"`
                   + ` title="Granted. It would have cost ${calc.charmCost(c.category, c.favored, sp)}.">0</span>`
                 : `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`)
+              + (c.set && c.cid
+                ? `<button type="button" class="chmore" data-chmore="${i}"`
+                  + ` aria-expanded="${isOpen}" title="Show cost, duration and the rules">`
+                  + `${isOpen ? '▾' : '▸'}</button>`
+                : `<span class="chmore" aria-hidden="true"></span>`)
               + `<button type="button" class="rowx" data-del="charm:${i}" title="Remove">×</button>`
               + (short ? `<div class="rowwarn">needs ${esc(short)}</div>` : '')
+              + (isOpen && listed
+                ? detailHtml(listed, set, {
+                    traitName, prose: charmProse(c.set, c.cid),
+                    category: c.category, className: 'sheet-detail' })
+                : '')
               + `</div>`;
           }).join('')
         : '<div class="empty">No Charms yet.</div>');
@@ -1130,6 +1159,19 @@ export function mountSheet(opts: SheetOpts) {
     if (colfav) {
       const c = S.colleges[+(colfav.dataset.colfav as string)];
       if (c) { c.favored = !c.favored; renderColleges(); recompute(); }
+      return;
+    }
+
+    const chmore = target.closest<HTMLElement>('[data-chmore]');
+    if (chmore) {
+      const c = S.charms.list[+(chmore.dataset.chmore as string)];
+      if (c?.set && c?.cid) {
+        const key = `${c.set}:${c.cid}`;
+        if (charmOpen.has(key)) charmOpen.delete(key); else charmOpen.add(key);
+        // The set may not be in memory yet if the sheet was loaded from a save.
+        charmData.loadSet(c.set).then(renderCharms).catch(() => renderCharms());
+        renderCharms();
+      }
       return;
     }
 
