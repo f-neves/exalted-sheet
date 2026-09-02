@@ -1,0 +1,533 @@
+{
+  "meta": {
+    "schema": 3
+  },
+  "id": {
+    "name": "Nashir Sete-Moedas",
+    "player": "",
+    "concept": "Cobrador do clã da Névoa · Escolhido dos Segredos",
+    "motivation": "Entender o que as visões querem antes que elas o gastem por inteiro",
+    "anima": "Verde brilhante; o Sinal dos Segredos na testa",
+    "sobriquet": "Sete-Moedas"
+  },
+  "splat": "sidereal",
+  "caste": "secrets",
+  "favored": {
+    "abilities": [
+      "martial-arts",
+      "awareness",
+      "dodge",
+      "resistance"
+    ],
+    "attributes": []
+  },
+  "attrs": {
+    "strength": {
+      "v": 2,
+      "granted": 0
+    },
+    "dexterity": {
+      "v": 5,
+      "granted": 0
+    },
+    "stamina": {
+      "v": 2,
+      "granted": 0
+    },
+    "charisma": {
+      "v": 2,
+      "granted": 0
+    },
+    "manipulation": {
+      "v": 4,
+      "granted": 0
+    },
+    "appearance": {
+      "v": 3,
+      "granted": 0
+    },
+    "perception": {
+      "v": 5,
+      "granted": 0
+    },
+    "intelligence": {
+      "v": 3,
+      "granted": 0
+    },
+    "wits": {
+      "v": 3,
+      "granted": 0
+    }
+  },
+  "abils": {
+    "archery": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "martial-arts": {
+      "v": 5,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Brigas em espaço apertado",
+          "v": 1
+        }
+      ]
+    },
+    "melee": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "thrown": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "war": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "integrity": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "performance": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "presence": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "resistance": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "survival": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "investigation": {
+      "v": 4,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Contas e devedores",
+          "v": 1
+        }
+      ]
+    },
+    "lore": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "medicine": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "occult": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "athletics": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "awareness": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "dodge": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "larceny": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "stealth": {
+      "v": 5,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Multidões do Undermarket",
+          "v": 1
+        }
+      ]
+    },
+    "bureaucracy": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "linguistics": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "ride": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "sail": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "socialize": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    }
+  },
+  "crafts": [],
+  "virtues": {
+    "compassion": {
+      "v": 2,
+      "granted": 0
+    },
+    "temperance": {
+      "v": 3,
+      "granted": 0
+    },
+    "conviction": {
+      "v": 4,
+      "granted": 0
+    },
+    "valor": {
+      "v": 2,
+      "granted": 0
+    }
+  },
+  "virtueFlaw": "conviction",
+  "limit": 0,
+  "willpower": {
+    "v": 7,
+    "granted": 0
+  },
+  "willpowerTemp": 7,
+  "essence": {
+    "v": 3,
+    "granted": 0
+  },
+  "backgrounds": [
+    {
+      "name": "Backing (Bureau of Destiny)",
+      "mystic": false,
+      "v": 1,
+      "granted": 0
+    },
+    {
+      "name": "Connections (undercity de Chiaroscuro)",
+      "mystic": false,
+      "v": 1,
+      "granted": 0
+    },
+    {
+      "name": "Acquaintances (os devedores que não sabe que tem)",
+      "mystic": false,
+      "v": 3,
+      "granted": 0
+    },
+    {
+      "name": "Salary",
+      "mystic": true,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "Sifu",
+      "mystic": true,
+      "v": 2,
+      "granted": 0
+    }
+  ],
+  "charms": {
+    "list": [
+      {
+        "name": "(Element) Apprentice Gesture",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-apprentice-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "(Element) Adept Gesture",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-adept-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Fivefold Shadow Hand Form",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "fivefold-shadow-hand-form",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "White Breath in the Cold (Smoky Mountain Mist Kata)",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "white-breath-in-the-cold-smoky-mountain-mist-kata",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Laugh at the Enemy’s Aim (Forgotten Misty Mountain Kata)",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "laugh-at-the-enemys-aim-forgotten-misty-mountain-kata",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Auspicious Prospects for (Caste)",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "auspicious-prospects-for-caste",
+        "tree": "investigation"
+      },
+      {
+        "name": "Methodology of Secrets",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "methodology-of-secrets",
+        "tree": "lore"
+      },
+      {
+        "name": "Of the Shape of the World",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "of-the-shape-of-the-world",
+        "tree": "lore"
+      },
+      {
+        "name": "Wise Choice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "wise-choice",
+        "tree": "awareness"
+      },
+      {
+        "name": "Prior Warning",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "prior-warning",
+        "tree": "awareness"
+      },
+      {
+        "name": "Expected Pain",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "expected-pain",
+        "tree": "awareness"
+      },
+      {
+        "name": "Someone Else’s Destiny",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "someone-elses-destiny",
+        "tree": "resistance"
+      },
+      {
+        "name": "Shield of Destiny",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "shield-of-destiny",
+        "tree": "resistance"
+      },
+      {
+        "name": "Optimistic Security Practice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "optimistic-security-practice",
+        "tree": "resistance"
+      },
+      {
+        "name": "Ox-Body Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "ox-body-technique",
+        "tree": "resistance"
+      },
+      {
+        "name": "Ox-Body Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "ox-body-technique",
+        "tree": "resistance"
+      },
+      {
+        "name": "Absence",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "absence",
+        "tree": "dodge"
+      },
+      {
+        "name": "Duck Fate",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "duck-fate",
+        "tree": "dodge"
+      },
+      {
+        "name": "Avoidance Kata",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "avoidance-kata",
+        "tree": "dodge"
+      },
+      {
+        "name": "Soft Presence Practice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "soft-presence-practice",
+        "tree": "stealth"
+      },
+      {
+        "name": "Blinding the Boar",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "blinding-the-boar",
+        "tree": "stealth"
+      },
+      {
+        "name": "Avoiding the Truth Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "avoiding-the-truth-technique",
+        "tree": "larceny"
+      },
+      {
+        "name": "Efficient Secretary Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "efficient-secretary-technique",
+        "tree": "investigation"
+      }
+    ]
+  },
+  "combos": [],
+  "colleges": [
+    {
+      "name": "The Guardians",
+      "favored": true,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "The Key",
+      "favored": true,
+      "v": 1,
+      "granted": 0
+    }
+  ],
+  "thaumaturgy": [],
+  "mutations": [],
+  "meritsFlaws": [],
+  "sorcery": {
+    "circles": {},
+    "spells": []
+  },
+  "commitments": [],
+  "health": {
+    "extras": {
+      "ox": 0
+    },
+    "marks": []
+  },
+  "weapons": [],
+  "armor": [],
+  "notes": {
+    "intimacies": "",
+    "backstory": "",
+    "gear": ""
+  },
+  "budget": 500,
+  "adjustment": 0
+}
