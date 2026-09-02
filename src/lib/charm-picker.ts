@@ -29,11 +29,14 @@ const VIEWS: { id: View; name: string; hint: string }[] = [
   { id: 'table', name: 'Table', hint: 'Dense columns, for comparing many at once' },
 ];
 const VIEW_KEY = 'exalted:charm-view';
+/** Table is the default: it is the one that answers "what does this cost, how long does
+ *  it last" for a screenful of Charms at once, without opening anything. */
+const DEFAULT_VIEW: View = 'table';
 const readView = (): View => {
   try {
     const v = localStorage.getItem(VIEW_KEY) as View | null;
-    return VIEWS.some((x) => x.id === v) ? v! : 'rows';
-  } catch { return 'rows'; }
+    return VIEWS.some((x) => x.id === v) ? v! : DEFAULT_VIEW;
+  } catch { return DEFAULT_VIEW; }
 };
 
 export interface PickerOpts {

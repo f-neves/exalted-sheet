@@ -473,6 +473,10 @@ await new Promise((r) => setTimeout(r, 200));
   };
 
   await p3.click('#charm-pick');
+  // Table is the default layout. These checks are about the list, so ask for it rather
+  // than leaning on whatever the default happens to be.
+  await p3.waitForSelector('[data-view="rows"]', { timeout: 15000 });
+  await p3.click('[data-view="rows"]');
   await p3.waitForSelector('.cp-row', { timeout: 15000 });
   const chips = await p3.$$eval('.cp-chip', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
   check('picker offers all nine Charm sets', chips.length === 9, chips.join(' | '));
@@ -641,6 +645,10 @@ await new Promise((r) => setTimeout(r, 200));
   // The picker can be read three ways. The list was the only one, and a Charm tree is
   // not a list.
   await p3.click('#charm-pick');
+  // Table is the default layout. These checks are about the list, so ask for it rather
+  // than leaning on whatever the default happens to be.
+  await p3.waitForSelector('[data-view="rows"]', { timeout: 15000 });
+  await p3.click('[data-view="rows"]');
   await p3.waitForSelector('.cp-row', { timeout: 15000 });
   const views = await p3.$$eval('[data-view]', (ns) => ns.map((n) => n.dataset.view));
   check('the picker offers three layouts', views.join(',') === 'rows,cards,table', views.join(','));
@@ -672,13 +680,22 @@ await new Promise((r) => setTimeout(r, 200));
   check('a table row still adds to the sheet', (await rows()).length !== beforePick,
         `${beforePick} -> ${(await rows()).length}`);
 
+  // Pick a layout that is NOT the default, so reopening proves the choice was stored
+  // rather than merely falling back to Table.
+  await p3.click('[data-view="cards"]');
+  await p3.waitForSelector('.cp-card', { timeout: 15000 });
+  await p3.click('.charm-picker [data-close]');
+  await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
+  await p3.click('#charm-pick');
+  await p3.waitForSelector('.cp-card', { timeout: 15000 });
+  check('the chosen layout is remembered', await p3.$('.cp-card') !== null);
+  check('and it is not just falling back to the default', await p3.$('.cp-table') === null);
+  await p3.evaluate(() => localStorage.removeItem('exalted:charm-view'));
   await p3.click('.charm-picker [data-close]');
   await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
   await p3.click('#charm-pick');
   await p3.waitForSelector('.cp-table', { timeout: 15000 });
-  check('the chosen layout is remembered', await p3.$('.cp-table') !== null);
-  await p3.click('[data-view="rows"]');
-  await p3.waitForSelector('.cp-row', { timeout: 15000 });
+  check('with nothing stored, the picker opens as a table', await p3.$('.cp-table') !== null);
   await p3.click('.charm-picker [data-close]');
   await p3.waitForFunction(() => !document.querySelector('.charm-picker'), { timeout: 15000 });
 
@@ -688,6 +705,10 @@ await new Promise((r) => setTimeout(r, 200));
   await p3.goto(URL.replace(/\/?$/, '') + '?splat=mortal', { waitUntil: 'networkidle0' });
   await p3.waitForSelector('#attrs .dot', { timeout: 15000 });
   await p3.click('#charm-pick');
+  // Table is the default layout. These checks are about the list, so ask for it rather
+  // than leaning on whatever the default happens to be.
+  await p3.waitForSelector('[data-view="rows"]', { timeout: 15000 });
+  await p3.click('[data-view="rows"]');
   await p3.waitForSelector('.cp-row', { timeout: 15000 });
   const mortalChips = await p3.$$eval('.cp-chip', (ns) => ns.map((n) => n.firstChild.textContent.trim()));
   check('a mortal is offered Terrestrial Martial Arts first',
