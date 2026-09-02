@@ -1,0 +1,43 @@
+# scripts/check-migration.mjs applies supabase/migration.sql to a throwaway Postgres in
+# Docker, twice, to prove it parses, applies and is genuinely idempotent before it is let
+# near a real project. Docker is right there on a GitHub runner, which makes CI a better
+# home for the check than a laptop that may not have an engine running at all.
+#
+# It touches no Supabase project and needs no keys.
+
+name: Migration check
+
+on:
+  push:
+    paths:
+      - 'supabase/migration.sql'
+      - 'scripts/check-migration.mjs'
+      - '.github/workflows/migration-check.yml'
+  pull_request:
+    paths:
+      - 'supabase/migration.sql'
+      - 'scripts/check-migration.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The script shells out to `docker run postgres:16-alpine`. Pulling it up front keeps
+      # the pull out of the readiness loop, which gives up after about thirty seconds.
+      - name: Pull Postgres
+        run: docker pull postgres:16-alpine
+
+      - run: npm ci
+
+      - run: npm run check:migration

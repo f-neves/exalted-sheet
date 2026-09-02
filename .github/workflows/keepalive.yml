@@ -1,0 +1,64 @@
+# A free-plan Supabase project goes INACTIVE after about a week without traffic, and a
+# paused project stops resolving in DNS: the campaign area, /login and every character
+# sheet backed by the database go down together, while the offline /sheet keeps working.
+# This job touches the project often enough that the clock never runs out.
+#
+# It only reads, and it needs no key beyond the anon one that already ships inside the
+# client bundle, so nothing here widens what the site already exposes.
+#
+# One thing to know: GitHub disables scheduled workflows in a repository that has had no
+# commits for 60 days, and it emails the owner when it does. If the project ever pauses
+# anyway, check whether this schedule was switched off before looking anywhere else.
+
+name: Keep Supabase awake
+
+on:
+  schedule:
+    # 07:13 UTC every third day. The odd minute keeps it off the top of the hour, when
+    # GitHub's scheduler queues jobs for many minutes.
+    - cron: '13 7 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Touch the database
+        env:
+          URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${URL:-}" ] || [ -z "${KEY:-}" ]; then
+            echo "::error::PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY are not set in Settings > Secrets and variables > Actions > Variables."
+            exit 1
+          fi
+
+          # GoTrue answering proves the project is up. It does not prove Postgres is warm,
+          # so it is a check, not the ping.
+          auth=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+                   -H "apikey: $KEY" "$URL/auth/v1/health")
+          echo "auth/v1/health -> $auth"
+
+          # This is the ping. PostgREST plans and runs a real query against public.profiles;
+          # row-level security then filters it to nothing, because the select policy is
+          # granted to authenticated only. An empty body with 200 is the expected answer,
+          # and the database was still woken to produce it.
+          rest=$(curl -sS -o body.txt -w '%{http_code}' --max-time 30 \
+                   -H "apikey: $KEY" "$URL/rest/v1/profiles?select=id&limit=1")
+          echo "rest/v1/profiles -> $rest  body: $(cat body.txt)"
+
+          if [ "$auth" != "200" ] || [ "$rest" != "200" ]; then
+            echo "::error::The project did not answer. If DNS failed it is already paused: restore it from the Supabase dashboard, or POST /v1/projects/<ref>/restore."
+            exit 1
+          fi
+
+          echo "Project is awake."
