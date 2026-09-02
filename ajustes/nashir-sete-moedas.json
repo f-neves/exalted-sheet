@@ -77,7 +77,7 @@
       "specialties": []
     },
     "presence": {
-      "v": 2,
+      "v": 1,
       "granted": 0,
       "specialties": []
     },
@@ -97,7 +97,7 @@
       "specialties": []
     },
     "integrity": {
-      "v": 0,
+      "v": 2,
       "granted": 0,
       "specialties": []
     },
@@ -117,7 +117,7 @@
       "specialties": []
     },
     "linguistics": {
-      "v": 1,
+      "v": 0,
       "granted": 0,
       "specialties": []
     },
@@ -129,12 +129,7 @@
     "martial-arts": {
       "v": 5,
       "granted": 0,
-      "specialties": [
-        {
-          "v": 1,
-          "name": "Brigas em espaço apertado"
-        }
-      ]
+      "specialties": []
     },
     "investigation": {
       "v": 3,
@@ -149,7 +144,7 @@
       "granted": 2
     },
     "stamina": {
-      "v": 3,
+      "v": 2,
       "granted": 2
     },
     "charisma": {
@@ -161,11 +156,11 @@
       "granted": 2
     },
     "dexterity": {
-      "v": 4,
+      "v": 5,
       "granted": 2
     },
     "appearance": {
-      "v": 2,
+      "v": 3,
       "granted": 2
     },
     "perception": {
@@ -177,7 +172,7 @@
       "granted": 2
     },
     "manipulation": {
-      "v": 3,
+      "v": 4,
       "granted": 2
     }
   },
@@ -185,7 +180,7 @@
   "limit": 0,
   "notes": {
     "gear": "Faca de Névoa (arma de forma do estilo) · sete moedas de metais diferentes, uma delas sagrada da Legítima Ordem",
-    "backstory": "Recolhido pelo clã Hidden in the Mist ainda criança. Nunca jurou. Despertou Essência por treino e por escutar o que não devia, não pelo Pó de Ouro, embora a undercity acredite no contrário.",
+    "backstory": "Recolhido pela barcaca do cla Hidden in the Mist aos seis anos, no Rio Cego. Nunca jurou.\nCobra dividas nas Docas Negras e no Undermarket ha sete anos.\n\nDESPERTOU ESSENCIA POR MEIOS NATURAIS, NAO PELO PO DE OURO. Quatro caminhos, nenhum quimico:\n  Treino  — dez mil horas de kata de Nevoa repetida no conves, desde crianca.\n  Informacao — uma vida em cantos ouvindo o que nao lhe diziam; crianca que carrega vara nao conta como gente presente, e cobrador entra em cozinha e quarto dos fundos.\n  Viagem — a barcaca nunca ancora duas vezes no mesmo trecho, e a cobranca o levou das Docas a Queda a Galeria dos Nomes. Desceu mais da undercity que quase qualquer pessoa viva.\n  Curiosidade — segue um Cano mais longe do que o servico exigia, e volta ao mesmo beco tres noites so para ver se o sujeito repete o horario.\n\nO veio verde no olho nao e vidro-de-veio nem Wyld: e a Exaltacao chegando anos antes da hora.\nA semelhanca com a mutacao do Po sustenta o boato de que ele e dourado, e o boato o mantem vivo.\nSe alguem confirmar que ele nunca foi jurado, ele perde alavancagem antes de perder a vida.",
     "intimacies": "As sete moedas · Behit (o velho do espeto) · A barcaça · \"A conta certa na hora certa\" · Medo de ser chamado de Sacerdote"
   },
   "splat": "mortal",
@@ -199,8 +194,8 @@
         "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
         "tree": "fivefold-shadow-hand-style",
         "favored": true,
-        "category": "native",
-        "granted": true
+        "granted": true,
+        "category": "native"
       },
       {
         "cid": "element-adept-gesture",
@@ -209,8 +204,8 @@
         "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
         "tree": "fivefold-shadow-hand-style",
         "favored": true,
-        "category": "native",
-        "granted": true
+        "granted": true,
+        "category": "native"
       },
       {
         "cid": "fivefold-shadow-hand-form",
@@ -219,8 +214,8 @@
         "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
         "tree": "fivefold-shadow-hand-style",
         "favored": true,
-        "category": "native",
-        "granted": true
+        "granted": true,
+        "category": "native"
       },
       {
         "cid": "white-breath-in-the-cold-smoky-mountain-mist-kata",
@@ -229,18 +224,18 @@
         "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
         "tree": "fivefold-shadow-hand-style",
         "favored": true,
-        "category": "native",
-        "granted": true
+        "granted": true,
+        "category": "native"
       },
       {
-        "cid": "the-fatal-kiss-forgotten-mountain-mist-kata",
+        "cid": "laugh-at-the-enemys-aim-forgotten-misty-mountain-kata",
         "set": "ma-terrestrial",
-        "name": "The Fatal Kiss (Forgotten Mountain Mist Kata)",
-        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "name": "Laugh at the Enemy’s Aim (Forgotten Misty Mountain Kata)",
+        "note": "",
         "tree": "fivefold-shadow-hand-style",
         "favored": true,
-        "category": "native",
-        "granted": true
+        "granted": true,
+        "category": "native"
       }
     ]
   },
