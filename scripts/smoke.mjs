@@ -587,6 +587,36 @@ await new Promise((r) => setTimeout(r, 200));
   check('their warnings come back once the sets reload',
         after.filter((r) => r.warn).length === 3, JSON.stringify(after.map((r) => r.warn)));
 
+  // A granted Charm sits on the sheet and costs nothing. This table hands out five of them
+  // at creation and buys the rest with a genre currency the XP budget never sees, so the
+  // flag has to survive a reload the way the picked Charms themselves do.
+  const charmTotal = () => p3.$eval('#xpBreak', (n) => {
+    const m = n.textContent.match(/Charms\s+(\d+)/i);
+    return m ? Number(m[1]) : null;
+  });
+  const paidBefore = await charmTotal();
+  await p3.click('#charms [data-chgr="0"]');
+  await p3.waitForFunction(() => document.querySelector('#charms .xpc.granted') !== null,
+                           { timeout: 15000 });
+  const granted = await rows();
+  check('ticking Free zeroes the price of that Charm', granted[0].xp === 0, String(granted[0].xp));
+  check('and leaves the other Charms priced', granted.slice(1).map((r) => r.xp).join(',') === '10,20',
+        granted.slice(1).map((r) => r.xp).join(','));
+  const paidAfter = await charmTotal();
+  check('the Charm total drops by exactly that price', paidBefore - paidAfter === 8,
+        `${paidBefore} -> ${paidAfter}`);
+
+  await p3.reload({ waitUntil: 'networkidle0' });
+  await p3.waitForSelector('#charms .lrow', { timeout: 15000 });
+  const stillFree = await p3.$$eval('#charms [data-chgr]', (ns) => ns.map((n) => n.checked));
+  check('Free survives a reload', stillFree.join(',') === 'true,false,false', stillFree.join(','));
+  check('and the price stays waived', (await rows())[0].xp === 0);
+
+  await p3.click('#charms [data-chgr="0"]');
+  await p3.waitForFunction(() => document.querySelector('#charms .xpc.granted') === null,
+                           { timeout: 15000 });
+  check('unticking it charges again', (await rows())[0].xp === 8, String((await rows())[0].xp));
+
   // Heroic mortals have no Charms of their own; Terrestrial Martial Arts are theirs
   // to buy, at the Charm price.
   await p3.evaluate(() => { localStorage.removeItem('exalted:sheet'); });

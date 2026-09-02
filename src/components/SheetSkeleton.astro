@@ -112,7 +112,7 @@
   <div id="commitments"></div>
 </div>
 
-<h2 class="barh barh-tog" data-sec="charms"><span class="sec-caret">▾</span> Charms &amp; Combos <small>(pick from the published lists, or type a name; the price follows the category)</small></h2>
+<h2 class="barh barh-tog" data-sec="charms"><span class="sec-caret">▾</span> Charms &amp; Combos <small>(pick from the published lists, or type a name; the price follows the category &middot; tick <b>Free</b> for a Charm the Storyteller granted, or one bought with something other than XP)</small></h2>
 <div class="sec-body" id="sec-charms">
   <div class="cols2">
     <div>
@@ -274,6 +274,9 @@
   .grant:focus { box-shadow: none; border-color: var(--gold); border-radius: 4px; }
   .xpc { font-family: 'Cinzel'; font-size: .7rem; color: var(--ink-soft); min-width: 2.2rem; text-align: right; flex: none; }
   .xpc.paid { color: var(--accent-strong); }
+  /* A granted Charm still shows a number, so the column stays a column; it is just
+     struck through, which reads as "priced, then waived" rather than "free item". */
+  .xpc.granted { color: var(--ink-soft); text-decoration: line-through; opacity: .75; }
 
   .specbtn { background: none; border: none; cursor: pointer; font-size: .7rem; color: var(--gold); opacity: .3; padding: 0 .1rem; line-height: 1; flex: none; font-family: system-ui, 'Segoe UI Symbol', sans-serif; }
   .specbtn:hover, .specbtn.has { opacity: 1; }

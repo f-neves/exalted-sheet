@@ -458,7 +458,10 @@ export function totalXp(S, splat, data) {
 
   const circles = S.sorcery?.circles || {};
   const circlesBought = Object.values(circles).filter(Boolean).length;
+  // A granted Charm sits on the sheet and costs nothing: the Storyteller handed it over,
+  // or it was paid for in some currency the XP budget does not track.
   for (const ch of S.charms?.list || []) {
+    if (ch.granted) continue;
     b.charms += charmCost(ch.category, !!ch.favored, splat);
   }
   // Circle initiations are Occult Charms, so they follow the favoured-Occult price.

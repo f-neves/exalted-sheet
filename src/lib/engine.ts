@@ -195,6 +195,9 @@ export function mountSheet(opts: SheetOpts) {
       list: (Array.isArray(raw.charms?.list) ? raw.charms.list : []).map((c: any) => ({
         name: String(c?.name ?? ''), favored: !!c?.favored,
         category: CATS.has(c?.category) ? c.category : 'native',
+        // Granted Charms show on the sheet and cost no XP. Absent on older saves, which
+        // is the right default: everything was paid for before this existed.
+        granted: !!c?.granted,
         note: String(c?.note ?? ''),
         // Set here, a charm came from the published lists and can be checked
         // against its minimums. Absent, it is a free-text row, as before.
@@ -716,7 +719,7 @@ export function mountSheet(opts: SheetOpts) {
           const tree = set.trees.find((t: any) => t.id === charm.t);
           S.charms.list.push({
             name: charm.n, favored: !!(tree?.trait && favOf(tree.traitKind || 'ability', tree.trait)),
-            category, note: '', set: set.id, cid: charm.id, tree: charm.t,
+            category, granted: false, note: '', set: set.id, cid: charm.id, tree: charm.t,
           });
         }
         renderCharms();
@@ -728,7 +731,7 @@ export function mountSheet(opts: SheetOpts) {
   function renderCharms() {
     const sp = splat();
     el('charms').innerHTML =
-      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
+      `<div class="lrow head"><span style="flex:1">Charm</span><span style="width:11rem">Type</span><span style="width:3.2rem;text-align:center">Fav</span><span style="width:3.6rem;text-align:center" title="Granted: it sits on the sheet and costs no XP">Free</span><span style="width:2.6rem;text-align:right">XP</span><span style="width:1.4rem"></span></div>`
       + (S.charms.list.length
         ? S.charms.list.map((c: any, i: number) => {
             const short = charmProblems(c);
@@ -745,7 +748,13 @@ export function mountSheet(opts: SheetOpts) {
               + `</select>`
               + `<label class="lbl" style="width:3.2rem;justify-content:center;display:flex">`
               + `<input type="checkbox" data-chfav="${i}"${c.favored ? ' checked' : ''} /></label>`
-              + `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`
+              + `<label class="lbl" style="width:3.6rem;justify-content:center;display:flex"`
+              + ` title="Granted: it sits on the sheet and costs no XP">`
+              + `<input type="checkbox" data-chgr="${i}"${c.granted ? ' checked' : ''} /></label>`
+              + (c.granted
+                ? `<span class="xpc granted" style="width:2.6rem"`
+                  + ` title="Granted. It would have cost ${calc.charmCost(c.category, c.favored, sp)}.">0</span>`
+                : `<span class="xpc paid" style="width:2.6rem">${calc.charmCost(c.category, c.favored, sp)}</span>`)
               + `<button type="button" class="rowx" data-del="charm:${i}" title="Remove">×</button>`
               + (short ? `<div class="rowwarn">needs ${esc(short)}</div>` : '')
               + `</div>`;
@@ -1249,6 +1258,7 @@ export function mountSheet(opts: SheetOpts) {
     if (d.cmotes !== undefined) { S.commitments[+d.cmotes].motes = iv(); recompute(); return; }
     if (d.chname !== undefined) { S.charms.list[+d.chname].name = t.value; save(); return; }
     if (d.chfav !== undefined) { S.charms.list[+d.chfav].favored = t.checked; renderCharms(); recompute(); return; }
+    if (d.chgr !== undefined) { S.charms.list[+d.chgr].granted = t.checked; renderCharms(); recompute(); return; }
     if (d.cbname !== undefined) { S.combos[+d.cbname].name = t.value; save(); return; }
     if (d.cbxp !== undefined) { S.combos[+d.cbxp].xp = iv(); recompute(); return; }
     if (d.circle !== undefined) { S.sorcery.circles[d.circle] = t.checked; renderSorcery(); recompute(); return; }
@@ -1377,7 +1387,7 @@ export function mountSheet(opts: SheetOpts) {
     'mut-add': () => { S.mutations.push({ name: '', level: RULES.mutationLevels[0], negative: false }); renderOther(); },
     'mf-add': () => { S.meritsFlaws.push({ name: '', points: 1, flaw: false }); renderOther(); },
     'commit-add': () => { S.commitments.push({ name: '', motes: 0 }); renderCommitments(); },
-    'charm-add': () => { S.charms.list.push({ name: '', favored: false, note: '' }); renderCharms(); },
+    'charm-add': () => { S.charms.list.push({ name: '', favored: false, granted: false, note: '' }); renderCharms(); },
     'charm-pick': () => { void pickCharms(); },
     'combo-add': () => { S.combos.push({ name: '', xp: 0 }); renderCharms(); },
     'spell-add': () => {
