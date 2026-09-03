@@ -21,6 +21,7 @@ const base = import.meta.env.BASE_URL;
       <a class="brand" href={base}>Exalted<small>Second Edition</small></a>
       <nav class="topnav">
         <a href={`${base}sheet`}>Sheet</a>
+        <a href={`${base}characters`} id="nav-characters" hidden>Characters</a>
         <a href={`${base}campaigns`} id="nav-campaigns" hidden>Campaigns</a>
       </nav>
       <span class="spacer"></span>
@@ -61,10 +62,12 @@ const base = import.meta.env.BASE_URL;
         const link = document.getElementById('auth-link');
         const label = link?.querySelector('.auth-label');
         const campaigns = document.getElementById('nav-campaigns');
+        const characters = document.getElementById('nav-characters');
         if (!link || !label) return;
         try {
           const { currentUser, profileName, signOut, supabaseConfigured } = await import('../lib/auth');
           if (!supabaseConfigured) return;
+          if (characters) characters.hidden = false;
           if (campaigns) campaigns.hidden = false;
           const user = await currentUser();
           if (!user) return;

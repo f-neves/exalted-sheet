@@ -173,6 +173,29 @@ input[type='number'] { -moz-appearance: textfield; }
 .seal.approved { border-color: var(--accent); color: var(--accent); }
 .seal.gm { border-color: var(--accent); color: var(--accent); }
 
+/* Cards for the lists of characters and campaigns. These live here, not in a page's
+   own <style>, because every one of these lists is written with innerHTML: Astro scopes
+   page styles to a data-astro-cid attribute that injected elements never carry. */
+.char-grid, .camp-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: .7rem; margin-bottom: .8rem;
+}
+.char-card, .camp-card {
+  display: flex; flex-direction: column; gap: .25rem; text-decoration: none; color: var(--ink);
+  border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
+  background: var(--panel); border-radius: 6px; padding: .65rem .8rem;
+  transition: border-color .12s, transform .12s;
+}
+.char-card:hover, .camp-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.char-card.local { border-left-color: var(--gold); }
+.char-card .seal, .camp-card .seal { align-self: flex-start; }
+.cname, .camp-name { font-family: 'Cinzel'; font-size: 1rem; color: var(--accent); }
+.cwho, .camp-desc { font-size: .86rem; color: var(--ink-soft); }
+.cmeta { font-size: .76rem; color: var(--ink-soft); letter-spacing: .04em; margin-top: .15rem; }
+.cmeta b { font-family: 'Cinzel'; font-weight: 600; color: var(--ink-soft); }
+.camp-code { font-family: 'Cinzel'; font-size: .78rem; color: var(--ink-soft); letter-spacing: .12em; }
+.empty-note, .empty { color: var(--ink-soft); font-style: italic; font-size: .9rem; padding: .2rem 0; }
+
 .code-chip {
   font-family: 'Cinzel'; font-size: 1.5rem; letter-spacing: .3em;
   color: var(--accent); background: var(--bg-soft);

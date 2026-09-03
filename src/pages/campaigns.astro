@@ -1,9 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL;
 ---
 
 <Base title="Campaigns — Exalted 2e">
   <h1 class="page-h">Campaigns</h1>
+  <p class="lede">
+    Tables you play at. Characters of your own, in a campaign or not, are under
+    <a href={`${base}characters`}>Characters</a>.
+  </p>
 
   <div class="notice" id="setup" hidden>
     <h2>The campaign area is not switched on yet</h2>
@@ -32,30 +37,15 @@ import Base from '../layouts/Base.astro';
       </form>
     </div>
 
-    <div id="loose" hidden>
-      <h2 class="barh">Characters without a campaign</h2>
-      <div id="loose-list"></div>
-    </div>
-
     <p class="msg" id="msg" role="status" aria-live="polite"></p>
   </div>
 
   <style>
-    .page-h { font-size: 1.6rem; letter-spacing: .06em; color: var(--accent); margin: 1.2rem 0 1rem; }
+    .page-h { font-size: 1.6rem; letter-spacing: .06em; color: var(--accent); margin: 1.2rem 0 .3rem; }
+    .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
     .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
     @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
     .code-input { text-transform: uppercase; letter-spacing: .25em; font-family: 'Cinzel'; }
-    .camp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .7rem; margin-bottom: 1.4rem; }
-    .camp-card {
-      display: flex; flex-direction: column; gap: .3rem; text-decoration: none;
-      border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
-      background: var(--panel); border-radius: 6px; padding: .7rem .8rem; color: var(--ink);
-    }
-    .camp-card:hover { border-color: var(--accent); }
-    .camp-name { font-family: 'Cinzel'; font-size: 1rem; color: var(--accent); }
-    .camp-desc { font-size: .86rem; color: var(--ink-soft); }
-    .camp-code { font-family: 'Cinzel'; font-size: .78rem; color: var(--ink-soft); letter-spacing: .12em; }
-    .empty-note { color: var(--ink-soft); font-style: italic; margin-bottom: 1.4rem; }
   </style>
 </Base>
 
@@ -71,8 +61,7 @@ import Base from '../layouts/Base.astro';
 
   (async () => {
     if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
-    const user = await requireLogin(base);
-    if (!user) return;
+    if (!await requireLogin(base)) return;
 
     const sb = getSupabase();
     el('loading').hidden = true;
@@ -99,20 +88,6 @@ import Base from '../layouts/Base.astro';
           ${gm ? `<span class="camp-code">Code ${esc(c.join_code)}</span>` : ''}
         </a>`;
       }).join('') + '</div>';
-    }
-
-    // A character outlives the campaign it was made in, so it needs somewhere to be found
-    // afterwards; otherwise deleting a campaign would strand it with no route back.
-    const { data: loose } = await sb.from('characters')
-      .select('id, name, concept').is('campaign_id', null).eq('owner_id', user.id)
-      .order('updated_at', { ascending: false });
-    if (loose?.length) {
-      el('loose').hidden = false;
-      el('loose-list').innerHTML = '<div class="camp-grid">' + loose.map((c: any) =>
-        `<a class="camp-card" href="${base}character?id=${c.id}">
-           <span class="camp-name">${esc(c.name || 'Unnamed')}</span>
-           ${c.concept ? `<span class="camp-desc">${esc(c.concept)}</span>` : ''}
-         </a>`).join('') + '</div>';
     }
 
     el('form-create').addEventListener('submit', async (ev) => {

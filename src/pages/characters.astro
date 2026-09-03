@@ -1,0 +1,167 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Characters — Exalted 2e">
+  <h1 class="page-h">Characters</h1>
+  <p class="lede">Every character saved to your account, plus the one this browser is holding.</p>
+
+  <div class="notice" id="setup" hidden>
+    <h2>The account area is not switched on yet</h2>
+    <p class="muted">
+      This build has no Supabase keys, so characters cannot be saved to an account.
+      The sheet still works on its own. See <code>supabase/README.md</code>.
+    </p>
+  </div>
+
+  <!-- Rendered before the account list loads, and left standing when there is no account
+       at all: the browser copy is the only character some people ever have. -->
+  <section id="local" hidden>
+    <h2 class="sec-h">In this browser</h2>
+    <div id="local-list"></div>
+    <p class="muted foot">
+      Held in this browser alone. Clearing site data loses it, and it does not follow you to
+      another device. To keep it for good, <b>Export</b> it from the sheet, start a character
+      below, and <b>Import</b> the file there.
+    </p>
+  </section>
+
+  <div class="notice" id="signin" hidden>
+    <h2>Sign in to see the rest</h2>
+    <p class="muted">
+      Characters saved to an account follow you between browsers and devices.
+      <a id="signin-link" href="#">Sign in or create an account</a>.
+    </p>
+  </div>
+
+  <p class="muted" id="loading">Loading…</p>
+
+  <div id="content" hidden>
+    <section>
+      <h2 class="sec-h">
+        On their own
+        <button class="btn primary" id="new-char" type="button">+ New character</button>
+      </h2>
+      <div id="loose-list"></div>
+    </section>
+
+    <section id="in-camps" hidden>
+      <h2 class="sec-h">In campaigns</h2>
+      <div id="camp-list"></div>
+    </section>
+
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </div>
+
+  <style>
+    .page-h { font-size: 1.6rem; letter-spacing: .06em; color: var(--accent); margin: 1.2rem 0 .3rem; }
+    .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: 44rem; }
+
+    .sec-h {
+      display: flex; align-items: center; gap: .8rem;
+      font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--accent-strong); font-family: 'Cinzel';
+      border-bottom: 1px solid var(--panel-border); padding-bottom: .35rem;
+      margin: 1.8rem 0 .8rem;
+    }
+    .sec-h .btn { margin-left: auto; }
+    .foot { font-size: .82rem; margin: .6rem 0 0; }
+  </style>
+</Base>
+
+<script>
+  import { getSupabase } from '../lib/supabase';
+  import { currentUser, supabaseConfigured } from '../lib/auth';
+  import { SPLAT_BY_ID } from '../lib/data';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  const msg = (t: string, bad = true) => { const m = el('msg'); m.textContent = t; m.className = 'msg' + (bad ? ' bad' : ''); };
+
+  const SEALS: Record<string, string> = { draft: 'Draft', submitted: 'Awaiting approval', approved: 'Approved' };
+
+  const when = (iso: string) => {
+    const d = new Date(iso);
+    return isNaN(+d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  /** The single sheet the standalone /sheet page keeps in this browser. */
+  function showLocal() {
+    let state: any = null;
+    try {
+      const raw = localStorage.getItem('exalted:sheet');
+      if (raw) state = JSON.parse(raw);
+    } catch { /* storage blocked or corrupt: nothing to show */ }
+    if (!state || typeof state !== 'object') return;
+
+    const name = (state.id?.name || '').trim() || 'Unnamed character';
+    const concept = (state.id?.concept || '').trim();
+    const splat = SPLAT_BY_ID[state.splat]?.name || '';
+    el('local').hidden = false;
+    el('local-list').innerHTML = `<div class="char-grid">
+      <a class="char-card local" href="${base}sheet">
+        <span class="seal">This browser</span>
+        <span class="cname">${esc(name)}</span>
+        ${concept ? `<span class="cwho">${esc(concept)}</span>` : ''}
+        ${splat ? `<span class="cmeta"><b>${esc(splat)}</b></span>` : ''}
+      </a></div>`;
+  }
+
+  const card = (c: any, sub: string) => `
+    <a class="char-card" href="${base}character?id=${c.id}">
+      <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+      <span class="cname">${esc(c.name || 'Unnamed')}</span>
+      ${c.concept ? `<span class="cwho">${esc(c.concept)}</span>` : ''}
+      <span class="cmeta">${sub}</span>
+    </a>`;
+
+  (async () => {
+    showLocal();
+
+    if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
+
+    // No redirect: the browser copy above is worth seeing even when nobody is signed in,
+    // and bouncing to /login would hide it behind a form.
+    const user = await currentUser();
+    if (!user) {
+      el('loading').hidden = true;
+      el('signin').hidden = false;
+      (el('signin-link') as HTMLAnchorElement).href =
+        `${base}login?next=${encodeURIComponent(location.pathname)}`;
+      return;
+    }
+
+    const sb = getSupabase();
+    el('loading').hidden = true;
+    el('content').hidden = false;
+
+    // owner_id, not RLS alone: a Storyteller can read every character in their campaigns,
+    // and those are not theirs to list here.
+    const { data, error } = await sb.from('characters')
+      .select('id, name, concept, status, updated_at, campaign_id, campaign:campaigns(id, name)')
+      .eq('owner_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) { msg('Could not load your characters: ' + error.message); return; }
+
+    const rows = data || [];
+    const loose = rows.filter((c: any) => !c.campaign_id);
+    const inCamps = rows.filter((c: any) => c.campaign_id);
+
+    el('loose-list').innerHTML = loose.length
+      ? '<div class="char-grid">' + loose.map((c: any) => card(c, `Edited ${when(c.updated_at)}`)).join('') + '</div>'
+      : '<p class="empty-note">No characters of your own yet. Start one with the button above.</p>';
+
+    if (inCamps.length) {
+      el('in-camps').hidden = false;
+      el('camp-list').innerHTML = '<div class="char-grid">' + inCamps.map((c: any) => {
+        const name = c.campaign?.name;
+        return card(c, name ? `<b>${esc(name)}</b> · ${when(c.updated_at)}` : `Edited ${when(c.updated_at)}`);
+      }).join('') + '</div>';
+    }
+
+    el('new-char').addEventListener('click', () => { location.href = `${base}character?new=1`; });
+  })();
+</script>

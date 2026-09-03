@@ -134,8 +134,8 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     const gmEditing = isGm && sessionStorage.getItem(`gm-edit:${id}`) === '1';
     const canEdit = (isOwner && status === 'draft') || gmEditing;
 
-    (el('back') as HTMLAnchorElement).href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}campaigns`;
-    if (!ch.campaign_id) el('back').textContent = '← Campaigns';
+    (el('back') as HTMLAnchorElement).href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}characters`;
+    if (!ch.campaign_id) el('back').textContent = '← Characters';
     el('char-name').textContent = ch.name || 'Character';
 
     /* ---- experience -------------------------------------------------- */
@@ -351,7 +351,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
         if (paths.length) await sb.storage.from(CHAR_BUCKET).remove(paths);
         const { error } = await sb.from('characters').delete().eq('id', id);
         if (error) return uiError('Could not delete it: ' + error.message);
-        location.href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}campaigns`;
+        location.href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}characters`;
       };
     }
 

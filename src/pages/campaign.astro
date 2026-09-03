@@ -90,15 +90,6 @@ import Base from '../layouts/Base.astro';
     .frow .gal-kind { flex: none; }
     .frow a { color: var(--ink); text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .frow a:hover { color: var(--accent); text-decoration: underline; }
-    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .7rem; margin-bottom: .8rem; }
-    .char-card {
-      display: flex; flex-direction: column; gap: .25rem; text-decoration: none; color: var(--ink);
-      border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
-      background: var(--panel); border-radius: 6px; padding: .6rem .75rem;
-    }
-    .char-card:hover { border-color: var(--accent); }
-    .char-card .cname { font-family: 'Cinzel'; color: var(--accent); }
-    .char-card .cwho { font-size: .82rem; color: var(--ink-soft); }
     .note-card { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 6px; padding: .6rem .7rem; margin-bottom: .5rem; }
     .note-card input.title { width: 100%; font-family: 'Cinzel'; margin-bottom: .3rem; }
     .note-card textarea { width: 100%; min-height: 5rem; resize: vertical; }
@@ -109,7 +100,6 @@ import Base from '../layouts/Base.astro';
     .vis-list { margin-top: .3rem; font-size: .8rem; }
     .vis-list summary { cursor: pointer; color: var(--ink-soft); }
     .vis-list label { display: inline-flex; align-items: center; gap: .3rem; margin-right: .8rem; }
-    .empty { font-size: .88rem; color: var(--ink-soft); font-style: italic; padding: .3rem 0; }
   </style>
 </Base>
 

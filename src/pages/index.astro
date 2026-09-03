@@ -23,6 +23,16 @@ const base = import.meta.env.BASE_URL;
       <span class="go">Open the sheet →</span>
     </a>
 
+    <a class="way" href={`${base}characters`}>
+      <h2>Characters</h2>
+      <p>
+        Your own characters, saved to your account and reachable from any browser. Keep as many
+        as you like, on their own or inside a campaign, and pick up where you left off. The
+        sheet in this browser is listed there too. Needs an account.
+      </p>
+      <span class="go">See your characters →</span>
+    </a>
+
     <a class="way" href={`${base}campaigns`}>
       <h2>Campaigns</h2>
       <p>
@@ -54,8 +64,9 @@ const base = import.meta.env.BASE_URL;
     .hero-p { max-width: 42rem; color: var(--ink-soft); }
     .hero-h2 { font-size: .82rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-strong); margin-top: 2.5rem; }
 
-    .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.6rem 0 0; align-items: stretch; }
-    @media (max-width: 760px) { .ways { grid-template-columns: 1fr; } }
+    .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.6rem 0 0; align-items: stretch; }
+    @media (max-width: 1000px) { .ways { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px) { .ways { grid-template-columns: 1fr; } }
     .way {
       display: flex; flex-direction: column; gap: .4rem; text-decoration: none; color: var(--ink);
       border: 1px solid var(--panel-border); border-top: 3px solid var(--accent);
