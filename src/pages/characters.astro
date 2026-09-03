@@ -19,10 +19,9 @@ import Base from '../layouts/Base.astro';
   <section id="local" hidden>
     <h2 class="sec-h">In this browser</h2>
     <div id="local-list"></div>
-    <p class="muted foot">
+    <p class="muted foot" id="local-foot">
       Held in this browser alone. Clearing site data loses it, and it does not follow you to
-      another device. To keep it for good, <b>Export</b> it from the sheet, start a character
-      below, and <b>Import</b> the file there.
+      another device.
     </p>
   </section>
 
@@ -94,7 +93,7 @@ import Base from '../layouts/Base.astro';
       const raw = localStorage.getItem('exalted:sheet');
       if (raw) state = JSON.parse(raw);
     } catch { /* storage blocked or corrupt: nothing to show */ }
-    if (!state || typeof state !== 'object') return;
+    if (!state || typeof state !== 'object') return null;
 
     const name = (state.id?.name || '').trim() || 'Unnamed character';
     const concept = (state.id?.concept || '').trim();
@@ -107,6 +106,41 @@ import Base from '../layouts/Base.astro';
         ${concept ? `<span class="cwho">${esc(concept)}</span>` : ''}
         ${splat ? `<span class="cmeta"><b>${esc(splat)}</b></span>` : ''}
       </a></div>`;
+    return { state, name, concept };
+  }
+
+  /**
+   * Copies the browser's sheet into the account as a new character. The original is left
+   * in localStorage: this is a copy, and losing the only version to a failed insert or a
+   * misread of the button would be unforgivable.
+   */
+  function offerToKeep(sb: any, userId: string, local: { state: any; name: string; concept: string }) {
+    const foot = el('local-foot');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn primary keep';
+    btn.textContent = 'Save it to my account';
+    foot.before(btn);
+    foot.insertAdjacentHTML('beforeend',
+      ' Saving copies it into the list below; the copy in this browser stays where it is.');
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      const { data, error } = await sb.from('characters').insert({
+        owner_id: userId,
+        campaign_id: null,
+        name: local.name === 'Unnamed character' ? '' : local.name,
+        concept: local.concept,
+        sheet: local.state,
+      }).select('id').single();
+      if (error) {
+        btn.disabled = false;
+        btn.textContent = 'Save it to my account';
+        return msg('Could not save it: ' + error.message);
+      }
+      location.href = `${base}character?id=${data.id}`;
+    });
   }
 
   const card = (c: any, sub: string) => `
@@ -118,7 +152,7 @@ import Base from '../layouts/Base.astro';
     </a>`;
 
   (async () => {
-    showLocal();
+    const local = showLocal();
 
     if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
 
@@ -136,6 +170,7 @@ import Base from '../layouts/Base.astro';
     const sb = getSupabase();
     el('loading').hidden = true;
     el('content').hidden = false;
+    if (local) offerToKeep(sb, user.id, local);
 
     // owner_id, not RLS alone: a Storyteller can read every character in their campaigns,
     // and those are not theirs to list here.

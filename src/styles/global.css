@@ -195,6 +195,8 @@ input[type='number'] { -moz-appearance: textfield; }
 .cmeta b { font-family: 'Cinzel'; font-weight: 600; color: var(--ink-soft); }
 .camp-code { font-family: 'Cinzel'; font-size: .78rem; color: var(--ink-soft); letter-spacing: .12em; }
 .empty-note, .empty { color: var(--ink-soft); font-style: italic; font-size: .9rem; padding: .2rem 0; }
+/* Built by script too, for the same reason. */
+.btn.keep { margin-top: .7rem; }
 
 .code-chip {
   font-family: 'Cinzel'; font-size: 1.5rem; letter-spacing: .3em;
