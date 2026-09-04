@@ -1,0 +1,1758 @@
+<title>Osir Sete-Moedas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --bg:#E9EDEA; --surface:#F5F8F5; --surface-2:#DEE5E0; --sunk:#D6DED8;
+  --ink:#11181A; --ink-2:#4A5559; --ink-3:#6E797C;
+  --rule:#C4CEC8; --rule-soft:#D6DED8;
+  --jade:#0E7550; --jade-ink:#0B5C3F; --jade-soft:#DBEDE3;
+  --brass:#8A6A2F; --brass-soft:#EFE6D4;
+  --shadow:0 1px 2px rgba(17,24,26,.06), 0 8px 24px -16px rgba(17,24,26,.28);
+  --display:"Bodoni Moda",Georgia,"Times New Roman",serif;
+  --body:"Spectral",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --col:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#090D0F; --surface:#111819; --surface-2:#182123; --sunk:#0D1416;
+    --ink:#E5EBE7; --ink-2:#95A29C; --ink-3:#727E79;
+    --rule:#242E30; --rule-soft:#1B2426;
+    --jade:#4FD9A0; --jade-ink:#7FE7BC; --jade-soft:#0F2B21;
+    --brass:#C9A05E; --brass-soft:#2A2114;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#090D0F; --surface:#111819; --surface-2:#182123; --sunk:#0D1416;
+  --ink:#E5EBE7; --ink-2:#95A29C; --ink-3:#727E79;
+  --rule:#242E30; --rule-soft:#1B2426;
+  --jade:#4FD9A0; --jade-ink:#7FE7BC; --jade-soft:#0F2B21;
+  --brass:#C9A05E; --brass-soft:#2A2114;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);
+  font-size:16.5px;line-height:1.62;font-weight:400;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.page{max-width:1120px;margin:0 auto;padding:0 clamp(18px,4vw,56px) 96px}
+
+.mast{padding:clamp(40px,7vw,88px) 0 clamp(28px,4vw,44px);border-bottom:1px solid var(--rule)}
+.kicker{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 18px}
+.kicker b{color:var(--jade);font-weight:600}
+h1{font-family:var(--display);font-weight:700;
+  font-size:clamp(44px,9vw,86px);line-height:.94;letter-spacing:-.015em;
+  margin:0;text-wrap:balance}
+h1 em{font-style:italic;font-weight:500;color:var(--ink-2);display:block;
+  font-size:.42em;line-height:1.15;letter-spacing:0;margin-top:.42em}
+.standfirst{font-size:clamp(17px,2.1vw,20px);line-height:1.5;color:var(--ink-2);
+  max-width:56ch;margin:26px 0 0;font-weight:300}
+
+.coins{display:flex;gap:9px;align-items:center;margin:30px 0 0;flex-wrap:wrap}
+.coin{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--brass);
+  background:var(--brass-soft);flex:0 0 auto}
+.coin.sacred{border-color:var(--jade);background:var(--jade-soft);
+  box-shadow:0 0 0 3px var(--jade-soft), 0 0 14px -2px var(--jade)}
+.coins .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin-left:10px}
+
+section{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0 40px;
+  padding:clamp(38px,5vw,60px) 0;border-bottom:1px solid var(--rule-soft)}
+section:last-of-type{border-bottom:0}
+.rail{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink-3);padding-top:.55em;
+  min-width:0;overflow-wrap:anywhere;line-height:1.5}
+.rail b{display:block;color:var(--jade);font-weight:600}
+.body{min-width:0}
+.body > *:first-child{margin-top:0}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(27px,3.6vw,38px);
+  line-height:1.12;letter-spacing:-.01em;margin:0 0 .5em;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.25;
+  margin:2.1em 0 .5em;letter-spacing:-.005em}
+h4{font-family:var(--mono);font-weight:600;font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--jade);margin:2em 0 .7em}
+p{margin:0 0 1.05em;max-width:var(--col)}
+p.wide{max-width:none}
+ul{margin:0 0 1.15em;padding-left:1.15em;max-width:var(--col)}
+li{margin:0 0 .48em}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+em.term{font-style:italic;color:var(--ink-2)}
+a{color:var(--jade-ink);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--jade);
+  outline-offset:3px;border-radius:2px}
+code{font-family:var(--mono);font-size:.86em;background:var(--sunk);
+  padding:.12em .38em;border-radius:3px;color:var(--ink-2)}
+
+@media (max-width:840px){
+  section{grid-template-columns:1fr;gap:0}
+  .rail{padding:0 0 14px;border-bottom:1px solid var(--rule-soft);margin-bottom:22px}
+  .rail b{display:inline;margin-left:.6em}
+}
+
+.note{border-left:2px solid var(--jade);padding:2px 0 2px 18px;margin:1.6em 0;
+  color:var(--ink-2);max-width:var(--col)}
+.note p:last-child{margin-bottom:0}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:4px;
+  padding:18px 20px;margin:1.1em 0;box-shadow:var(--shadow)}
+.card p:last-child{margin-bottom:0}
+
+.quotes{margin:1.5em 0;border-top:1px solid var(--rule-soft)}
+.quotes p{margin:0;padding:11px 0 11px 16px;border-bottom:1px solid var(--rule-soft);
+  border-left:2px solid transparent;font-style:italic;color:var(--ink-2);max-width:none}
+.quotes p:hover{border-left-color:var(--brass);color:var(--ink)}
+
+.tw{overflow-x:auto;margin:1.4em 0;border:1px solid var(--rule);border-radius:4px;
+  background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--rule-soft);
+  vertical-align:top;overflow-wrap:break-word}
+thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);
+  border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:13.5px;white-space:nowrap}
+td.trait{font-weight:600}
+tr.sum td{background:var(--surface-2);font-weight:600;border-top:1px solid var(--rule)}
+tr.sum td.n{color:var(--jade)}
+td small{display:block;color:var(--ink-3);font-size:12.5px;line-height:1.35;
+  margin-top:3px;font-weight:400}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 6px;border-radius:3px;background:var(--jade-soft);
+  color:var(--jade-ink);white-space:nowrap;font-weight:500;line-height:1.5;
+  vertical-align:baseline}
+.tag.brass{background:var(--brass-soft);color:var(--brass)}
+.tag.mute{background:var(--sunk);color:var(--ink-3)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:4px;
+  overflow:hidden;margin:1.5em 0}
+.stat{background:var(--surface);padding:13px 14px;margin:0;min-width:0}
+.stat dt{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 6px;overflow-wrap:anywhere;line-height:1.4}
+.stat dd{margin:0;font-family:var(--display);font-size:25px;font-weight:700;line-height:1.1;
+  font-variant-numeric:tabular-nums;min-width:0}
+.stat dd .u{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;
+  color:var(--ink-3);letter-spacing:.05em;line-height:1.4;margin-top:3px;
+  overflow-wrap:anywhere}
+
+.ladder{margin:1.5em 0;border-top:1px solid var(--rule)}
+.rung{display:grid;grid-template-columns:56px minmax(0,1fr);gap:20px;
+  padding:18px 0;border-bottom:1px solid var(--rule-soft)}
+.rung .num{font-family:var(--display);font-size:34px;font-weight:700;line-height:.9;
+  color:var(--rule);font-variant-numeric:tabular-nums}
+.rung.now .num{color:var(--jade)}
+.rung h3{margin:0 0 .35em;font-size:18px}
+.rung p{margin:0 0 .5em;font-size:15px;color:var(--ink-2)}
+.rung p:last-child{margin-bottom:0}
+@media (max-width:520px){.rung{grid-template-columns:1fr;gap:6px}.rung .num{font-size:22px}}
+
+details.json{border:1px solid var(--rule);border-radius:4px;background:var(--surface);
+  margin:1.5em 0;overflow:hidden}
+details.json summary{padding:14px 18px;cursor:pointer;font-family:var(--mono);font-size:12px;
+  letter-spacing:.06em;color:var(--ink-2);list-style:none}
+details.json summary::-webkit-details-marker{display:none}
+details.json summary::before{content:"\25B8\00a0\00a0";color:var(--jade)}
+details.json[open] summary::before{content:"\25BE\00a0\00a0"}
+details.json[open] summary{border-bottom:1px solid var(--rule)}
+.jbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--rule);
+  background:var(--surface-2);font-family:var(--mono);font-size:11px;
+  letter-spacing:.05em;color:var(--ink-3)}
+.jbtn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);
+  padding:5px 11px;border-radius:3px;cursor:pointer}
+.jbtn:hover{border-color:var(--jade);color:var(--jade-ink)}
+pre{margin:0;padding:16px 18px;overflow:auto;background:var(--sunk);
+  font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--ink-2);
+  max-height:420px;-webkit-overflow-scrolling:touch}
+
+.ledger{font-family:var(--mono);font-size:12.5px;line-height:1.65;color:var(--ink-2);
+  background:var(--sunk);border-left:2px solid var(--brass);padding:15px 18px;
+  margin:1.5em 0;max-width:var(--col);border-radius:0 3px 3px 0}
+.ledger p{margin:0 0 .8em;max-width:none}
+.ledger p:last-child{margin-bottom:0}
+.ledger .void{color:var(--ink-3);font-style:italic}
+.folk{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:14px;margin:1.6em 0}
+.folk .card{margin:0}
+.folk p{font-size:14.5px;max-width:none;margin:0 0 .8em}
+.folk p:last-child{margin-bottom:0}
+.folk .who{font-family:var(--display);font-size:20px;font-weight:700;line-height:1.15;margin:0 0 .2em}
+.folk .role{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--jade);margin:0 0 .85em}
+
+footer{padding:44px 0 0;border-top:1px solid var(--rule);color:var(--ink-3);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;line-height:1.7}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+
+<div class="page">
+
+<header class="mast">
+  <p class="kicker">Punhos do Destino &middot; Chiaroscuro &middot; <b>Escolhido dos Segredos</b></p>
+  <h1>Osir, Tr&ecirc;s-Dedos<em>Cobrador do cl&atilde; da N&eacute;voa</em></h1>
+  <p class="standfirst">Duas fichas fechadas no talo, 250 XP de mortal e 500 XP de Sideral, a rota de XPG da Temporada 1, e as tr&ecirc;s pessoas que decidiram a vida dele sem nunca terem combinado nada entre si.</p>
+  <div class="coins" aria-label="Sete moedas, uma delas sagrada">
+    <span class="coin"></span><span class="coin"></span><span class="coin"></span>
+    <span class="coin sacred"></span>
+    <span class="coin"></span><span class="coin"></span><span class="coin"></span>
+    <span class="cap">seis dele, uma que apareceu</span>
+  </div>
+</header>
+
+<section>
+  <div class="rail">Em prosa<b>a história inteira</b></div>
+  <div class="body">
+    <h2>O cobrador que era a conta</h2>
+    <p class="standfirst" style="margin:0 0 1.6em">Para quem joga Exalted e nunca ouviu falar dele. As seções seguintes destrincham as mesmas coisas com fonte, custo e tabela; esta aqui é só para ler.</p>
+
+    <div class="note">
+      <p>O que é dos documentos da mesa: Chiaroscuro, a undercity, o clã Hidden in the Mist, o Pó de Ouro, a Legítima Ordem e a Lei do Silêncio das Sombras. O resto, incluindo Azira, Vekhet, as cinco cadeiras e a família em Varang, foi construído por cima disso e continua sendo proposta para o Narrador. As seções abaixo marcam linha por linha o que veio de onde.</p>
+    </div>
+
+    <p>Chiaroscuro é uma cidade do Sul feita de vidro, erguida sobre as ruínas de outra cidade que também era feita de vidro, e a maior parte da gente que vive nela nunca vê o sol. Embaixo do nível da rua há um segundo Chiaroscuro de galerias, canos, docas afundadas e mercados que existem por não terem nome. Quem manda lá embaixo não são os príncipes: são cinco clãs de artistas marciais que se chamam de famílias e se comportam como cartórios armados. Um deles se chama Hidden in the Mist, mora numa barcaça que nunca ancora duas vezes no mesmo trecho de água, e controla a única coisa da undercity que interessa a um Exaltado: o Pó de Ouro, vidro moído que abre os canais de Essência de um mortal comum e o deixa marcado para sempre.</p>
+
+    <p>Quarenta anos atrás, quem descobriu o que o Pó fazia foi uma mulher chamada Azira. Ela entendeu o efeito antes de todo mundo e entendeu junto a única coisa que importava: uma vantagem dessas morre no dia em que virar mercadoria. Foi ideia dela distribuir pouco, só a quem jurasse ao clã, e manter raro de propósito. Ela também desenhou a rota da barcaça, que em quarenta anos ninguém conseguiu alcançar. E tinha um olho verde. Há trinta anos ficou grávida em segredo, sumiu meses antes do parto do jeito que sempre sumia quando os inimigos apertavam, e dessa vez não voltou. O clã vive até hoje das duas coisas que ela inventou e que ninguém mais sabe refazer.</p>
+
+    <p>No mesmo período, a mil e quinhentas milhas dali, nas Cidades-Estado de Varang, nasceu um menino numa família conhecida de videntes. Veio com heterocromia, um olho verde e um castanho, e sem o anelar da mão direita. Nenhuma das duas coisas teve causa nenhuma. Acontecem com gente de verdade, sem motivo, e foi só isso. Os pais leram a criança e viram o que um astrólogo mortal consegue ver e nada além: que havia um destino, que era grande, e que não os incluía. Não souberam qual. Pararam exatamente ali, porque eram bons no ofício e porque a leitura foi clara. Amavam o filho e queriam criá-lo. Quando o homem veio buscar, a mala estava pronta.</p>
+
+    <p>O homem era Behit, Sideral, Escolhido das Jornadas, e a casta dele tem um Charm que resolve missão de entrega numa linha só. Ele chegou preparado para roubar, comprar ou mentir, porque o ofício dele é mover coisa e não convencer gente, e foi embora sem precisar de nada disso. Vinte e nove anos depois ele ainda não arquivou direito aquele dia, e é por isso que volta a Chiaroscuro de tempos em tempos. Não é afeto e não é dever. Sideral simplesmente não gosta de ter sido surpreendido.</p>
+
+    <p>A decisão não foi de Behit. Foi de um arranjo de deuses e Siderais da Mansão de Hera, a Divisão dos Segredos, em Yu-Shan, que leu no menino uma Exaltação futura projetando sombra larga demais para passar despercebida e escolheu onde ele deveria crescer. Tinha que ser o Hidden in the Mist, porque é ali que ele aprenderia a arte marcial de que vai precisar, e porque é naquela cidade que ele encontraria os outros que também ainda não sabem o que são. Vale dizer o que o Bureau não fez: ninguém fabricou a coincidência do olho verde. Ela já estava lá, de graça, num bebê de Varang e numa mulher desaparecida de Chiaroscuro. O Bureau apenas reparou nela e a usou como fechadura, que é o que Siderais de fato fazem. Eles não inventam acasos. Percebem quais servem.</p>
+
+    <p>O clã fez o resto sozinho. Um ano depois do sumiço de Azira apareceu um bebê com um olho verde, e não havia nada a investigar: todo mundo sabia da gravidez, todo mundo sabia que ela tinha ido embora com a barriga, e ninguém jamais presenciou parto nenhum. Ficaram com o menino, e não por caridade. Era a única coisa que sobrou dela. Deram-lhe o nome de Osir. Quem nunca duvidou por um segundo foi Vashi, o Prumo, amiga mais próxima de Azira e mestra de combate do clã, e ela tem motivo: viu a barriga com os próprios olhos. Tem também a parte que ninguém diz em voz alta, que é que ela quer acreditar. Vashi não é ingênua. É uma mulher com uma memória verdadeira que não se aplica ao bebê que puseram na frente dela.</p>
+
+    <p>O menino saiu astuto, do jeito que se esperava de um filho de Azira, e isso só confirmou o que já tinham decidido. Mas na hora de aprender a arte da casa ele travou, e travou por anatomia. O Fivefold Shadow Hand é feito de posições exatas de dedo, uma para cada elemento, e o elemento da família é a Névoa, que é o anelar. O gesto de aprendiz dobra o anelar contra a palma direita. O de adepto encosta os dois anelares pelas pontas. A mão direita dele não forma nem um nem outro. Houve quem gastasse anos com ele e houve quem dissesse na frente dele que era desperdício, que sem o dedo não dava, e os dois grupos continuam no clã sem que nenhum tenha mudado de ideia. Vashi apostou nele desde o primeiro dia, e não por sentimentalismo: foi a única a entender que o problema não era o dedo que faltava, era que ninguém tinha tentado ensinar o gesto de outro jeito. Quem treinou com ele todas as manhãs até o gesto sair foi Tamir, filho dela, pouco mais novo, cinco dedos em cada mão.</p>
+
+    <p>Osir aprendeu. Depois treinou mais e abriu os canais de Essência sem nunca ter tocado no Pó, o que na undercity é quase uma ofensa pessoal. Abriram do jeito lento e por quatro caminhos ao mesmo tempo: dez mil horas de kata repetida no convés, uma vida inteira em cantos ouvindo o que não lhe diziam, uma barcaça que nunca dorme no mesmo trecho e o levou a mais lugares do que quase qualquer pessoa viva da undercity conhece, e curiosidade da variedade que segue um sujeito mais longe do que o serviço exigia. A undercity acha que foi o Pó, e é uma conclusão razoável: ele é da Névoa, a Névoa controla a droga, e o documento local diz que cada dose deixa estilhaços sob a pele, uma articulação que cresce para o lado errado, ou uma cor que o olho não deveria ter. Ele é o terceiro item da lista, e com uma mão de quatro dedos parece ser o segundo também. A verdade é que ele nunca foi jurado, e por isso nunca recebeu dose. A pureza dele é subproduto da exclusão dele.</p>
+
+    <p>Há sete anos ele cobra dívidas. É um trabalho de rua, feito nas Docas Negras e no Undermarket, e ele é bom nele de um jeito que incomoda. Cobrador do Hidden in the Mist não trabalha com um livro-caixa: trabalha com o livro de Vekhet, um deus pequeno da Divisão dos Segredos cuja pasta inteira é uma só, toda dívida existente que ainda não foi cobrada. Dinheiro, favor, vida salva, silêncio comprado, promessa feita na porta. E o caderno de Vekhet não tem números, porque dívida não é mensurável e não existe soma honesta entre uma noite de chuva e oito dinares. Cada linha é uma descrição de circunstância, do tipo <em class="term">"em uma noite de chuva, tendo sido negada abrigo em outro lugar, Halim filho de Rasha foi acolhido por Teniye a viúva, que lhe deu pão que ela mesma não comeu"</em>. O livro é absurdamente longo porque é honesto. Um livro de valores caberia numa prateleira.</p>
+
+    <p>Trabalhar assim tem consequências. Nenhuma dívida é jamais quitada, porque não há como reproduzir as condições em que ela se formou; o que existe é apaziguamento. Todo pagamento gera linha nova em vez de reduzir a antiga. E pagar demais inverte a dívida, transformando quem pagou em credor. Depois de apaziguamentos sucessivos, o próprio Vekhet deixa de saber a direção do saldo e escreve a única coisa que consegue afirmar com honestidade profissional: <em class="term">"permanece algo, de um dos dois para o outro"</em>. Osir lê isso e tem que escolher um lado. Quando escolhe errado, paga quem devia receber, e as dezenas de pessoas que hoje lhe devem sem que ele saiba vieram exatamente daí, e não de generosidade nem de vidência.</p>
+
+    <p>Vekhet manda as contas impossíveis para ele por um motivo prosaico, e o motivo não é talento: os outros cobradores voltam para perguntar. Quem recebe uma linha ilegível vai ao guarda-livros pedir esclarecimento, porque agir sem entender é assumir risco por conta própria. Osir não pergunta. Ele olha a linha, alguma coisa nele decide, e ele vai. Então o deus faz o que qualquer burocrata competente faria e despacha o impossível para o esquisito que devolve serviço feito e não gera correspondência. Ele não sabe das visões do rapaz. Não sabe que existem. Não faz ideia de estar se aproveitando delas.</p>
+
+    <p>Porque há visões, e são reais. Chegam sem legenda: uma imagem, uma data, um objeto. Um vaso. Um braço. Terça-feira. Nunca o motivo. O charlatanismo de Osir não está na visão, está na explicação, que ele improvisa com uma calma administrativa insuportável, porque cobrador que hesita morre. E quando ele mente descaradamente para se safar, a coisa acontece assim mesmo. É a piada central do personagem: ele não tem a opção de ser fraude, porque o universo cobre as mentiras dele.</p>
+
+    <p>O apelido vem de sete moedas de metais diferentes que ele carrega e com as quais paga, de vez em quando, dívidas alheias em momentos que ninguém entende, ele inclusive. Seis foram juntadas por motivo nenhum. A sétima é uma moeda sagrada da Legítima Ordem, das que só Sacerdotes gastam e que nenhum comerciante pode recusar, e apareceu no troco dele numa banca do Undermarket há três anos. Nunca a gastou, porque gastar seria se declarar Sacerdote, e a Lei do Silêncio das Sombras mata quem nomeia um Sacerdote. Também nunca conseguiu se livrar dela: duas vezes deixou cair de propósito num cais, e nas duas ela voltou.</p>
+
+    <p>Na plataforma da Chamada, nas Docas Negras, há um velho que vende espeto, chama Osir de "moço da conta", recusa o dinheiro dele uma vez a cada três com um motivo diferente e sempre irritante, e diz coisas que só fazem sentido no mês seguinte. Osir compra ali há anos e nunca conseguiu guardar o nome do homem, nem o rosto direito. Se perguntarem quem é, ele sente um incômodo de dois segundos, não acha a resposta e deixa para lá. Quem joga Exalted já sabe o que isso é. É Behit, e sempre foi.</p>
+
+    <p>Há duas coisas que ele sabe e nunca disse. A primeira é que não é filho de Azira. Não consegue provar, não entende como nem por quê, e sabe. Nunca desmentiu, e não por oportunismo: foi essa suposição que o manteve vivo num lugar onde criança sem dono não dura, e desmentir agora, sem prova e sem outra história para pôr no lugar, seria catastrófico. Uma vez ele tentou dizer isso a Vashi. Ela ouviu um homem de trinta anos negando a própria mãe morta, foi ríspida do jeito dela, e ele nunca mais tocou no assunto. A segunda é o que ele não sabe, e é uma lista mais longa: que não nasceu em Chiaroscuro, que tem outro nome, que os pais eram videntes e o entregaram porque leram bem, e que um escritório no Céu decidiu onde ele ia morar antes de ele saber andar.</p>
+
+    <p>E há a linha. A conta do clã com Vekhet não fecha, e há gerações que não fecha. O que existe no livro é isto e nada além: <em class="term">"o clã da névoa recebeu, e não pagou"</em>, sem objeto, sem credor, sem data confiável. Toda vez que Vekhet tenta especificar, não volta erro nem recusa nem silêncio suspeito. Volta uma ausência bem-feita. Ele já reescreveu essa linha dezenas de vezes em trinta anos, procurando a formulação que a faça revelar mais, do jeito que se reescreve uma frase que não sai.</p>
+
+    <p>O que o clã pegou sem pagar é o próprio Osir, e o credor é uma família de videntes em Varang que entregou um filho e nunca recebeu nada por ele. A razão de Vekhet nunca chegar lá é que o lacre desce pela cadeia de comando dele mesmo: Nara-O dos Cem Véus, chefe da Divisão dos Segredos, mantém o assunto inencontrável. Não é inimigo, não é sabotagem, não é conspiração de fora. É o chefe do chefe fazendo o trabalho do chefe do chefe, irrecorrível, legítimo e sem ninguém para culpar. Há sete anos Vekhet manda Osir cobrar as contas travadas do clã, e a conta travada é Osir. Ele nunca ligou uma coisa à outra, e não é distração: o lacre não esconde só o fato, torna a associação impensável.</p>
+
+    <p>É aqui que a campanha começa, e é aqui que a regra do sistema faz o trabalho todo. Deuses estão dentro do destino. São tecidos no Tear como qualquer outra coisa em Creation, e quem enxerga o padrão de fora dele são os Siderais, treinados em astrologia. Então a cena já está pronta antes de alguém rolar dado: Osir Exalta como Escolhido dos Segredos, aprende a ler o Tear, e a primeira coisa que faz é olhar para a própria vida procurando a mão do deus, com sete anos de raiva acumulada por recados sem sentido. E encontra que Vekhet nunca escolheu nada. Cada conta impossível caiu na mão dele porque o Tear precisava de um homem naquele endereço, naquela hora. O deus achou que estava se livrando de trabalho chato, e estava sendo usado com a mesma vagueza com que usava o rapaz. Dois burocratas, um humano e um divino, passando um ao outro instruções que nenhum dos dois escreveu.</p>
+
+    <p>E a conta muda de sinal mais uma vez, porque tudo o que Osir é veio dessas cobranças: os segredos que sabe, as casas em que entrou, quem conheceu, a razão de estar vivo. Ele não pode cobrar isso de um deus que não fez por ele de propósito, e não pode dispensar, porque foi feito. Fica devendo a quem não lhe fez favor nenhum, que é exatamente o tipo de linha que o caderno não sabe fechar. O cobrador vira uma delas. Se algum dia ele decidir apaziguar a conta que o gerou, vai ter que ir a Varang, e a única moeda que tem para isso é ele mesmo aparecendo na porta, trinta anos depois, com uma Exaltação nas costas. Pela terceira regra da pasta, isso é pagar muito acima do devido, e pagar acima do devido inverte a dívida. Ele encerra como credor de um casal que fez a coisa certa, o que na contabilidade de Vekhet não é justiça nenhuma: é só mais uma linha, aberta do outro lado.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">A hist&oacute;ria<b>o personagem</b></div>
+  <div class="body">
+    <h2>Um beb&ecirc; entregue no lugar certo, na hora certa, por gente que sabia exatamente o que estava fazendo</h2>
+    <p>Osir acha que a vida dele come&ccedil;ou num cesto, em Chiaroscuro. Est&aacute; errado por trinta anos e mil e quinhentas milhas.</p>
+
+    <h3>Azira, e os quarenta anos</h3>
+    <p><strong>[DOC]</strong> O documento da undercity diz que o P&oacute; de Ouro deixou de ser v&iacute;cio local <em class="term">"h&aacute; cerca de quarenta anos, quando Hidden in the Mist descobriu o que o P&oacute; fazia"</em>, e n&atilde;o diz quem descobriu. Quem descobriu foi <strong>Azira</strong>.</p>
+    <p>Ela entendeu antes de todo mundo que aquele vidro mo&iacute;do abria os canais de Ess&ecirc;ncia de um mortal, e entendeu junto a consequ&ecirc;ncia: a vantagem morre no dia em que virar mercadoria. Foi ideia dela distribuir pouco, s&oacute; a jurados, e manter raro de prop&oacute;sito. Dez anos subindo dentro do cl&atilde;, astuta de um jeito que virava hist&oacute;ria contada. E ela tinha <strong>um olho verde</strong>.</p>
+    <p><strong>[DOC]</strong> O mesmo documento diz outra coisa sobre o mesmo per&iacute;odo: a barca&ccedil;a do cl&atilde; nunca ancora duas vezes no mesmo trecho, e <em class="term">"em quarenta anos ningu&eacute;m conseguiu alcan&ccedil;&aacute;-la, o que a undercity inteira entende n&atilde;o ser sorte"</em>. <strong>[SUGEST&Atilde;O, levar ao mestre]</strong> Duas heran&ccedil;as, o mesmo prazo, a mesma mulher.</p>
+    <p>H&aacute; trinta anos ela estava gr&aacute;vida, e era segredo. Azira acumulou inimigos na mesma velocidade em que subiu, e sumir por uma temporada era h&aacute;bito velho dela, a ponto de ningu&eacute;m no cl&atilde; estranhar mais. Ela desapareceu <strong>meses antes do parto</strong>, exatamente como sempre desaparecia. Dessa vez n&atilde;o voltou.</p>
+    <p>Ningu&eacute;m sabe o que houve com ela, nem com a crian&ccedil;a que ela carregava. O cl&atilde; vive at&eacute; hoje de duas heran&ccedil;as que ela deixou e que ningu&eacute;m mais sabe refazer.</p>
+
+    <h3>Varang, e os pais que estavam prontos</h3>
+    <p>No mesmo per&iacute;odo, longe dali, nas <strong>Cidades-Estado de Varang</strong>, nasceu um menino numa fam&iacute;lia conhecida de videntes. Veio com <strong>heterocromia</strong> e com <strong>o anelar direito faltando</strong>. Nenhuma das duas coisas teve causa. Acontecem com gente de verdade, sem motivo nenhum, e foi s&oacute; isso.</p>
+    <p>Os pais leram a crian&ccedil;a e viram o que um vidente mortal consegue ver, e nada al&eacute;m: <strong>que havia um destino, que era grande, e que n&atilde;o os inclu&iacute;a</strong>. N&atilde;o souberam qual. <strong>[DOC]</strong> As regras s&atilde;o expl&iacute;citas nesse limite, um astr&oacute;logo percebe que existe destino e mede a for&ccedil;a dele, mas um hor&oacute;scopo comum n&atilde;o diz qual &eacute;. Eles pararam exatamente ali. Amavam o filho e queriam cri&aacute;-lo. Leram bem, e leram que n&atilde;o era com eles.</p>
+    <p>Quando o homem veio buscar, a mala estava pronta.</p>
+
+    <h3>Behit, que foi mandado</h3>
+    <p><strong>Behit &eacute; Sideral, Escolhido das Jornadas.</strong> <strong>[DOC]</strong> A casta dele carrega o Charm que resolve a miss&atilde;o inteira numa linha: <em class="term">"Auspicious Prospects for Journeys revela quando e onde algu&eacute;m deve viajar"</em>. Um beb&ecirc; em Varang, um ponto exato em Chiaroscuro, uma data. Formul&aacute;rio padr&atilde;o.</p>
+    <p>Ele chegou preparado para roubar, comprar ou mentir, porque o of&iacute;cio dele &eacute; mover coisa e n&atilde;o convencer gente. Recebeu a crian&ccedil;a das m&atilde;os dos pais, com as coisas j&aacute; separadas, e foi embora sem usar nada do que tinha planejado. <strong>Vinte e nove anos depois ele ainda n&atilde;o arquivou direito aquele dia</strong>, e &eacute; por isso que volta a Chiaroscuro de tempos em tempos. N&atilde;o &eacute; afeto e n&atilde;o &eacute; dever: Sideral n&atilde;o gosta de ter sido surpreendido.</p>
+    <p>Behit n&atilde;o foi informado do porqu&ecirc;. Executou uma entrega.</p>
+
+    <h3>A decis&atilde;o foi tomada em Yu-Shan</h3>
+    <p>Quem escolheu o destino do menino n&atilde;o foi Behit, nem o deus para quem ele viria a trabalhar. Foi um arranjo de deuses e Siderais da <strong>Mans&atilde;o Proibida de Hera</strong>, a Divis&atilde;o dos Segredos. Escolhidos de J&uacute;piter costumam ser opacos at&eacute; entre os pr&oacute;prios pares, mas o destino inicial deste aqui estava <strong>limpo de ler</strong>: uma Exalta&ccedil;&atilde;o futura projeta sombra larga o bastante para ningu&eacute;m precisar apertar os olhos.</p>
+    <p>E o lugar tamb&eacute;m estava claro. Tinha que ser o Hidden in the Mist, porque &eacute; ali que ele aprenderia a arte marcial que vai precisar ter, e porque &eacute; naquela cidade que ele encontraria <strong>os outros que tamb&eacute;m ainda n&atilde;o sabem o que s&atilde;o</strong>.</p>
+    <div class="note">
+      <p>Yu-Shan n&atilde;o fabricou a coincid&ecirc;ncia do olho verde. Ela j&aacute; estava l&aacute;, de gra&ccedil;a, num beb&ecirc; de Varang e numa mulher desaparecida de Chiaroscuro. O Bureau apenas <strong>reparou nela e a usou como fechadura</strong>, que &eacute; o que Siderais de fato fazem: n&atilde;o inventam acasos, percebem quais servem.</p>
+    </div>
+
+    <h3>O cl&atilde; tirou a conclus&atilde;o sozinho</h3>
+    <p>Um ano depois do sumi&ccedil;o de Azira apareceu um beb&ecirc; com um olho verde. Ningu&eacute;m precisou ser convencido de nada, e n&atilde;o havia nada a investigar: <strong>o cl&atilde; sabia da gravidez, sabia que ela tinha ido embora com a barriga, e nunca presenciou parto nenhum</strong>. Um beb&ecirc; com o olho dela fechou a conta sozinho. Ficaram com o menino, e n&atilde;o por caridade: era a &uacute;nica coisa que sobrou dela.</p>
+    <p>&Eacute; por isso que a certeza de <strong>Vashi, o Prumo</strong>, a amiga mais pr&oacute;xima de Azira, continua inabal&aacute;vel trinta anos depois. Ela n&atilde;o acredita numa hist&oacute;ria que contaram para ela: viu a barriga com os pr&oacute;prios olhos e conhecia o h&aacute;bito da amiga de desaparecer.</p>
+    <p>E h&aacute; a parte que ningu&eacute;m diz em voz alta: <strong>ela quer acreditar</strong>. V&ecirc; em Osir o futuro do cl&atilde;, l&ecirc; o olho verde como destino ausp&iacute;cio e o dedo que falta como desafio a vencer. N&atilde;o &eacute; ing&ecirc;nua. &Eacute; uma mulher com uma mem&oacute;ria verdadeira que n&atilde;o se aplica ao beb&ecirc; que puseram na frente dela.</p>
+    <p>Deram-lhe o nome de Osir. O nome verdadeiro, o de Varang, ficou para depois. Se um dia.</p>
+
+    <h3>O dedo, e os que apostaram contra</h3>
+    <p>Ele saiu astuto, do jeito que se esperava de um filho dela, e isso s&oacute; confirmou o que todos j&aacute; tinham decidido. Mas na hora de aprender a arte do cl&atilde; travou, e travou por anatomia declarada em manual: <strong>[DOC]</strong> o Fivefold Shadow Hand &eacute; feito de posi&ccedil;&otilde;es exatas de dedo, e <strong>a N&eacute;voa &eacute; o anelar</strong>. O gesto de aprendiz dobra o anelar contra a palma direita. O de adepto encosta os dois anelares pelas pontas. A m&atilde;o direita dele n&atilde;o forma nem um nem outro.</p>
+    <p>Houve quem gastasse anos com ele, e houve quem dissesse em voz alta, na frente dele, que era desperd&iacute;cio, que sem o dedo n&atilde;o dava. Os dois grupos continuam no cl&atilde; e <strong>nenhum dos dois mudou de ideia depois</strong>.</p>
+    <p><strong>Vashi, o Prumo</strong>, apostou desde o primeiro dia, e n&atilde;o por sentimentalismo. Ela &eacute; a cadeira do M&iacute;nimo, a que ensina, e foi a &uacute;nica a entender que o problema n&atilde;o era o dedo que faltava, e sim que ningu&eacute;m tinha tentado ensinar o gesto de outro jeito. Quem treinou com ele todos os dias at&eacute; o gesto sair foi <strong>Tamir</strong>, filho dela, pouco mais novo, cinco dedos em cada m&atilde;o, e o primeiro a entender que para o irm&atilde;o ia ser um desafio a mais.</p>
+    <p>Osir aprendeu. Depois treinou mais e abriu os canais de Ess&ecirc;ncia sem tocar no P&oacute;. Depois treinou ainda mais e aprendeu Charms escritos para m&atilde;os que ele n&atilde;o tem. <strong>&Eacute; por isso que Vashi o admira</strong>, e ela nunca disse isso a ele. H&aacute; sete anos ele cobra d&iacute;vidas nas Docas Negras e no Undermarket sem errar uma conta.</p>
+
+    <h3>O que ele sabe, e nunca disse</h3>
+    <p><strong>Ele sabe que n&atilde;o &eacute; filho de Azira.</strong> N&atilde;o consegue provar, n&atilde;o entende como nem por qu&ecirc;, e sabe. Nunca desmentiu, e a raz&atilde;o n&atilde;o &eacute; oportunismo: <strong>foi essa suposi&ccedil;&atilde;o que o manteve vivo</strong> num lugar onde crian&ccedil;a sem dono n&atilde;o dura. Desmentir agora, sem prova e sem outra hist&oacute;ria para p&ocirc;r no lugar, seria catastr&oacute;fico.</p>
+    <p>Ele sabe porque <strong>sente</strong>, que &eacute; a pior fonte poss&iacute;vel para uma afirma&ccedil;&atilde;o dessas. A parte vidente que veio de Varang alcan&ccedil;a de raspão a &uacute;nica coisa que ele mais gostaria de saber, e n&atilde;o entrega prova, nem nome, nem lugar. Uma vez ele tentou dizer isso a Vashi. Ela ouviu um homem de trinta anos negando a pr&oacute;pria m&atilde;e morta, foi r&iacute;spida do jeito dela, e ele nunca mais tocou no assunto.</p>
+    <p>&Eacute; o segundo boato que ele carrega sem corrigir. O primeiro &eacute; o do P&oacute;.</p>
+
+    <h3>A Ess&ecirc;ncia n&atilde;o veio do P&oacute;</h3>
+    <p>A undercity inteira acha que ele &eacute; dourado. Faz sentido: &eacute; gente da N&eacute;voa, o cl&atilde; controla o P&oacute;, e ele tem <strong>um olho verde e outro n&atilde;o</strong>. <strong>[DOC]</strong> O pr&oacute;prio documento lista o que cada dose deixa: estilha&ccedil;os sob a pele, uma articula&ccedil;&atilde;o que cresce para o lado errado, <em class="term">uma cor que o olho n&atilde;o deveria ter</em>. Ele &eacute; a terceira da lista, e com uma m&atilde;o de quatro dedos parece ser a segunda tamb&eacute;m.</p>
+    <p>A verdade &eacute; que Osir <strong>nunca tomou uma dose</strong>, e a raz&atilde;o &eacute; administrativa: <strong>[DOC]</strong> o cl&atilde; s&oacute; d&aacute; P&oacute; a jurados e jura pouco de prop&oacute;sito, porque cada juramento &eacute; uma dose entregue e uma boca a mais. Osir sempre foi &uacute;til sem precisar ser jurado. <strong>A pureza dele &eacute; subproduto da exclus&atilde;o dele.</strong></p>
+    <p>Os canais abriram do jeito lento, por quatro caminhos ao mesmo tempo, nenhum qu&iacute;mico:</p>
+    <ul>
+      <li><strong>Treino.</strong> Dez mil horas de kata de N&eacute;voa repetida no conv&eacute;s, desde crian&ccedil;a, contra a opini&atilde;o de metade do cl&atilde;.</li>
+      <li><strong>Informa&ccedil;&atilde;o.</strong> Uma vida em cantos ouvindo o que n&atilde;o lhe diziam. Crian&ccedil;a que carrega vara n&atilde;o conta como gente presente, e cobrador entra em cozinha, dep&oacute;sito e quarto dos fundos.</li>
+      <li><strong>Viagem.</strong> A barca&ccedil;a nunca dorme no mesmo trecho, e a cobran&ccedil;a o levou das Docas &agrave; Queda, &agrave; Galeria dos Nomes. Desceu mais da undercity do que quase qualquer pessoa viva, por itiner&aacute;rio e n&atilde;o por bravata.</li>
+      <li><strong>Curiosidade.</strong> A parte que ningu&eacute;m pediu. Segue um Cano mais longe do que o servi&ccedil;o exigia, e volta ao mesmo beco tr&ecirc;s noites s&oacute; para ver se o sujeito repete o hor&aacute;rio.</li>
+    </ul>
+    <p>Eleva&ccedil;&atilde;o, n&atilde;o qu&iacute;mica. E o verde n&atilde;o &eacute; Wyld: <strong>[DOC]</strong> a Casta dos Segredos marca os seus com <strong>&iacute;ris verdes emoldurando pupilas salpicadas de min&uacute;sculas estrelas de esmeralda</strong>. Ele j&aacute; tem a cor, num olho s&oacute;. As estrelas ainda n&atilde;o chegaram.</p>
+
+    <h3>As sete moedas</h3>
+    <p>O apelido &eacute; literal. Sete moedas de metais diferentes, com as quais ele paga d&iacute;vidas alheias em momentos que ningu&eacute;m entende. Seis s&atilde;o comuns, juntadas por motivo nenhum. <strong>A s&eacute;tima &eacute; uma moeda sagrada da Leg&iacute;tima Ordem</strong>, das que s&oacute; Sacerdotes gastam e que nenhum comerciante pode recusar, e apareceu no troco dele numa banca do Undermarket h&aacute; tr&ecirc;s anos.</p>
+    <p>Nunca a gastou, porque gastar seria se declarar Sacerdote, e a Lei do Sil&ecirc;ncio das Sombras mata quem nomeia um Sacerdote. Tamb&eacute;m nunca conseguiu se livrar dela: duas vezes deixou cair de prop&oacute;sito num cais, e nas duas ela voltou.</p>
+
+    <h3>O velho do espeto</h3>
+    <p>Na plataforma da Chamada, nas Docas Negras, h&aacute; um velho que vende espeto e chama Osir de "mo&ccedil;o da conta". Recusa o dinheiro dele uma vez a cada tr&ecirc;s, sempre com um motivo diferente e sempre irritante, e diz coisas que s&oacute; fazem sentido no m&ecirc;s seguinte.</p>
+    <p>Osir compra ali h&aacute; anos e <strong>nunca conseguiu guardar o nome do homem</strong>. Nem o rosto, direito. Se perguntarem quem &eacute; o velho, ele sente um inc&ocirc;modo de dois segundos, n&atilde;o acha a resposta e deixa para l&aacute;. <strong>[DOC]</strong> &Eacute; o Destino Arcano funcionando como o livro descreve: mortais no m&aacute;ximo chegam a <em class="term">"aquele homem"</em>, sem nunca alcan&ccedil;ar um nome.</p>
+    <p>&Eacute; Behit. Sempre foi.</p>
+
+    <h4>O que ele n&atilde;o sabe</h4>
+    <p>Que n&atilde;o nasceu em Chiaroscuro. Que tem outro nome. Que os pais eram videntes e o entregaram porque leram bem. Que o deus para quem ele trabalha h&aacute; sete anos, sem nunca ter sido apresentado, mant&eacute;m uma linha aberta e ileg&iacute;vel a respeito dele. Que um escrit&oacute;rio no C&eacute;u decidiu onde ele ia morar antes de ele saber andar.</p>
+
+    <h4>Motiva&ccedil;&atilde;o</h4>
+    <p>Entender o que as vis&otilde;es querem, antes que elas o gastem por inteiro.</p>
+    <h4>Intimidades</h4>
+    <p>As sete moedas &middot; o velho do espeto &middot; a barca&ccedil;a &middot; Vashi, o Prumo &middot; Tamir, o irm&atilde;o &middot; "a conta certa na hora certa" &middot; o pavor de ser chamado de Sacerdote em voz alta.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">O cl&atilde;<b>as cinco m&atilde;os</b></div>
+  <div class="body">
+    <h2>Cinco cadeiras, uma por dedo, e a &uacute;nica que ele nunca vai ocupar</h2>
+    <p><strong>[INVEN&Ccedil;&Atilde;O NOSSA]</strong> Nada desta se&ccedil;&atilde;o est&aacute; nos documentos da mesa. Foi desenhado por cima do que o documento da undercity diz do Hidden in the Mist, e vale levar ao mestre antes de tratar como verdade estabelecida.</p>
+    <p>O cl&atilde; se governa por cinco, e a divis&atilde;o copia a arte que ele ensina: uma cadeira por dedo do Punho da Sombra Qu&iacute;ntupla. &Eacute; arranjo mais velho que qualquer um dos cinco atuais, e ningu&eacute;m no subsolo acha isso pitoresco.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Dedo</th><th>A cadeira</th><th>Quem senta</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Polegar<small>o que se op&otilde;e aos outros quatro</small></td><td>Pol&iacute;tica. Fala com o mundo l&aacute; fora, negocia com a Leg&iacute;tima Ordem e com quem mais aparecer</td><td><span class="tag mute">vaga do mestre</span></td></tr>
+        <tr><td class="trait">Indicador<small>o que aponta</small></td><td>Vigil&acirc;ncia e disciplina interna. Aponta alvo, aponta culpado</td><td><span class="tag mute">vaga do mestre</span></td></tr>
+        <tr><td class="trait">M&eacute;dio<small>o mais longo, o que alcan&ccedil;a primeiro</small></td><td>Opera&ccedil;&otilde;es. Manda gente para fora, e &agrave;s vezes n&atilde;o recebe de volta</td><td><span class="tag mute">vaga do mestre</span></td></tr>
+        <tr><td class="trait">Anelar<small>o dedo do anel</small></td><td>Juramentos, pactos e contas. Segura o contrato com Vekhet desde que o cl&atilde; se estabeleceu <span class="tag brass">o dedo que falta em Osir</span></td><td>Menahem, o Talho</td></tr>
+        <tr><td class="trait">M&iacute;nimo<small>fecha o punho por &uacute;ltimo, quebra primeiro</small></td><td>Treino, inicia&ccedil;&atilde;o, os novos. &Eacute; sempre o professor que apanha por causa do aluno</td><td>Vashi, o Prumo</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><p>O &uacute;nico assento do cl&atilde; que Osir <strong>fisicamente</strong> jamais poderia ocupar &eacute; o do anel: juramentos e contas. E &eacute; justamente na contabilidade dessa cadeira que existe uma linha em aberto a respeito dele. Ningu&eacute;m no cl&atilde; leu assim. Todo mundo j&aacute; fez a piada uma vez e parou de fazer.</p></div>
+
+    <div class="folk">
+      <div class="card">
+        <p class="who">Vashi, o Prumo</p>
+        <p class="role">cadeira do m&iacute;nimo &middot; sifu &middot; mestra</p>
+        <p>Cinquenta e poucos anos, combatente e mestra do cl&atilde;, n&atilde;o a l&iacute;der pol&iacute;tica. O prumo &eacute; o peso na linha que diz o que &eacute; vertical de verdade, sem opini&atilde;o, e &eacute; assim que ela ensina.</p>
+        <p>Foi a amiga mais pr&oacute;xima de Azira. Viu a barriga, nunca viu o parto, criou o menino como filho de amiga morta e o educou com o mesmo rigor que deu ao pr&oacute;prio filho.</p>
+        <p><strong>Nunca elogiou Osir na frente dele uma vez sequer</strong>, e o defendeu de morrer todas as vezes que algu&eacute;m no cl&atilde; reclamou do esquisito que pega as contas boas.</p>
+      </div>
+      <div class="card">
+        <p class="who">Tamir</p>
+        <p class="role">filho de vashi &middot; irm&atilde;o de cria&ccedil;&atilde;o</p>
+        <p>Pouco mais novo, criado no mesmo rigor. N&atilde;o h&aacute; rivalidade: os dois se gostam e confiam um no outro. &Eacute; a estrutura que os separa. Tamir tem cinco dedos, tem sobrenome dentro do cl&atilde; e est&aacute; numa trilha que termina numa cadeira.</p>
+        <p>Foi ele que treinou com Osir todos os dias, porque entendeu antes de todo mundo que para o irm&atilde;o ia ser um desafio a mais. E &eacute; ele que defende Osir mais alto do que a pr&oacute;pria m&atilde;e, inclusive na frente das outras cadeiras.</p>
+        <p>Um dia isso vai custar caro a ele, e n&atilde;o vai custar nada a Osir, o que &eacute; pior.</p>
+      </div>
+      <div class="card">
+        <p class="who">Menahem, o Talho</p>
+        <p class="role">cadeira do anelar &middot; guarda-livros</p>
+        <p>Meticuloso, sem mal&iacute;cia, gosta do trabalho. Sabe que o livro do cl&atilde; &eacute; mantido por uma coisa que n&atilde;o &eacute; gente, e acha isso perfeitamente normal: um deus cuida das contas, &eacute; um bom arranjo, funciona desde sempre.</p>
+        <p>N&atilde;o &eacute; segredo guardado a ferro. &Eacute; conhecimento antigo, meio profissional e meio religioso, que vem junto com o cargo, e mais alguns no cl&atilde; tamb&eacute;m sabem.</p>
+        <p>O que ningu&eacute;m nunca fez foi <strong>ler o livro de ponta a ponta</strong>. Ningu&eacute;m l&ecirc; contabilidade assim.</p>
+      </div>
+    </div>
+
+    <h3>O segredo de Tamir</h3>
+    <p>Osir abriu os canais de Ess&ecirc;ncia por treino, informa&ccedil;&atilde;o, viagem e curiosidade, e a undercity inteira acha que foi o P&oacute;. Com Tamir foi o contr&aacute;rio exato: ele treinou, n&atilde;o conseguiu, e <strong>recorreu ao P&oacute;</strong>. Esconde as marcas de todo mundo.</p>
+    <p>S&oacute; Osir sabe. Nem Vashi. Principalmente Vashi, porque o que Tamir teme n&atilde;o &eacute; o cl&atilde;: &eacute; a m&atilde;e olhar para ele e enxergar uma falha.</p>
+    <div class="note"><p>Isso p&otilde;e na m&atilde;o do cobrador do cl&atilde; <strong>a &uacute;nica d&iacute;vida que ele jamais vai cobrar</strong>, e que ele nunca quis ter. Vekhet, se soubesse, teria escrito a linha h&aacute; anos.</p></div>
+
+    <h3>O rel&oacute;gio de bastidor</h3>
+    <p>N&atilde;o precisa ir para a mesa. Funciona melhor em interl&uacute;dio, em tr&ecirc;s batidas ao longo da Temporada 1:</p>
+    <ul>
+      <li>Menahem comenta com Vashi, de passagem, que Osir fecha conta velha melhor do que gente com o dobro de casa. &Eacute; elogio, e ela recebe como elogio.</li>
+      <li>Ele nota que as contas travadas caem sempre no mesmo nome, sup&otilde;e que seja arranjo informal de algu&eacute;m, e vai atr&aacute;s de quem arranjou. N&atilde;o vem de ningu&eacute;m.</li>
+      <li>Ele l&ecirc; o livro inteiro pela primeira vez na vida e encontra tr&ecirc;s coisas de uma vez: <strong>as travadas caem sempre no mesmo cobrador</strong>, <strong>esse cobrador acerta demais para quem nunca pergunta nada</strong>, e <strong>existem linhas em que o devedor &eacute; o cl&atilde;</strong>. Leva &agrave; Vashi, achando que est&aacute; sendo correto.</li>
+    </ul>
+    <p>E &eacute; assim que a mulher que passou a vida escolhendo n&atilde;o olhar para as contas recebe, de um colega bem-intencionado, a &uacute;nica p&aacute;gina do mundo que fala do filho da amiga dela.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">O deus<b>vekhet</b></div>
+  <div class="body">
+    <h2>O deus das d&iacute;vidas n&atilde;o cobradas, e a &uacute;nica linha que ele n&atilde;o consegue escrever</h2>
+    <p><strong>[DOC]</strong> A Divis&atilde;o dos Segredos &eacute; chefiada por <strong>Nara-O dos Cem V&eacute;us</strong>, que det&eacute;m dom&iacute;nio sobre todo segredo que apenas uma pessoa conhece, e abaixo dele est&aacute; <strong>Itzcalimon, Senhor da Chantagem</strong>. <strong>[INVEN&Ccedil;&Atilde;O NOSSA]</strong> Vekhet &eacute; subordinado de Itzcalimon, e a pasta dele &eacute; uma s&oacute;: <strong>toda d&iacute;vida existente que ainda n&atilde;o foi cobrada</strong>. Dinheiro, favor, vida salva, sil&ecirc;ncio comprado, promessa feita na porta.</p>
+
+    <h3>O caderno n&atilde;o tem n&uacute;meros</h3>
+    <p>D&iacute;vida n&atilde;o &eacute; mensur&aacute;vel, nem a monet&aacute;ria. N&atilde;o existe soma honesta entre uma noite de chuva e oito dinares. Ent&atilde;o o livro de Vekhet n&atilde;o &eacute; contabilidade: cada linha &eacute; uma <strong>descri&ccedil;&atilde;o de circunst&acirc;ncia</strong>.</p>
+    <div class="ledger">
+      <p>Em uma noite de chuva, tendo sido negada abrigo em outro lugar, Halim filho de Rasha foi acolhido por Teniye a vi&uacute;va, que lhe deu p&atilde;o que ela mesma n&atilde;o comeu.</p>
+    </div>
+    <p>&Eacute; por isso que o caderno &eacute; longo at&eacute; o absurdo. Ele &eacute; longo porque &eacute; honesto. Um livro de valores caberia numa prateleira.</p>
+
+    <h4>As tr&ecirc;s regras da pasta</h4>
+    <ul>
+      <li><strong>Nenhuma d&iacute;vida &eacute; jamais quitada.</strong> N&atilde;o h&aacute; como reproduzir as condi&ccedil;&otilde;es em que ela se formou. O que existe &eacute; apaziguamento, e &eacute; o que ele sempre busca.</li>
+      <li><strong>Todo pagamento gera linha nova.</strong> Uma conta com sete anos e cinco apaziguamentos n&atilde;o &eacute; um saldo: s&atilde;o seis descri&ccedil;&otilde;es empilhadas que nenhuma opera&ccedil;&atilde;o soma.</li>
+      <li><strong>Pagar demais inverte a d&iacute;vida.</strong> Quem quitou al&eacute;m do devido vira credor, e o antigo credor passa a dever.</li>
+    </ul>
+
+    <h3>Por que ele &eacute; vago</h3>
+    <p>N&atilde;o &eacute; mist&eacute;rio de deus, e n&atilde;o &eacute; irregularidade. &Eacute; <strong>limita&ccedil;&atilde;o real</strong>: ele n&atilde;o tem como dizer quanto, porque quanto n&atilde;o existe. E registrar n&atilde;o &eacute; executar, ent&atilde;o dizer o que fazer estaria fora da atribui&ccedil;&atilde;o dele de qualquer jeito. Vekhet emite a circunst&acirc;ncia. O que fazer com ela &eacute; problema de quem cobra.</p>
+    <p>A dire&ccedil;&atilde;o do saldo ele informa quando sabe. Depois de apaziguamentos sucessivos ele deixa de saber, e escreve a &uacute;nica coisa que consegue afirmar com honestidade profissional:</p>
+    <div class="ledger">
+      <p>Permanece algo, de um dos dois para o outro.</p>
+    </div>
+    <p>Osir l&ecirc; isso e tem que escolher um lado. Quando escolhe errado, paga quem devia receber, e pagar de fora da conta &eacute; sempre desproporcional. A d&iacute;vida vira. <strong>As dezenas de pessoas que ele possui sem saber vieram da&iacute;</strong>, e n&atilde;o de generosidade nem de vid&ecirc;ncia: vieram de contas velhas demais para terem dire&ccedil;&atilde;o leg&iacute;vel.</p>
+
+    <h3>Por que o cl&atilde;, e o que Osir &eacute; para ele</h3>
+    <p>Vekhet n&atilde;o tem lealdade ao Hidden in the Mist. Tem <strong>contrato</strong>, antigo, desde que o cl&atilde; se estabeleceu em Chiaroscuro, e &eacute; muito bem pago por ele. Manter as contas &eacute; servi&ccedil;o prestado, e ele presta bem.</p>
+    <p>Osir &eacute; <strong>um</strong> dos cobradores dele, n&atilde;o o &uacute;nico. &Eacute; o mais peculiar, e a raz&atilde;o &eacute; prosaica: os outros voltam para perguntar. Um cobrador competente que recebe uma linha ileg&iacute;vel vai ao guarda-livros pedir esclarecimento, porque agir sem saber &eacute; assumir risco por conta pr&oacute;pria. <strong>Osir n&atilde;o pergunta.</strong> Ele olha a linha, alguma coisa nele decide, e ele vai.</p>
+    <p>Ent&atilde;o Vekhet faz o que qualquer burocrata competente faria: manda as contas imposs&iacute;veis para o esquisito. Ele n&atilde;o acredita nas vis&otilde;es do rapaz, n&atilde;o sabe que existem, e n&atilde;o faz ideia de estar se aproveitando delas. Ele sabe que aquele nome devolve servi&ccedil;o feito e n&atilde;o gera correspond&ecirc;ncia.</p>
+    <div class="note"><p>Os dois exploram a mesma ambiguidade em dire&ccedil;&otilde;es opostas. O deus livra a mesa de linhas travadas. O rapaz acha que est&aacute; recebendo instru&ccedil;&atilde;o do C&eacute;u. Nenhum dos dois age de m&aacute; f&eacute;, e nenhum dos dois sabe o que o outro est&aacute; fazendo com ele.</p></div>
+    <p>Ele tamb&eacute;m n&atilde;o sabe da Exalta&ccedil;&atilde;o. Ningu&eacute;m informou, porque ningu&eacute;m informa subordinado. Para Vekhet, Osir &eacute; um mortal sob seus cuidados, e ele ainda chama o homem de trinta anos de <em class="term">o menino</em>, para irrita&ccedil;&atilde;o geral.</p>
+
+    <h3>A linha que ele n&atilde;o consegue escrever</h3>
+    <p>A conta do cl&atilde; n&atilde;o fecha. H&aacute; gera&ccedil;&otilde;es que n&atilde;o fecha. O que Vekhet tem no livro &eacute; isto, e nada al&eacute;m:</p>
+    <div class="ledger">
+      <p>O cl&atilde; da n&eacute;voa recebeu, e n&atilde;o pagou.</p>
+      <p class="void">sem objeto &middot; sem credor &middot; sem data confi&aacute;vel</p>
+    </div>
+    <p>Toda vez que ele tenta especificar, n&atilde;o volta nada. N&atilde;o volta erro, n&atilde;o volta recusa, n&atilde;o volta sil&ecirc;ncio suspeito. <strong>Volta uma aus&ecirc;ncia bem-feita.</strong> Ele j&aacute; reescreveu essa linha dezenas de vezes em trinta anos, procurando a formula&ccedil;&atilde;o que a fa&ccedil;a revelar mais, do jeito que se reescreve uma frase que n&atilde;o sai. Nunca sai.</p>
+    <p>O que o cl&atilde; pegou sem pagar <strong>&eacute; o pr&oacute;prio Osir</strong>. E a raz&atilde;o de Vekhet nunca chegar l&aacute; &eacute; que o lacre desce pela cadeia de comando dele mesmo: <strong>Nara-O</strong> mant&eacute;m o assunto inencontr&aacute;vel. N&atilde;o &eacute; inimigo, n&atilde;o &eacute; sabotagem, n&atilde;o &eacute; conspira&ccedil;&atilde;o de fora. &Eacute; o chefe do chefe fazendo o trabalho do chefe do chefe: irrecorr&iacute;vel, leg&iacute;timo, e sem ningu&eacute;m para culpar.</p>
+    <div class="note"><p>H&aacute; sete anos ele manda Osir cobrar as contas travadas do cl&atilde;, e a conta travada &eacute; Osir. Nunca ligou uma coisa &agrave; outra, e n&atilde;o &eacute; distra&ccedil;&atilde;o: o lacre n&atilde;o esconde s&oacute; o fato, torna a associa&ccedil;&atilde;o <strong>impens&aacute;vel</strong>. Toda vez que o pensamento se aproxima, ele se ocupa com outra coisa e n&atilde;o percebe que se ocupou. &Eacute; a coisa mais inc&ocirc;moda que j&aacute; aconteceu com ele.</p></div>
+
+    <h3>A virada</h3>
+    <p><strong>[DOC]</strong> Deuses est&atilde;o <strong>dentro</strong> do destino. S&atilde;o tecidos no Tear como qualquer outra coisa em Creation, e s&atilde;o os Siderais, treinados em astrologia, que enxergam o padr&atilde;o de fora dele.</p>
+    <p>Ent&atilde;o a cena j&aacute; est&aacute; pronta. Osir Exalta, aprende astrologia, e a primeira coisa que faz &eacute; olhar para a pr&oacute;pria vida procurando a m&atilde;o do deus, com sete anos de raiva acumulada por recados sem sentido.</p>
+    <p>E encontra que <strong>Vekhet nunca escolheu nada</strong>. Cada conta imposs&iacute;vel caiu na m&atilde;o dele porque o Tear precisava de um homem naquele endere&ccedil;o, naquela hora. O deus achou que estava se livrando de trabalho chato. Estava sendo usado com a mesma vagueza com que usava Osir.</p>
+    <p>Dois burocratas, um humano e um divino, passando um ao outro instru&ccedil;&otilde;es que nenhum dos dois escreveu.</p>
+    <p>E a conta muda de sinal outra vez. Tudo o que Osir &eacute; veio dessas cobran&ccedil;as: os segredos que sabe, as casas em que entrou, o que viu, quem conheceu, a raz&atilde;o de estar vivo. Ele n&atilde;o pode cobrar isso de Vekhet, porque Vekhet n&atilde;o fez de prop&oacute;sito. E n&atilde;o pode dispensar, porque foi feito. <strong>Ele fica devendo a um deus que n&atilde;o fez por ele</strong>, que &eacute; exatamente o tipo de linha que o caderno n&atilde;o sabe fechar. Agora Osir &eacute; uma delas.</p>
+    <p>Quando isso acontecer, Vekhet vai se arrepender de n&atilde;o ter tido mais cuidado com o menino.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">Em aberto<b>escolhas do mestre</b></div>
+  <div class="body">
+    <h2>O que deliberadamente n&atilde;o foi decidido</h2>
+    <p>Estas pe&ccedil;as ficam de fora por escolha, para que o Narrador resolva sem avisar o jogador.</p>
+
+    <h3>Como Azira sumiu, gr&aacute;vida</h3>
+    <ul>
+      <li><strong>Morreu, sem drama.</strong> A undercity mata gente competente do mesmo jeito que mata o resto, e uma mulher gr&aacute;vida escondida fora do cl&atilde; &eacute; alvo mais f&aacute;cil que o normal.</li>
+      <li><strong>Est&aacute; viva.</strong> Saiu por vontade pr&oacute;pria. Uma mulher astuta o bastante para entender o P&oacute; antes de todo mundo &eacute; astuta o bastante para notar quando um deus entra na sala.</li>
+      <li><strong>Foi removida.</strong> A vaga em forma de crian&ccedil;a com olho verde n&atilde;o apareceu sozinha: algu&eacute;m a abriu para que o beb&ecirc; coubesse nela. &Eacute; a vers&atilde;o que faz Yu-Shan pagar um pre&ccedil;o em sangue pela coloca&ccedil;&atilde;o de Osir, e a que d&oacute;i mais quando ele descobrir.</li>
+    </ul>
+    <p>Em qualquer das tr&ecirc;s sobra a mesma pergunta, e ela tamb&eacute;m &eacute; do mestre: <strong>o que houve com a crian&ccedil;a que ela carregava</strong>. Seja o que for, &eacute; uma linha em aberto em algum lugar.</p>
+
+    <h3>O Destino Arcano alcan&ccedil;a Vekhet?</h3>
+    <p><strong>[DOC]</strong> Quem convive com um Sideral esquece dele, e registro escrito a respeito se perde ou passa a ser atribu&iacute;do a outra pessoa. O alcance exato sobre deuses vale conferir na mesa.</p>
+    <p>Se alcan&ccedil;ar, <strong>a linha do cl&atilde; pode ser a primeira coisa a sumir do caderno</strong> no instante da Exalta&ccedil;&atilde;o. O &uacute;nico ser em Creation com um livro de tudo o que ficou faltando passa a ter uma p&aacute;gina que n&atilde;o segura: escreve, esquece de ter escrito, e sabe apenas que falta alguma coisa ali.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Grau</th><th>O que Vekhet perde</th><th>O que isso faz com a campanha</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Nenhum</td><td>Nada. Deuses n&atilde;o s&atilde;o afetados nesta mesa</td><td>Vekhet vira aliado incomodado e consciente. O arrependimento fica inteiro, e utiliz&aacute;vel</td></tr>
+        <tr><td class="trait">Parcial</td><td>O nome e o rosto. Guarda a sensa&ccedil;&atilde;o de que h&aacute; uma d&iacute;vida</td><td>NPC recorrente que persegue Osir por um motivo que ele n&atilde;o consegue enunciar</td></tr>
+        <tr><td class="trait">Total</td><td>Tudo, inclusive o arrependimento</td><td>O mais cruel. Ele reescreve a linha em branco de tempos em tempos, sem lembrar de j&aacute; t&ecirc;-la escrito</td></tr>
+      </tbody>
+    </table></div>
+    <p>Uma quarta pergunta cabe junto: <strong>se Vekhet chega a entender que foi obstru&iacute;do pela pr&oacute;pria hierarquia</strong>. Se chegar, ele descobre, com milhares de anos de idade, que tamb&eacute;m era uma conta que algu&eacute;m n&atilde;o pagou.</p>
+
+    <h3>O pedido que Osir vai recusar</h3>
+    <p>Uma hora Vekhet vai apontar uma linha em que a parte devedora &eacute; <strong>o cl&atilde;</strong>, e cobr&aacute;-la ser&aacute; contra Vashi. N&atilde;o precisa ser crime: o cl&atilde; pegou alguma coisa de algu&eacute;m numa hora em que pegar era a diferen&ccedil;a entre existir e n&atilde;o existir. Vashi decidiu, sabe exatamente o que fez, e dorme bem.</p>
+    <p>Vekhet n&atilde;o v&ecirc; dilema nenhum. Para ele &eacute; uma linha, e o cl&atilde; paga justamente para que as contas estejam certas. E Osir n&atilde;o vai receber ordem nenhuma: vai receber uma circunst&acirc;ncia, como sempre, e vai levar um tempo lendo at&eacute; reconhecer o nome no meio.</p>
+
+    <h3>As outras tr&ecirc;s cadeiras</h3>
+    <p>Polegar, Indicador e M&eacute;dio est&atilde;o sem nome de prop&oacute;sito. A do Polegar &eacute; a que interessa mais: &eacute; ela que negocia com a Leg&iacute;tima Ordem, e foi da Leg&iacute;tima Ordem que veio a s&eacute;tima moeda.</p>
+  </div>
+</section>
+
+<section>
+<div class="rail">O gimmick<b>como jogar</b></div>
+  <div class="body">
+    <h2>Vidente que n&atilde;o entende a pr&oacute;pria vis&atilde;o</h2>
+    <p>Osir recebe de verdade, e recebe sem legenda: uma imagem, uma data, um objeto. Um vaso. Um bra&ccedil;o. Ter&ccedil;a-feira. Nunca o motivo. O charlatanismo dele n&atilde;o est&aacute; na vis&atilde;o, est&aacute; na <em class="term">explica&ccedil;&atilde;o</em>, que ele improvisa com uma calma administrativa insuport&aacute;vel, porque um cobrador que hesita morre.</p>
+    <p>E quando ele inventa descaradamente para se safar, acontece assim mesmo. Essa &eacute; a parte que faz o personagem funcionar: ele n&atilde;o tem a op&ccedil;&atilde;o de ser fraude, porque o universo cobre as mentiras dele.</p>
+
+    <h4>Tr&ecirc;s regras de mesa</h4>
+    <div class="card">
+      <p><strong>N&atilde;o explique agora.</strong> Ele faz a coisa, diz uma frase curta e vai embora. A justificativa s&oacute; sai se <em class="term">outro jogador</em> perguntar, e no m&aacute;ximo uma vez por sess&atilde;o. Mist&eacute;rio oferecido morre na hora.</p>
+    </div>
+    <div class="card">
+      <p><strong>O caderno.</strong> Anote toda profecia idiota que ele soltar. Uma em cada quatro, voc&ecirc; e o mestre fazem se cumprir de um jeito enviesado, tr&ecirc;s sess&otilde;es depois. As outras tr&ecirc;s nunca se resolvem. Essa propor&ccedil;&atilde;o &eacute; o que separa personagem misterioso de personagem chato.</p>
+    </div>
+    <div class="card">
+      <p><strong>A mentira que se cumpre.</strong> Quando Osir inventar uma justificativa que ele mesmo sabe ser falsa, declare em voz alta na mesa "isso foi inven&ccedil;&atilde;o" e <strong>role Destino 4 assim mesmo</strong>. Com tr&ecirc;s ou mais sucessos, o mestre fica convidado a fazer aquilo virar verdade em alguma sess&atilde;o futura, do jeito mais inconveniente poss&iacute;vel.</p>
+    </div>
+
+    <h4>Calibragem de fala</h4>
+    <div class="quotes">
+      <p>"N&atilde;o &eacute; comigo. &Eacute; com voc&ecirc;, em outubro, e vai ser maior."</p>
+      <p>"Voc&ecirc; vai precisar desse bra&ccedil;o. Eu n&atilde;o, mas voc&ecirc; vai."</p>
+      <p>"Algu&eacute;m tinha que pagar por isso hoje, e n&atilde;o ia sair barato de qualquer jeito."</p>
+      <p>"Esse ainda n&atilde;o &eacute; o seu nome."</p>
+      <p>"Quebrei porque tava no caminho. N&atilde;o do meu."</p>
+      <p>"Eu te devo. S&oacute; n&atilde;o aconteceu ainda."</p>
+    </div>
+
+    <h4>Tr&ecirc;s atitudes prontas para a Temporada 1</h4>
+    <ul>
+      <li>No meio de uma cobran&ccedil;a tensa, ele para, entrega uma moeda <strong>ao devedor</strong> e diz que agora est&atilde;o quites. Ningu&eacute;m entende, ele inclusive. Tr&ecirc;s sess&otilde;es depois aquela moeda aparece na m&atilde;o errada, e &eacute; isso que salva o grupo.</li>
+      <li>Ele cobra a d&iacute;vida de um homem que nunca contraiu nada, com recibo e tudo, e faz quest&atilde;o de que a cobran&ccedil;a seja p&uacute;blica.</li>
+      <li>Ele se recusa a entrar num pr&eacute;dio. Fica na cal&ccedil;ada, encostado, olhando a porta. Quando perguntam, diz que j&aacute; entrou uma vez. O pr&eacute;dio &eacute; novo.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="rail">250 XP<b>a ficha mortal</b></div>
+  <div class="body">
+    <h2>Fechada no talo, conferida no motor da sua ficha</h2>
+    <p class="wide">Os custos abaixo saem de <code>src/data/splats/mortal.json</code> do seu reposit&oacute;rio, n&atilde;o da tabela do livro. Passei a ficha inteira pelo <code>totalXp()</code> de <code>src/lib/calc.js</code>: d&aacute; <strong>250 exatos</strong>, sem sobra e sem estouro.</p>
+
+    <h4>Concedido pelo mestre, fora do or&ccedil;amento</h4>
+    <p>Ess&ecirc;ncia 3 &middot; Qualidade Ess&ecirc;ncia Desperta &middot; Antecedente Destino 4 &middot; os cinco primeiros Charms de um estilo Terrestre. Artes Marciais &eacute; a habilidade favorecida obrigat&oacute;ria.</p>
+
+    <h4>Atributos &middot; 92 XP</h4>
+    <div class="tw"><table>
+      <thead><tr><th>F&iacute;sicos</th><th class="n">&bull;</th><th class="n">XP</th><th>Sociais</th><th class="n">&bull;</th><th class="n">XP</th><th>Mentais</th><th class="n">&bull;</th><th class="n">XP</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">For&ccedil;a</td><td class="n">2</td><td class="n">4</td>
+            <td class="trait">Carisma</td><td class="n">1</td><td class="n">0</td>
+            <td class="trait">Percep&ccedil;&atilde;o</td><td class="n">4</td><td class="n">24</td></tr>
+        <tr><td class="trait">Destreza</td><td class="n">4</td><td class="n">24</td>
+            <td class="trait">Manipula&ccedil;&atilde;o</td><td class="n">3</td><td class="n">12</td>
+            <td class="trait">Intelig&ecirc;ncia</td><td class="n">2</td><td class="n">4</td></tr>
+        <tr><td class="trait">Vigor</td><td class="n">3</td><td class="n">12</td>
+            <td class="trait">Apar&ecirc;ncia</td><td class="n">1</td><td class="n">0</td>
+            <td class="trait">Racioc&iacute;nio</td><td class="n">3</td><td class="n">12</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><p>Carisma e Apar&ecirc;ncia ficam em 1 de prop&oacute;sito. A Exalta&ccedil;&atilde;o sobe de gra&ccedil;a todo atributo abaixo de 2, ent&atilde;o esses dois viram 2 sem custar nada. S&atilde;o 8 XP de economia, e custa pouco em jogo: ele &eacute; um cobrador que intimida por Manipula&ccedil;&atilde;o, n&atilde;o por presen&ccedil;a.</p></div>
+
+    <h4>Habilidades &middot; 103 XP</h4>
+    <div class="tw"><table>
+      <thead><tr><th>Habilidade</th><th class="n">&bull;</th><th class="n">XP</th><th>Por qu&ecirc;</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Artes Marciais <span class="tag">favorecida</span></td><td class="n">5</td><td class="n">19</td><td>M&iacute;nimo do Shadow Palm Invocation, e a temporada &eacute; beat 'em up</td></tr>
+        <tr><td class="trait">Furtividade</td><td class="n">4</td><td class="n">15</td><td>O ponto-chave. Vira 11 dados sob a Forma do estilo</td></tr>
+        <tr><td class="trait">Prontid&atilde;o</td><td class="n">3</td><td class="n">9</td><td>Ele escuta o que n&atilde;o devia. M&iacute;nimo da Casta dos Segredos: 2</td></tr>
+        <tr><td class="trait">Investiga&ccedil;&atilde;o</td><td class="n">3</td><td class="n">9</td><td>M&iacute;nimo da Casta, e base do Auspicious Prospects</td></tr>
+        <tr><td class="trait">Ladinagem</td><td class="n">3</td><td class="n">9</td><td>M&iacute;nimo da Casta: 2. Cobrador vive de m&atilde;o leve e mentira boa</td></tr>
+        <tr><td class="trait">Esquiva</td><td class="n">3</td><td class="n">9</td><td>O estilo n&atilde;o tem defesa pr&oacute;pria. DV Esquiva 5</td></tr>
+        <tr><td class="trait">Presen&ccedil;a</td><td class="n">2</td><td class="n">5</td><td>Cobrar &eacute; intimidar sem levantar a voz</td></tr>
+        <tr><td class="trait">Socializa&ccedil;&atilde;o</td><td class="n">2</td><td class="n">5</td><td>M&iacute;nimo da Casta dos Segredos</td></tr>
+        <tr><td class="trait">Resist&ecirc;ncia</td><td class="n">2</td><td class="n">5</td><td>Apanhar em p&eacute;</td></tr>
+        <tr><td class="trait">Atletismo</td><td class="n">2</td><td class="n">5</td><td>Cen&aacute;rio como arma, que &eacute; o XPG desta temporada</td></tr>
+        <tr><td class="trait">Ocultismo</td><td class="n">2</td><td class="n">5</td><td>Anos de conversa de conv&eacute;s sobre os deuses soterrados</td></tr>
+        <tr><td class="trait">Conhecimento</td><td class="n">2</td><td class="n">5</td><td>Lore 2 &eacute; o limiar do que a undercity considera conhecimento comum</td></tr>
+        <tr><td class="trait">Lingu&iacute;stica</td><td class="n">1</td><td class="n">3</td><td>Ele &eacute; alfabetizado, o que numa undercity j&aacute; &eacute; uma arma</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Especialidades, Virtudes, Vontade e Antecedentes &middot; 55 XP</h4>
+    <div class="tw"><table>
+      <thead><tr><th>Tra&ccedil;o</th><th class="n">&bull;</th><th class="n">XP</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Artes Marciais: brigas em espa&ccedil;o apertado</td><td class="n">1</td><td class="n">3</td><td>Corredor de cais, cabine de barca&ccedil;a, beco</td></tr>
+        <tr><td class="trait">Furtividade: multid&otilde;es do Undermarket</td><td class="n">1</td><td class="n">3</td><td>Sumir para dentro de gente, n&atilde;o para dentro do escuro</td></tr>
+        <tr><td class="trait">Compaix&atilde;o</td><td class="n">2</td><td class="n">3</td><td></td></tr>
+        <tr><td class="trait">Convic&ccedil;&atilde;o</td><td class="n">3</td><td class="n">9</td><td>"Aquilo precisava ser feito". &Eacute; a virtude do conceito</td></tr>
+        <tr><td class="trait">Temperan&ccedil;a</td><td class="n">3</td><td class="n">9</td><td>Ele espera. Ele n&atilde;o explica. Ele n&atilde;o gasta a s&eacute;tima moeda</td></tr>
+        <tr><td class="trait">Valor</td><td class="n">1</td><td class="n">0</td><td>Coragem n&atilde;o &eacute; o problema dele</td></tr>
+        <tr><td class="trait">For&ccedil;a de Vontade</td><td class="n">6</td><td class="n">10</td><td>Teto das duas virtudes mais altas (3 + 3)</td></tr>
+        <tr><td class="trait">Destino <span class="tag brass">concedido</span></td><td class="n">4</td><td class="n">0</td><td>Uma coincid&ecirc;ncia absurda por cena, ou +4 dados numa parada cr&iacute;tica</td></tr>
+        <tr><td class="trait">Backing (cl&atilde; Hidden in the Mist)</td><td class="n">2</td><td class="n">6</td><td>Reconhecido pela barca&ccedil;a, mas nunca jurado. O 2 &eacute; a hist&oacute;ria</td></tr>
+        <tr><td class="trait">Contatos (devedores da undercity)</td><td class="n">2</td><td class="n">6</td><td>Sete anos de gente que ele poupou ou quebrou</td></tr>
+        <tr><td class="trait">Recursos</td><td class="n">2</td><td class="n">6</td><td>Vive bem para os padr&otilde;es do n&iacute;vel &minus;3</td></tr>
+        <tr class="sum"><td>Total</td><td class="n"></td><td class="n">250</td><td>92 atributos &middot; 103 habilidades &middot; 6 especialidades &middot; 21 virtudes &middot; 10 vontade &middot; 18 antecedentes</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Derivados</h4>
+    <div class="stats">
+      <dl class="stat"><dt>Ess&ecirc;ncia</dt><dd>3<span class="u">30 motes perif&eacute;ricos</span></dd></dl>
+      <dl class="stat"><dt>For&ccedil;a de Vontade</dt><dd>6</dd></dl>
+      <dl class="stat"><dt>DV Esquiva</dt><dd>5</dd></dl>
+      <dl class="stat"><dt>DV Aparar</dt><dd>5<span class="u">desarmado</span></dd></dl>
+      <dl class="stat"><dt>DV Mental</dt><dd>5</dd></dl>
+      <dl class="stat"><dt>Iniciativa</dt><dd>6<span class="u">dados</span></dd></dl>
+      <dl class="stat"><dt>Absor&ccedil;&atilde;o</dt><dd>3B<span class="u">1L &middot; 0A</span></dd></dl>
+      <dl class="stat"><dt>Movimento</dt><dd>7<span class="u">10 em corrida</span></dd></dl>
+      <dl class="stat"><dt>Ataque desarmado</dt><dd>9<span class="u">dados</span></dd></dl>
+      <dl class="stat"><dt>Furtividade</dt><dd>8<span class="u">11 sob a Forma</span></dd></dl>
+      <dl class="stat"><dt>Sa&uacute;de</dt><dd>7<span class="u">n&iacute;veis</span></dd></dl>
+    </div>
+
+    <h4>Trocas que eu consideraria</h4>
+    <ul>
+      <li><strong>Atletismo 2 por Integridade 2.</strong> Custo id&ecirc;ntico, 5 XP. Sobe o DV Mental de 5 para 6 e prepara a &aacute;rvore de Integridade Sideral, ao pre&ccedil;o dos stunts de cen&aacute;rio que d&atilde;o XPG nesta temporada. Eu ficaria com Atletismo agora e compraria Integridade com o XP de fim de temporada.</li>
+      <li><strong>Atributo favorecido.</strong> A ficha do site d&aacute; a mortais um Atributo Favorecido por padr&atilde;o (<code>favoredAttributes.picks: 1</code>), mas as regras da mesa s&oacute; citam a Habilidade Favorecida. Se o mestre liberar, favorecer Destreza devolve 6 XP, que compram Esquiva 4 ou uma terceira especialidade e ainda sobra.</li>
+      <li><strong>Furtividade 5</strong> custa 8 XP, que saem de Ocultismo e Conhecimento voltando a 1 e Atletismo a 1. S&oacute; fa&ccedil;a isso se a mesa for mais infiltra&ccedil;&atilde;o que pancadaria.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="rail">Pacote gr&aacute;tis<b>fivefold shadow hand</b></div>
+  <div class="body">
+    <h2>Aspecto N&eacute;voa, que &eacute; o mesmo elemento da Casta</h2>
+    <p>O estilo chama a &Aacute;gua de <em class="term">N&eacute;voa</em>. A Casta dos Segredos tem como associa&ccedil;&otilde;es o verde, a Calibra&ccedil;&atilde;o, o Norte e o elemento &Aacute;gua. O cl&atilde; Hidden in the Mist &eacute; de aspecto &Aacute;gua. Casta, estilo e cl&atilde; caem no mesmo eixo sem que ningu&eacute;m precise for&ccedil;ar.</p>
+    <p>Os cinco Charms concedidos s&atilde;o exatamente o conjunto que abre o Charm terminal do estilo, o que &eacute; sorte de verdade e n&atilde;o arranjo:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Charm</th><th class="n">Custo</th><th>Efeito na mesa</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Mist Apprentice Gesture</td><td class="n">1m</td><td>Anda sobre qualquer superf&iacute;cie, s&oacute;lida ou l&iacute;quida, sem tomar dano. Ele atravessa o Rio Cego a p&eacute;, e o cl&atilde; mora no Rio Cego</td></tr>
+        <tr><td class="trait">Mist Adept Gesture</td><td class="n">3m</td><td>Soma Artes Marciais em <strong>sucessos</strong>, n&atilde;o dados, para resistir a veneno. Cinco sucessos autom&aacute;ticos</td></tr>
+        <tr><td class="trait">Fivefold Shadow Hand Form</td><td class="n">5m</td><td>V&ecirc; e toca desmaterializados, o dano desarmado vira letal, e soma Ess&ecirc;ncia a todo ataque de AM e a toda rolagem de Furtividade</td></tr>
+        <tr><td class="trait">White Breath in the Cold</td><td class="n">6m, 1v</td><td>Sopra n&eacute;voa por 30 jardas: &aacute;rea de visibilidade ruim enquanto ele mantiver o gesto</td></tr>
+        <tr><td class="trait">The Fatal Kiss</td><td class="n">6m, 1v</td><td>Bebe veneno e impregna os pr&oacute;prios tecidos. Todo fluido corporal dele fica t&oacute;xico pela cena</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><p>O estilo &eacute; incompat&iacute;vel com armadura, e a arma de forma da N&eacute;voa &eacute; a faca, que por acaso &eacute; a arma predileta do cl&atilde; Hidden in the Mist. Charms de outros elementos custam <strong>+1 mote</strong> para ele, porque n&atilde;o &eacute; um Terrestre de &Aacute;gua.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">XPG a 8<b>rota da temporada 1</b></div>
+  <div class="body">
+    <h2>Cada kata nova custa uma rela&ccedil;&atilde;o com um cl&atilde; rival</h2>
+    <p>A palavra-chave <em class="term">Share-(Elemento)</em> &eacute; a coisa mais &uacute;til do estilo para esta campanha: uma kata de outro elemento s&oacute; pode ser aprendida se a N&eacute;voa estiver na lista, <strong>e s&oacute; de um professor aspectado ao elemento prim&aacute;rio da kata</strong>. Isso transforma cada compra de XPG numa negocia&ccedil;&atilde;o com uma das outras fam&iacute;lias Five Shade. Estas s&atilde;o todas as op&ccedil;&otilde;es abertas a ele, e nada mais:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Ordem</th><th>Charm</th><th>Professor</th><th>O que compra</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag">1&ordm;</span></td><td class="trait">Shadow Palm Invocation<small>AM 5, Ess&ecirc;ncia 3. Ele j&aacute; tem os dois</small></td><td><span class="tag mute">nenhum</span></td><td>Todo Charm do estilo vira reflexivo e de uma m&atilde;o s&oacute;. Acabam os gestos de duas m&atilde;os. &Eacute; a compra que faz o personagem parecer sobrenatural sem nunca parecer que fez alguma coisa</td></tr>
+        <tr><td><span class="tag">2&ordm;</span></td><td class="trait">The Disappearing Assassin<small>Forgotten Misty Breeze Kata</small></td><td>Guild of the Ever-Shifting Breeze <span class="tag brass">Ar</span></td><td>Quem o viu passa a achar que viu um gato, uma folha caindo, ou nada. Se ele sumir por cinco a&ccedil;&otilde;es, esquecem que viram. Este &eacute; literalmente o Charm de quebrar o vaso e fugir</td></tr>
+        <tr><td><span class="tag">3&ordm;</span></td><td class="trait">Laugh at the Enemy's Aim<small>Forgotten Misty Mountain Kata</small></td><td>Clan Best Forgotten <span class="tag brass">Madeira</span></td><td>O golpe que acertou ele acertou outra coisa: um barril, um banco, uma melancia com palitos de bra&ccedil;o. Defesa perfeita para um m&iacute;stico c&ocirc;mico</td></tr>
+        <tr><td><span class="tag">4&ordm;</span></td><td class="trait">The Cat Disguise<small>Misty Forgotten Breeze Kata</small></td><td>Clan Best Forgotten <span class="tag brass">Madeira</span></td><td>Disfarce de qualquer coisa entre um gato e um alce, objetos inclusive. Ele pode ser um cabide, e ningu&eacute;m repara enquanto ningu&eacute;m pendurar o casaco</td></tr>
+        <tr><td><span class="tag">5&ordm;</span></td><td class="trait">The Nameless Assassin<small>Smoky Mist Mountain Kata</small></td><td>Mountain Clan <span class="tag brass">Terra</span></td><td>Troca de roupa instant&acirc;nea para um uniforme an&ocirc;nimo com m&aacute;scara, guardado no Elsewhere. Aprender isto significa dever um favor ao cl&atilde; que est&aacute; em atrito aberto com o dele</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><p>As outras quatro katas do estilo t&ecirc;m Fuma&ccedil;a ou Brisa como prim&aacute;rias sem listar Share-Mist, e est&atilde;o fechadas para ele em definitivo. &Eacute; consistente com a doutrina do pr&oacute;prio estilo: a N&eacute;voa afoga a Fuma&ccedil;a, e as duas n&atilde;o se ensinam.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">O boom<b>50 xp da exalta&ccedil;&atilde;o</b></div>
+  <div class="body">
+    <h2>A ficha mortal j&aacute; satisfaz os m&iacute;nimos da Casta</h2>
+    <p>Escolhidos dos Segredos precisam de Prontid&atilde;o 2, Investiga&ccedil;&atilde;o 3, Ladinagem 2, Socializa&ccedil;&atilde;o 2 e Furtividade 2. Osir chega com 3, 3, 3, 2 e 4. Nenhum dos 50 XP vai para tapar buraco de ficha, todos v&atilde;o para poder novo.</p>
+    <h4>As quatro escolhas livres de habilidade favorecida</h4>
+    <p>Investiga&ccedil;&atilde;o, Ladinagem, Conhecimento, Ocultismo e Furtividade j&aacute; v&ecirc;m de gra&ccedil;a pela Casta. As quatro escolhas livres deveriam ser <strong>Artes Marciais</strong> (indispens&aacute;vel: barateia toda Arte Marcial Celeste e depois as Siderais), <strong>Prontid&atilde;o</strong>, <strong>Integridade</strong> e <strong>Socializa&ccedil;&atilde;o</strong>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Compra</th><th class="n">XP</th><th>Por que primeiro</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Auspicious Prospects for Secrets<small>Investiga&ccedil;&atilde;o 2, Ess&ecirc;ncia 1</small></td><td class="n">8</td><td>Pela errata, <strong>sem rolagem</strong>. Diz se uma informa&ccedil;&atilde;o deve ser revelada ou ocultada. &Eacute; a licen&ccedil;a mec&acirc;nica do conceito inteiro: ele passa a de fato saber se o vaso precisa quebrar</td></tr>
+        <tr><td class="trait">Efficient Secretary Technique<small>Investiga&ccedil;&atilde;o 1, Ess&ecirc;ncia 2</small></td><td class="n">8</td><td>A aranha-padr&atilde;o de esmeralda que ele cospe e que fica grudada no corpo dele. Busca qualquer fato conhecido por cem pessoas. &Eacute; o motor de "como &eacute; que ele sabe disso"</td></tr>
+        <tr><td class="trait">Avoiding the Truth Technique<small>Ladinagem</small></td><td class="n">8</td><td>Ilus&atilde;o sobrenatural que faz o alvo n&atilde;o acreditar no que ele disse, mesmo sendo verdade, e sobe a dificuldade de detectar mentira nele. A ironia perfeita: o Charm serve para fazer as pessoas duvidarem da verdade</td></tr>
+        <tr><td class="trait">Soft Presence Practice<small>Furtividade</small></td><td class="n">8</td><td>Motes gastos em Charms de Furtividade deixam de acender a anima, e ele ganha um sucesso extra em Furtividade e Ladinagem na cena. &Eacute; o que mant&eacute;m um Sideral rec&eacute;m-exaltado invis&iacute;vel numa cidade que executa quem chama aten&ccedil;&atilde;o</td></tr>
+        <tr><td class="trait">Prior Warning<small>Prontid&atilde;o, favorecida</small></td><td class="n">8</td><td>Por cinco horas, sempre que ele estiver prestes a se meter em encrenca, rola Esperteza + Prontid&atilde;o e sente <strong>dois minutos de aviso por sucesso</strong>. Na ficha dele d&aacute; uns seis. A "sorte esquisita" vira regra escrita</td></tr>
+        <tr><td class="trait">Integridade, de 0 para 2</td><td class="n">5</td><td>DV Mental sobe para 6. Sideral sem Integridade &eacute; alvo f&aacute;cil de influ&ecirc;ncia sobrenatural, e Chiaroscuro tem deuses de templo que enxergam mentira como quem enxerga a luz do dia</td></tr>
+        <tr><td class="trait">Col&eacute;gio dos Guardi&otilde;es, 1 ponto<small>Casa dos Segredos</small></td><td class="n">5</td><td>Astrologia. &Eacute; aqui que quebrar um vaso numa pra&ccedil;a deixa de ser interpreta&ccedil;&atilde;o e passa a reescrever destino de verdade. Ver abaixo por que esse col&eacute;gio em particular</td></tr>
+        <tr class="sum"><td>Total</td><td class="n">50</td><td>Cinco Charms mais dois investimentos de base</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Por que os Guardi&otilde;es, e n&atilde;o a M&aacute;scara</h3>
+    <p>Os Guardi&otilde;es s&atilde;o um dos cinco col&eacute;gios da Casa dos Segredos, ao lado da Chave, da M&aacute;scara, do Feiticeiro e do Tesouro. Personificam <strong>conhecimento pr&aacute;tico e recompensa ganha por trabalho longo</strong>: a sabedoria do bicho e do velho. No aspecto ascendente, quem est&aacute; sob o dom&iacute;nio deles entende Creation por observa&ccedil;&atilde;o prolongada. No descendente, exibe supersti&ccedil;&atilde;o sem sentido e vende bugiganga.</p>
+    <p>O livro lista o col&eacute;gio como sendo o do xam&atilde;, do vendedor de &oacute;leo de cobra, do vendedor de talism&atilde;s, da parteira e do velho abobalhado, e as correla&ccedil;&otilde;es s&atilde;o sabedoria de fog&atilde;o, respeito aos mais velhos, supersti&ccedil;&atilde;o, <strong>charlat&atilde;es e embusteiros</strong>, tradi&ccedil;&atilde;o, paci&ecirc;ncia, observa&ccedil;&atilde;o e inevitabilidade. Escrito assim, de cima para baixo, &eacute; a ficha de personagem do Osir.</p>
+    <p>Duas resplend&ecirc;ncias fecham o caso:</p>
+    <ul>
+      <li><strong>Hayseed Eye</strong>, uma Endurance por semana: ele percebe se a pessoa com quem est&aacute; falando pretende se aproveitar dele. Nenhuma vantagem em combate, o que &eacute; exatamente o tipo de poder que um cobrador usa o dia inteiro.</li>
+      <li><strong>Talisman-Making Touch</strong>, uma Endurance e um dado de Paradoxo: ele cria um talism&atilde; a partir de um objeto pessoal que aben&ccedil;oa, e <strong>n&atilde;o pode ficar com ele</strong>. Tem que entregar a algu&eacute;m que precise. Isso &eacute; a mec&acirc;nica das sete moedas, publicada em 2006, antes de o personagem existir.</li>
+    </ul>
+    <div class="note"><p>A M&aacute;scara continua sendo a segunda escolha &oacute;bvia, e &eacute; o col&eacute;gio do espi&atilde;o, do sacerdote e do bibliotec&aacute;rio. Ela est&aacute; danificada de prop&oacute;sito: os Siderais a torceram depois do Expurgo Solar para criar o Destino Arcano, e por isso n&atilde;o podem tecer destinos ascendentes ou descendentes da M&aacute;scara <em class="term">para si mesmos</em>. Para os outros, funciona normalmente.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">500 XP<b>a ficha de sideral</b></div>
+  <div class="body">
+    <h2>Dezoito Charms comprados, nenhum de Arte Marcial, e &eacute; de prop&oacute;sito</h2>
+    <p class="wide">Conferida no mesmo motor da ficha mortal: <code>totalXp()</code> de <code>src/lib/calc.js</code> contra <code>src/data/splats/sidereal.json</code>. D&aacute; <strong>500 exatos</strong>. As cinco katas de Fivefold Shadow Hand atravessam da fase mortal marcadas como <strong>concedidas</strong> e n&atilde;o consomem or&ccedil;amento, ent&atilde;o o ajuste global fica em zero e nada &eacute; pago duas vezes.</p>
+    <p>Os dezoito Charms comprados s&atilde;o todos de habilidade. Eles existem para sustentar as duas coisas que Osir faz, <strong>ver</strong> e <strong>cobrar</strong>. O combate ele resolve com o que j&aacute; tinha antes de Exaltar, e os cinco Charms da lista de 50 XP da se&ccedil;&atilde;o anterior s&atilde;o o primeiro peda&ccedil;o exato desta mesma ficha.</p>
+
+    <h4>Casta e habilidades favorecidas</h4>
+    <p>Escolhido dos Segredos. Favorecidas: <strong>Artes Marciais</strong>, <strong>Prontid&atilde;o</strong>, <strong>Esquiva</strong> e <strong>Resist&ecirc;ncia</strong>. A quarta era a d&uacute;vida, entre Atletismo, Integridade e Resist&ecirc;ncia.</p>
+    <div class="note"><p><strong>Resist&ecirc;ncia ganhou por causa dos Charms, n&atilde;o do conceito.</strong> A &aacute;rvore de Resist&ecirc;ncia dos Siderais n&atilde;o &eacute; sobre aguentar pancada: &eacute; sobre <em class="term">mexer no destino alheio para n&atilde;o levar a sua</em>. Um veneno que ele guarda preso ao pr&oacute;prio destino e transfere para a pr&oacute;xima pessoa que ferir; dano recebido que ele joga no fate de quem est&aacute; do outro lado. Para um cobrador que trabalha desarmado e sem armadura em beco, isso &eacute; tem&aacute;tico e &eacute; o que o mant&eacute;m vivo. Atletismo n&atilde;o tem &aacute;rvore que interesse a ele, e Integridade sai mais barata como habilidade comum, que &eacute; como ela entrou.</p></div>
+
+    <h4>Onde foram os 500</h4>
+    <div class="tw"><table>
+      <thead><tr><th>Bloco</th><th class="n">XP</th><th>O que comprou</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Atributos</td><td class="n">116</td><td>Des 5 &middot; Per 5 &middot; Man 4 &middot; Apa 3 &middot; Int 3 &middot; Esp 3 &middot; For 2 &middot; Vig 2 &middot; Car 2</td></tr>
+        <tr><td class="trait">Habilidades</td><td class="n">120</td><td>AM 5 &middot; Furtividade 5 &middot; Resist&ecirc;ncia 4 &middot; Investiga&ccedil;&atilde;o 4 &middot; Prontid&atilde;o 4 &middot; Ladinagem 4 &middot; Conhecimento 3 &middot; Esquiva 3 &middot; Integridade 2 &middot; Presen&ccedil;a 2 &middot; Ocultismo 2 &middot; Atletismo 1 &middot; Lingu&iacute;stica 1</td></tr>
+        <tr><td class="trait">Especialidades</td><td class="n">9</td><td>Brigas em espa&ccedil;o apertado &middot; Contas e devedores &middot; Multid&otilde;es do Undermarket</td></tr>
+        <tr><td class="trait">Virtudes</td><td class="n">33</td><td>Convic&ccedil;&atilde;o 4 &middot; Temperan&ccedil;a 3 &middot; Compaix&atilde;o 2 &middot; Valor 2. Falha de Virtude na Convic&ccedil;&atilde;o, que &eacute; a virtude de quem termina a cobran&ccedil;a mesmo quando n&atilde;o devia</td></tr>
+        <tr><td class="trait">For&ccedil;a de Vontade</td><td class="n">22</td><td>7</td></tr>
+        <tr><td class="trait">Ess&ecirc;ncia</td><td class="n">16</td><td>3</td></tr>
+        <tr><td class="trait">Antecedentes</td><td class="n">27</td><td>Acquaintances 3 &middot; Salary 2 &middot; Sifu 2 &middot; Backing 1 &middot; Connections 1</td></tr>
+        <tr><td class="trait">Charms</td><td class="n">144</td><td>18 comprados a 8 cada. As 5 katas mortais entram concedidas, a zero</td></tr>
+        <tr><td class="trait">Col&eacute;gios</td><td class="n">13</td><td>Guardi&otilde;es 2 &middot; Chave 1, ambos favorecidos</td></tr>
+        <tr class="sum"><td>Total</td><td class="n">500</td><td>sem sobra e sem estouro</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><p>Dois antecedentes valem leitura separada. <strong>Sifu 2</strong> &eacute; Vashi, e continua sendo Vashi depois da Exalta&ccedil;&atilde;o, o que &eacute; um problema por si s&oacute;. <strong>Acquaintances 3</strong> est&aacute; escrito na ficha como <em class="term">os devedores que ele n&atilde;o sabe que tem</em>: s&atilde;o as pessoas que ele criou pagando do lado errado de contas velhas demais para terem dire&ccedil;&atilde;o leg&iacute;vel.</p></div>
+
+    <h3>Os dezoito Charms</h3>
+    <div class="tw"><table>
+      <thead><tr><th>&Aacute;rvore</th><th>Charm</th><th>O que faz por ele</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Investiga&ccedil;&atilde;o</td><td>Auspicious Prospects for Secrets<small>1m &middot; Inv 2, Ess 1</small></td><td>Diz se uma informa&ccedil;&atilde;o deve ser revelada ou ocultada. &Eacute; a licen&ccedil;a mec&acirc;nica do conceito inteiro: ele passa a de fato saber se o vaso precisa quebrar</td></tr>
+        <tr><td class="trait">Investiga&ccedil;&atilde;o</td><td>Efficient Secretary Technique<small>2m &middot; Inv 1, Ess 2</small></td><td>Uma aranha-padr&atilde;o de esmeralda que ele cospe e que fica grudada nele, e que busca qualquer fato objetivo n&atilde;o escondido de prop&oacute;sito. O motor de "como &eacute; que ele sabe disso". Um cobrador que ganha uma secret&aacute;ria</td></tr>
+        <tr><td class="trait">Conhecimento</td><td>Methodology of Secrets<small>5m &middot; Conhec 2, Ess 2</small></td><td>Dormindo, a Donzela dos Segredos mostra o plano dela para o destino e onde ele se encaixa. Ao acordar tem tr&ecirc;s especialidades b&ocirc;nus para distribuir, e elas valem tamb&eacute;m na rolagem de astrologia do col&eacute;gio correspondente. &Eacute; a vis&atilde;o vindo com endere&ccedil;o, uma vez que ele durma</td></tr>
+        <tr><td class="trait">Conhecimento</td><td>Of the Shape of the World<small>5m &middot; Conhec 3, Ess 2</small></td><td>Int + Conhecimento, e cada sucesso d&aacute; um fato do futuro de uma pessoa, lugar ou objeto. N&atilde;o diz quando, e s&oacute; uma vez por m&ecirc;s por alvo. &Eacute; exatamente a vis&atilde;o que ele j&aacute; tinha, agora com dados na m&atilde;o</td></tr>
+        <tr><td class="trait">Prontid&atilde;o</td><td>Prior Warning<small>6m &middot; Pront 2, Ess 1</small></td><td>Por cinco horas, sempre que estiver prestes a se meter em encrenca, dois minutos de aviso por sucesso</td></tr>
+        <tr><td class="trait">Prontid&atilde;o</td><td>Expected Pain<small>3m &middot; Pront 3, Ess 2</small></td><td>Dispara sozinho. Ele nunca &eacute; pego desprevenido, e o aviso chega uma a&ccedil;&atilde;o antes. Vale tamb&eacute;m para perigo que ronda um Acquaintance dele, que na ficha dele s&atilde;o tr&ecirc;s pontos de gente</td></tr>
+        <tr><td class="trait">Prontid&atilde;o</td><td>Wise Choice<small>6m &middot; Pront 3, Ess 2</small></td><td>Entre op&ccedil;&otilde;es que ele j&aacute; considerou, v&ecirc; qual d&aacute; o melhor resultado no m&ecirc;s seguinte, e s&oacute; nele. N&atilde;o revela a op&ccedil;&atilde;o que ele n&atilde;o pensou. &Eacute; o Charm que produz decis&atilde;o inexplic&aacute;vel e, ainda assim, defens&aacute;vel</td></tr>
+        <tr><td class="trait">Resist&ecirc;ncia</td><td>Someone Else&rsquo;s Destiny<small>4m &middot; Res 3, Ess 2</small></td><td>Droga, veneno ou doen&ccedil;a vira memorando preso ao destino dele, em &oacute;rbita, at&eacute; o pr&oacute;ximo golpe dele que tirar sangue. A&iacute; passa para a v&iacute;tima. Cobran&ccedil;a escrita como regra</td></tr>
+        <tr><td class="trait">Resist&ecirc;ncia</td><td>Shield of Destiny<small>3m &middot; Res 3, Ess 3</small></td><td>Depois de rolado o dano e antes de aplicado, Des + Resist&ecirc;ncia: cada dois sucessos tiram um n&iacute;vel de sa&uacute;de dele e p&otilde;em no agressor ou num aliado do agressor</td></tr>
+        <tr><td class="trait">Resist&ecirc;ncia</td><td>Optimistic Security Practice<small>5m &middot; Res 3, Ess 2</small></td><td>Sem armadura, soak sobe em Ess&ecirc;ncia + Resist&ecirc;ncia pela cena. E quem tem Convic&ccedil;&atilde;o menor que a Compaix&atilde;o dele gasta For&ccedil;a de Vontade para conseguir atac&aacute;-lo</td></tr>
+        <tr><td class="trait">Resist&ecirc;ncia</td><td>Ox-Body Technique<small>&times;2</small></td><td>N&iacute;veis de sa&uacute;de. Um homem sem armadura, sem escudo e com Vigor 2 precisa dos dois</td></tr>
+        <tr><td class="trait">Esquiva</td><td>Absence<small>2m &middot; Esq 2, Ess 2</small></td><td>O Shadow Over Water dos Viziers. Defesa perfeita contra um ataque</td></tr>
+        <tr><td class="trait">Esquiva</td><td>Duck Fate<small>10m &middot; Esq 3, Ess 2</small></td><td>Des + Esquiva contra a Ess&ecirc;ncia de quem causou o problema, e ele escapa de ataque surpresa, ataque em &aacute;rea, ataque sem componente f&iacute;sico ou efeito cont&iacute;nuo. &Eacute; o bot&atilde;o de p&acirc;nico</td></tr>
+        <tr><td class="trait">Esquiva</td><td>Avoidance Kata<small>2m &middot; Esq 3, Ess 3</small></td><td>Ele n&atilde;o estava l&aacute; quando a confus&atilde;o come&ccedil;ou. Essa &eacute; a vers&atilde;o dele, e o Tear confirma: some, reaparece num lugar plaus&iacute;vel, e a mem&oacute;ria dos outros se reescreve sozinha para explicar o que sobrou</td></tr>
+        <tr><td class="trait">Furtividade</td><td>Soft Presence Practice<small>2m &middot; Furt 2, Ess 1</small></td><td>Motes gastos contam pela metade para acender a anima. &Eacute; o que mant&eacute;m um Sideral rec&eacute;m-exaltado invis&iacute;vel numa cidade que executa quem chama aten&ccedil;&atilde;o</td></tr>
+        <tr><td class="trait">Furtividade</td><td>Blinding the Boar<small>5m 1fv &middot; Furt 2, Ess 2</small></td><td>Ele fica vis&iacute;vel e presente, e nenhum detalhe dele registra na cabe&ccedil;a de ningu&eacute;m: onde est&aacute;, o que veste, o que disse, a apar&ecirc;ncia. &Eacute; o Destino Arcano ensaiado, anos antes de ele ganhar o de verdade</td></tr>
+        <tr><td class="trait">Ladinagem</td><td>Avoiding the Truth Technique<small>3m &middot; Lad 2, Ess 1</small></td><td>Soma Ladinagem em sucessos e faz o alvo achar que enxergou uma mentira, mesmo quando ele falou a verdade. A ironia certa para este personagem: o Charm serve para fazer as pessoas duvidarem do que &eacute; verdade</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Os dois col&eacute;gios</h4>
+    <p><strong>Guardi&otilde;es 2</strong> &eacute; o col&eacute;gio explicado na se&ccedil;&atilde;o anterior: observa&ccedil;&atilde;o longa, supersti&ccedil;&atilde;o, charlat&atilde;es, paci&ecirc;ncia e inevitabilidade, mais o Talisman-Making Touch, que &eacute; a mec&acirc;nica das sete moedas publicada antes de o personagem existir. <strong>A Chave 1</strong> entra como segundo p&eacute; dentro da pr&oacute;pria Casa dos Segredos, e um ponto s&oacute; &eacute; o suficiente para ele come&ccedil;ar a tecer.</p>
+    <p>Os dois s&atilde;o favorecidos por serem da Casa dele. Nada nesta ficha depende de permiss&atilde;o de outra Donzela.</p>
+
+    <details class="json">
+      <summary>osir-sideral-500.json</summary>
+      <div class="jbar"><span>500 XP &middot; ajuste 0 &middot; 18 Charms pagos &middot; 5 concedidos &middot; 2 col&eacute;gios</span><button class="jbtn" type="button" data-copy="jsonsid">Copiar JSON</button></div>
+      <pre id="jsonsid">{
+  "meta": {
+    "schema": 3
+  },
+  "id": {
+    "name": "Osir Sete-Moedas",
+    "player": "",
+    "concept": "Cobrador do clã da Névoa · Escolhido dos Segredos",
+    "motivation": "Entender o que as visões querem antes que elas o gastem por inteiro",
+    "anima": "Verde brilhante; o Sinal dos Segredos na testa",
+    "sobriquet": "Sete-Moedas"
+  },
+  "splat": "sidereal",
+  "caste": "secrets",
+  "favored": {
+    "abilities": [
+      "martial-arts",
+      "awareness",
+      "dodge",
+      "resistance"
+    ],
+    "attributes": []
+  },
+  "attrs": {
+    "strength": {
+      "v": 2,
+      "granted": 0
+    },
+    "dexterity": {
+      "v": 5,
+      "granted": 0
+    },
+    "stamina": {
+      "v": 2,
+      "granted": 0
+    },
+    "charisma": {
+      "v": 2,
+      "granted": 0
+    },
+    "manipulation": {
+      "v": 4,
+      "granted": 0
+    },
+    "appearance": {
+      "v": 3,
+      "granted": 0
+    },
+    "perception": {
+      "v": 5,
+      "granted": 0
+    },
+    "intelligence": {
+      "v": 3,
+      "granted": 0
+    },
+    "wits": {
+      "v": 3,
+      "granted": 0
+    }
+  },
+  "abils": {
+    "archery": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "martial-arts": {
+      "v": 5,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Brigas em espaço apertado",
+          "v": 1
+        }
+      ]
+    },
+    "melee": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "thrown": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "war": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "integrity": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "performance": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "presence": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "resistance": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "survival": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "investigation": {
+      "v": 4,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Contas e devedores",
+          "v": 1
+        }
+      ]
+    },
+    "lore": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "medicine": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "occult": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "athletics": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "awareness": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "dodge": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "larceny": {
+      "v": 4,
+      "granted": 0,
+      "specialties": []
+    },
+    "stealth": {
+      "v": 5,
+      "granted": 0,
+      "specialties": [
+        {
+          "name": "Multidões do Undermarket",
+          "v": 1
+        }
+      ]
+    },
+    "bureaucracy": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "linguistics": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "ride": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "sail": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "socialize": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    }
+  },
+  "crafts": [],
+  "virtues": {
+    "compassion": {
+      "v": 2,
+      "granted": 0
+    },
+    "temperance": {
+      "v": 3,
+      "granted": 0
+    },
+    "conviction": {
+      "v": 4,
+      "granted": 0
+    },
+    "valor": {
+      "v": 2,
+      "granted": 0
+    }
+  },
+  "virtueFlaw": "conviction",
+  "limit": 0,
+  "willpower": {
+    "v": 7,
+    "granted": 0
+  },
+  "willpowerTemp": 7,
+  "essence": {
+    "v": 3,
+    "granted": 0
+  },
+  "backgrounds": [
+    {
+      "name": "Backing (Bureau of Destiny)",
+      "mystic": false,
+      "v": 1,
+      "granted": 0
+    },
+    {
+      "name": "Connections (undercity de Chiaroscuro)",
+      "mystic": false,
+      "v": 1,
+      "granted": 0
+    },
+    {
+      "name": "Acquaintances (os devedores que não sabe que tem)",
+      "mystic": false,
+      "v": 3,
+      "granted": 0
+    },
+    {
+      "name": "Salary",
+      "mystic": true,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "Sifu",
+      "mystic": true,
+      "v": 2,
+      "granted": 0
+    }
+  ],
+  "charms": {
+    "list": [
+      {
+        "name": "(Element) Apprentice Gesture",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-apprentice-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "(Element) Adept Gesture",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "element-adept-gesture",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Fivefold Shadow Hand Form",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "fivefold-shadow-hand-form",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "White Breath in the Cold (Smoky Mountain Mist Kata)",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "white-breath-in-the-cold-smoky-mountain-mist-kata",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Laugh at the Enemy’s Aim (Forgotten Misty Mountain Kata)",
+        "favored": true,
+        "category": "native",
+        "granted": true,
+        "note": "Concedido na fase mortal · Fivefold Shadow Hand, aspecto Névoa",
+        "set": "ma-terrestrial",
+        "cid": "laugh-at-the-enemys-aim-forgotten-misty-mountain-kata",
+        "tree": "fivefold-shadow-hand-style"
+      },
+      {
+        "name": "Auspicious Prospects for (Caste)",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "auspicious-prospects-for-caste",
+        "tree": "investigation"
+      },
+      {
+        "name": "Methodology of Secrets",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "methodology-of-secrets",
+        "tree": "lore"
+      },
+      {
+        "name": "Of the Shape of the World",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "of-the-shape-of-the-world",
+        "tree": "lore"
+      },
+      {
+        "name": "Wise Choice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "wise-choice",
+        "tree": "awareness"
+      },
+      {
+        "name": "Prior Warning",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "prior-warning",
+        "tree": "awareness"
+      },
+      {
+        "name": "Expected Pain",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "expected-pain",
+        "tree": "awareness"
+      },
+      {
+        "name": "Someone Else’s Destiny",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "someone-elses-destiny",
+        "tree": "resistance"
+      },
+      {
+        "name": "Shield of Destiny",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "shield-of-destiny",
+        "tree": "resistance"
+      },
+      {
+        "name": "Optimistic Security Practice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "optimistic-security-practice",
+        "tree": "resistance"
+      },
+      {
+        "name": "Ox-Body Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "ox-body-technique",
+        "tree": "resistance"
+      },
+      {
+        "name": "Ox-Body Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "ox-body-technique",
+        "tree": "resistance"
+      },
+      {
+        "name": "Absence",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "absence",
+        "tree": "dodge"
+      },
+      {
+        "name": "Duck Fate",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "duck-fate",
+        "tree": "dodge"
+      },
+      {
+        "name": "Avoidance Kata",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "avoidance-kata",
+        "tree": "dodge"
+      },
+      {
+        "name": "Soft Presence Practice",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "soft-presence-practice",
+        "tree": "stealth"
+      },
+      {
+        "name": "Blinding the Boar",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "blinding-the-boar",
+        "tree": "stealth"
+      },
+      {
+        "name": "Avoiding the Truth Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "avoiding-the-truth-technique",
+        "tree": "larceny"
+      },
+      {
+        "name": "Efficient Secretary Technique",
+        "favored": true,
+        "category": "native",
+        "granted": false,
+        "note": "",
+        "set": "sidereal",
+        "cid": "efficient-secretary-technique",
+        "tree": "investigation"
+      }
+    ]
+  },
+  "combos": [],
+  "colleges": [
+    {
+      "name": "The Guardians",
+      "favored": true,
+      "v": 2,
+      "granted": 0
+    },
+    {
+      "name": "The Key",
+      "favored": true,
+      "v": 1,
+      "granted": 0
+    }
+  ],
+  "thaumaturgy": [],
+  "mutations": [],
+  "meritsFlaws": [],
+  "sorcery": {
+    "circles": {},
+    "spells": []
+  },
+  "commitments": [],
+  "health": {
+    "extras": {
+      "ox": 0
+    },
+    "marks": []
+  },
+  "weapons": [],
+  "armor": [],
+  "notes": {
+    "intimacies": "",
+    "backstory": "",
+    "gear": ""
+  },
+  "budget": 500,
+  "adjustment": 0
+}</pre>
+    </details>
+    <p>J&aacute; est&aacute; gravado em <code>ajustes/osir-sideral-500.json</code> no reposit&oacute;rio, pronto para o bot&atilde;o <strong>Import</strong>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">Depois<b>as quatro temporadas</b></div>
+  <div class="body">
+    <h2>Onde isso tudo vai dar</h2>
+    <div class="ladder">
+      <div class="rung now">
+        <div class="num">1</div>
+        <div>
+          <h3>As Sombras de Chiaroscuro &middot; beat 'em up</h3>
+          <p>Mortal. Fivefold Shadow Hand aspecto N&eacute;voa, Shadow Palm Invocation, e as katas compradas de cl&atilde;s rivais. A amea&ccedil;a pendurada &eacute; a s&eacute;tima moeda: algu&eacute;m, em algum momento, vai perguntar de onde ela veio.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <div class="num">2</div>
+        <div>
+          <h3>Ascens&atilde;o a Yu-Shan &middot; treinamento</h3>
+          <p><strong>Ebon Shadow Style</strong> como Arte Marcial Celeste. Ele entra com Artes Marciais 5 e Ess&ecirc;ncia 3, ent&atilde;o pega a &aacute;rvore inteira sem gargalo: Image of Death Technique, Wall Climbing Technique, Distracting Finger-Gesture Attack, Ebon Shadow Form.</p>
+          <p>A Forma tem um detalhe que serve a este personagem especificamente: quem morre sob ela vira fuma&ccedil;a preta, n&atilde;o deixa fantasma, e o corpo n&atilde;o identifica ningu&eacute;m. &Eacute; a Lei do Sil&ecirc;ncio das Sombras escrita como Charm.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <div class="num">3</div>
+        <div>
+          <h3>O Torneio das Constela&ccedil;&otilde;es &middot; shounen e intriga</h3>
+          <p>Fundo da &aacute;rvore do Ebon Shadow: Paralyzing Touch Attack, Blow-Concealing Gesture Technique, Shadow-Body Style. E o lado Segredos abrindo em Gift of a Broken Mask, que imp&otilde;e Destino Arcano a quem ele quiser, por dias. Ele quebra o vaso e a v&iacute;tima literalmente n&atilde;o consegue reter quem foi.</p>
+          <p>Col&eacute;gios subindo. Astrologia &eacute; a arma de bastidor num torneio.</p>
+        </div>
+      </div>
+      <div class="rung">
+        <div class="num">4</div>
+        <div>
+          <h3>Mestres da Realidade &middot; &eacute;pico</h3>
+          <p><strong>Charcoal March of Spiders</strong> como Arte Marcial Sideral: o estilo de caminhar sobre os fios do destino e das aranhas-padr&atilde;o. &Eacute; o fecho do arco de um homem que passou quatro temporadas fingindo entender o destino e agora anda em cima dele.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">Importar<b>ficha em json</b></div>
+  <div class="body">
+    <h2>Pronta para o bot&atilde;o Import</h2>
+    <p>J&aacute; gravei o arquivo em <code>ajustes/osir-sete-moedas.json</code> no reposit&oacute;rio. Abra a ficha, clique em <strong>Import</strong> e aponte para ele. O or&ccedil;amento vem em 250 e o ajuste de XP em zero: os cinco Charms entram marcados como concedidos e j&aacute; n&atilde;o consomem or&ccedil;amento, ent&atilde;o n&atilde;o &eacute; preciso refundo nenhum. Os Charms v&ecirc;m ligados &agrave;s entradas reais de <code>ma-terrestrial</code>, ent&atilde;o a checagem de m&iacute;nimos funciona.</p>
+    <details class="json">
+      <summary>osir-sete-moedas.json</summary>
+      <div class="jbar"><span>250 XP &middot; ajuste 0 &middot; 5 Charms concedidos &middot; 4 antecedentes</span><button class="jbtn" type="button" data-copy="jsonblob">Copiar JSON</button></div>
+      <pre id="jsonblob">{
+  "id": {
+    "name": "Osir Sete-Moedas",
+    "anima": "sem anima; mortal de Essencia desperta",
+    "player": "",
+    "concept": "Cobrador do clã da Névoa · futuro Escolhido dos Segredos",
+    "sobriquet": "Sete-Moedas",
+    "motivation": "Entender o que as visões querem antes que elas o gastem por inteiro"
+  },
+  "meta": {
+    "schema": 2
+  },
+  "abils": {
+    "war": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "lore": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "ride": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "sail": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "dodge": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "melee": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "occult": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "thrown": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "archery": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "larceny": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "stealth": {
+      "v": 4,
+      "granted": 0,
+      "specialties": [
+        {
+          "v": 1,
+          "name": "Multidões do Undermarket"
+        }
+      ]
+    },
+    "medicine": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "presence": {
+      "v": 1,
+      "granted": 0,
+      "specialties": []
+    },
+    "survival": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "athletics": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "awareness": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    },
+    "integrity": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "socialize": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "resistance": {
+      "v": 2,
+      "granted": 0,
+      "specialties": []
+    },
+    "bureaucracy": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "linguistics": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "performance": {
+      "v": 0,
+      "granted": 0,
+      "specialties": []
+    },
+    "martial-arts": {
+      "v": 5,
+      "granted": 0,
+      "specialties": []
+    },
+    "investigation": {
+      "v": 3,
+      "granted": 0,
+      "specialties": []
+    }
+  },
+  "armor": [],
+  "attrs": {
+    "wits": {
+      "v": 3,
+      "granted": 2
+    },
+    "stamina": {
+      "v": 2,
+      "granted": 2
+    },
+    "charisma": {
+      "v": 2,
+      "granted": 2
+    },
+    "strength": {
+      "v": 2,
+      "granted": 2
+    },
+    "dexterity": {
+      "v": 5,
+      "granted": 2
+    },
+    "appearance": {
+      "v": 3,
+      "granted": 2
+    },
+    "perception": {
+      "v": 4,
+      "granted": 2
+    },
+    "intelligence": {
+      "v": 2,
+      "granted": 2
+    },
+    "manipulation": {
+      "v": 4,
+      "granted": 2
+    }
+  },
+  "caste": "",
+  "limit": 0,
+  "notes": {
+    "gear": "Faca de Névoa (arma de forma do estilo) · sete moedas de metais diferentes, uma delas sagrada da Legítima Ordem",
+    "backstory": "NASCEU EM VARANG, NAO EM CHIAROSCURO. Filho de uma familia conhecida de videntes nas Cidades-Estado de Varang.\nVeio com heterocromia e com o anelar direito faltando; nenhuma das duas coisas teve causa.\nOs pais leram que havia um destino grande e que nao os incluia, e nao souberam qual. Pararam ali e entregaram o filho.\nA entrega foi feita por Behit, Sideral Escolhido das Jornadas, por arranjo da Divisao dos Segredos em Yu-Shan.\nEle nao sabe nada disso. Acha que a vida dele comecou num cesto, em Chiaroscuro.\n\nO CLA TIROU A CONCLUSAO SOZINHO. Um ano antes, Azira desaparecera gravida: a mulher de olho verde que\ndescobriu o que o Po de Ouro fazia, e cuja segunda heranca e a rota da barcaca que ninguem alcanca.\nApareceu um bebe com um olho verde, o cla sabia da gravidez e nunca presenciou parto nenhum. Fechou a conta sozinho.\nVashi, o Prumo, amiga mais proxima de Azira, viu a barriga e nunca viu o parto: a certeza dela e inabalavel, e ela quer acreditar.\nOsir SABE que nao e filho de Azira, por sentir e nao por prova, e nunca desmentiu: foi essa suposicao que o manteve vivo.\n\nO DEDO. O Fivefold Shadow Hand e feito de posicoes exatas de dedo, e a Nevoa e o anelar. A mao direita dele nao forma o gesto.\nMetade do cla disse em voz alta que era desperdicio. Vashi apostou nele e Tamir, filho dela, treinou com ele todos os dias ate sair.\nAprendeu de outro jeito, e depois aprendeu Charms escritos para maos que ele nao tem.\n\nDESPERTOU ESSENCIA POR MEIOS NATURAIS, NAO PELO PO DE OURO. Nunca jurou, e por isso nunca recebeu dose:\no cla so da Po a jurados e jura pouco de proposito. A pureza dele e subproduto da exclusao dele.\nQuatro caminhos, nenhum quimico:\n  Treino  - dez mil horas de kata de Nevoa repetida no conves, desde crianca.\n  Informacao - uma vida em cantos ouvindo o que nao lhe diziam; cobrador entra em cozinha e quarto dos fundos.\n  Viagem - a barcaca nunca ancora duas vezes no mesmo trecho, e a cobranca o levou das Docas a Queda a Galeria dos Nomes.\n  Curiosidade - segue um Cano mais longe do que o servico exigia, so para ver se o sujeito repete o horario.\n\nTEM HETEROCROMIA: o olho esquerdo e verde-claro, cor de vidro fino contra a luz, e o direito e castanho escuro.\nEsse verde nao e Wyld: e a Exaltacao chegando anos antes da hora. A Casta dos Segredos marca os seus com iris verdes\nemoldurando pupilas salpicadas de estrelas de esmeralda. Ele ja tem a cor, e so em metade dos olhos; as estrelas nao chegaram.\nA undercity inteira acha que ele e dourado: o documento lista o que cada dose de Po deixa, e \"uma cor que o olho nao deveria ter\"\ne o terceiro item, num olho so, e com uma mao de quatro dedos ele parece ser o segundo tambem.\nNao ha veio verde nenhum na pele do rosto: quem tocou Po de Ouro carrega a marca atravessando a pele, e ele nao carrega.\n\nCOBRA HA SETE ANOS nas Docas Negras e no Undermarket para Vekhet, deus das dividas nao cobradas, sem nunca ter sido apresentado.\nRecebe circunstancias, nao ordens, e nao volta para perguntar, o que e exatamente por que as contas impossiveis caem nele.\nRecebe visoes de verdade e sem legenda: uma imagem, uma data, um objeto, nunca o motivo. Improvisa a explicacao com calma administrativa.\n\nA CONTA QUE O CLA NAO PAGOU E ELE. Vekhet tem a linha ha trinta anos e nunca conseguiu especifica-la,\nporque Nara-O dos Cem Veus mantem o assunto inencontravel. Se alguem confirmar que ele nunca foi jurado,\nele perde alavancagem antes de perder a vida.",
+    "intimacies": "As sete moedas · o velho do espeto · a barcaca · Vashi, o Prumo · Tamir, o irmao · \"a conta certa na hora certa\" · o pavor de ser chamado de Sacerdote em voz alta"
+  },
+  "splat": "mortal",
+  "budget": 250,
+  "charms": {
+    "list": [
+      {
+        "cid": "element-apprentice-gesture",
+        "set": "ma-terrestrial",
+        "name": "Mist Apprentice Gesture",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "tree": "fivefold-shadow-hand-style",
+        "favored": true,
+        "granted": true,
+        "category": "native"
+      },
+      {
+        "cid": "element-adept-gesture",
+        "set": "ma-terrestrial",
+        "name": "Mist Adept Gesture",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "tree": "fivefold-shadow-hand-style",
+        "favored": true,
+        "granted": true,
+        "category": "native"
+      },
+      {
+        "cid": "fivefold-shadow-hand-form",
+        "set": "ma-terrestrial",
+        "name": "Fivefold Shadow Hand Form",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "tree": "fivefold-shadow-hand-style",
+        "favored": true,
+        "granted": true,
+        "category": "native"
+      },
+      {
+        "cid": "white-breath-in-the-cold-smoky-mountain-mist-kata",
+        "set": "ma-terrestrial",
+        "name": "White Breath in the Cold (Smoky Mountain Mist Kata)",
+        "note": "Pacote grátis · Fivefold Shadow Hand, aspecto Névoa",
+        "tree": "fivefold-shadow-hand-style",
+        "favored": true,
+        "granted": true,
+        "category": "native"
+      },
+      {
+        "cid": "laugh-at-the-enemys-aim-forgotten-misty-mountain-kata",
+        "set": "ma-terrestrial",
+        "name": "Laugh at the Enemy’s Aim (Forgotten Misty Mountain Kata)",
+        "note": "",
+        "tree": "fivefold-shadow-hand-style",
+        "favored": true,
+        "granted": true,
+        "category": "native"
+      }
+    ]
+  },
+  "combos": [],
+  "crafts": [
+    {
+      "v": 0,
+      "name": "Air",
+      "granted": 0,
+      "specialties": []
+    },
+    {
+      "v": 0,
+      "name": "Earth",
+      "granted": 0,
+      "specialties": []
+    },
+    {
+      "v": 0,
+      "name": "Fire",
+      "granted": 0,
+      "specialties": []
+    },
+    {
+      "v": 0,
+      "name": "Water",
+      "granted": 0,
+      "specialties": []
+    },
+    {
+      "v": 0,
+      "name": "Wood",
+      "granted": 0,
+      "specialties": []
+    }
+  ],
+  "health": {
+    "marks": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "extras": {
+      "l0": 0,
+      "l1": 0,
+      "l2": 0,
+      "l4": 0,
+      "inc": 0
+    }
+  },
+  "essence": {
+    "v": 3,
+    "granted": 3
+  },
+  "favored": {
+    "abilities": [
+      "martial-arts"
+    ],
+    "attributes": []
+  },
+  "sorcery": {
+    "spells": [],
+    "circles": {
+      "terrestrial": false
+    }
+  },
+  "virtues": {
+    "valor": {
+      "v": 2,
+      "granted": 0
+    },
+    "compassion": {
+      "v": 2,
+      "granted": 0
+    },
+    "conviction": {
+      "v": 3,
+      "granted": 0
+    },
+    "temperance": {
+      "v": 3,
+      "granted": 0
+    }
+  },
+  "weapons": [],
+  "colleges": [],
+  "mutations": [],
+  "willpower": {
+    "v": 6,
+    "granted": 0
+  },
+  "adjustment": 0,
+  "virtueFlaw": "conviction",
+  "backgrounds": [
+    {
+      "v": 4,
+      "name": "Destiny",
+      "mystic": false,
+      "granted": 4
+    },
+    {
+      "v": 2,
+      "name": "Backing (Clã Hidden in the Mist)",
+      "mystic": false,
+      "granted": 0
+    },
+    {
+      "v": 2,
+      "name": "Contacts (devedores da undercity)",
+      "mystic": false,
+      "granted": 0
+    },
+    {
+      "v": 2,
+      "name": "Resources",
+      "mystic": false,
+      "granted": 0
+    }
+  ],
+  "commitments": [],
+  "meritsFlaws": [
+    {
+      "flaw": false,
+      "name": "Essência Desperta (concedida pelo mestre)",
+      "points": 0
+    }
+  ],
+  "thaumaturgy": [],
+  "willpowerTemp": 6
+}</pre>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="rail">Pend&ecirc;ncias<b>para o mestre</b></div>
+  <div class="body">
+    <h2>O que ainda depende de outra pessoa</h2>
+    <ul>
+      <li><strong>A s&eacute;tima moeda.</strong> Quem a colocou no troco dele, e por qu&ecirc;. Eu deixaria isso inteiramente na m&atilde;o do mestre, inclusive a possibilidade de ningu&eacute;m ter colocado.</li>
+      <li><strong>Behit.</strong> Confirmar que o velho do espeto &eacute; o mentor Sideral disfar&ccedil;ado, ou entregar o c&uacute;mplice e deixar o mestre escolher se usa.</li>
+      <li><strong>Backing para uma fam&iacute;lia Five Shade.</strong> Se o mestre preferir Allies ou Contacts no lugar, o custo muda: Allies &eacute; antecedente m&iacute;stico na sua ficha e pula para 6 por ponto a partir do quarto.</li>
+      <li><strong>Artefato n&iacute;vel 1 a 3.</strong> Permitido com aprova&ccedil;&atilde;o e boa justificativa. A candidata &oacute;bvia &eacute; a faca de N&eacute;voa, mas eu n&atilde;o gastaria XP nisso: o personagem &eacute; mais interessante sem nada na m&atilde;o.</li>
+      <li><strong>Ozur.</strong> O Dragon-Blood outcaste da Chamada &eacute; a pe&ccedil;a mais solta e mais &uacute;til do documento da undercity. Osir cobra nas Docas, ent&atilde;o os dois se conhecem de vista. Vale combinar com o mestre se essa rela&ccedil;&atilde;o existe antes da primeira sess&atilde;o.</li>
+    </ul>
+
+    <h3>Uma coisa no reposit&oacute;rio</h3>
+    <p>Os Guardi&otilde;es j&aacute; foram acrescentados a <code>src/data/splats/sidereal.json</code>. O resto da lista, por&eacute;m, &eacute; uma mistura de primeira e segunda edi&ccedil;&atilde;o: entradas como Ascending Air, Corvus, Fire Ship, Hammer e Rocket n&atilde;o existem nos vinte e cinco col&eacute;gios de 2&ordf; edi&ccedil;&atilde;o, e faltam oito que existem.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Casa</th><th>Os cinco col&eacute;gios</th></tr></thead>
+      <tbody>
+        <tr><td class="trait">Jornadas <small>Merc&uacute;rio</small></td><td>O Capit&atilde;o &middot; A Gaivota &middot; O Mastro &middot; O Mensageiro &middot; O Leme</td></tr>
+        <tr><td class="trait">Serenidade <small>V&ecirc;nus</small></td><td>O Jarro &middot; Os Amantes &middot; O M&uacute;sico &middot; O Pav&atilde;o &middot; O Pilar</td></tr>
+        <tr><td class="trait">Batalhas <small>Marte</small></td><td>O Estandarte &middot; A Manopla &middot; A Aljava &middot; O Escudo &middot; A Lan&ccedil;a</td></tr>
+        <tr><td class="trait">Segredos <small>J&uacute;piter</small></td><td>Os Guardi&otilde;es &middot; A Chave &middot; A M&aacute;scara &middot; O Feiticeiro &middot; O Tesouro</td></tr>
+        <tr><td class="trait">Finais <small>Saturno</small></td><td>O Cad&aacute;ver &middot; O Corvo &middot; A Carro&ccedil;a &middot; A Fuma&ccedil;a Ascendente &middot; A Espada</td></tr>
+      </tbody>
+    </table></div>
+    <p>&Eacute; s&oacute; pedir e eu substituo a lista inteira por essa.</p>
+  </div>
+</section>
+
+<footer>
+  Fontes: Punhos do Destino, A Undercity de Chiaroscuro e Leg&iacute;tima Ordem de Chiaroscuro (Notion da mesa) &middot; Scroll of Errata 2.5 &middot; Scroll of the Monk &middot; The Manual of Exalted Power: Sidereals<br>
+  Custos de XP conferidos contra src/data/splats/mortal.json e src/lib/calc.js do reposit&oacute;rio exalted
+</footer>
+
+</div>
+
+<script>
+Array.prototype.forEach.call(document.querySelectorAll('.jbtn[data-copy]'), function (btn) {
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.getAttribute('data-copy'));
+    if (!el) return;
+    var done = function (msg) {
+      btn.textContent = msg;
+      setTimeout(function () { btn.textContent = 'Copiar JSON'; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(el.textContent).then(function () { done('Copiado'); })
+        .catch(function () { done('Selecione e copie'); });
+    } else {
+      done('Selecione e copie');
+    }
+  });
+});
+</script>
+

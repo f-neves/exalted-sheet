@@ -1,0 +1,583 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exalted 2e · Artes Marciais × Armas</title>
+<style>
+  :root{
+    --bg:#f6f3ec; --panel:#fffdf8; --ink:#241f1a; --dim:#6d6459; --line:#ddd4c4;
+    --accent:#8c2f2f; --t:#2f6b4f; --c:#2b5c8a; --s:#6d3f8c; --chip:#efe9dc;
+    --shadow:0 1px 2px rgba(60,45,25,.08),0 8px 24px rgba(60,45,25,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#15130f;--panel:#1e1b16;--ink:#ece5d8;--dim:#9a9082;--line:#332e26;
+      --accent:#d97a6c;--t:#6fbf95;--c:#79aede;--s:#b58ad8;--chip:#282319;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);}
+  }
+  :root[data-theme=light]{--bg:#f6f3ec;--panel:#fffdf8;--ink:#241f1a;--dim:#6d6459;--line:#ddd4c4;
+    --accent:#8c2f2f;--t:#2f6b4f;--c:#2b5c8a;--s:#6d3f8c;--chip:#efe9dc;
+    --shadow:0 1px 2px rgba(60,45,25,.08),0 8px 24px rgba(60,45,25,.07);}
+  :root[data-theme=dark]{--bg:#15130f;--panel:#1e1b16;--ink:#ece5d8;--dim:#9a9082;--line:#332e26;
+    --accent:#d97a6c;--t:#6fbf95;--c:#79aede;--s:#b58ad8;--chip:#282319;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:.01em}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 20px}
+  .sub b{color:var(--ink);font-weight:600}
+
+  nav{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:20px}
+  nav button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+    color:var(--dim);font:inherit;font-size:14px;padding:9px 14px;cursor:pointer;margin-bottom:-1px}
+  nav button:hover{color:var(--ink)}
+  nav button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+  .tier{display:inline-block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;padding:2px 7px;border-radius:3px;
+    border:1px solid currentColor;white-space:nowrap}
+  .tier.T{color:var(--t)} .tier.C{color:var(--c)} .tier.S{color:var(--s)}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  input[type=search],select{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);
+    border-radius:6px;background:var(--panel);color:var(--ink);min-width:0}
+  input[type=search]{flex:1;min-width:180px}
+  label.chk{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:6px;cursor:pointer}
+
+  .cols{display:grid;grid-template-columns:minmax(240px,320px) 1fr;gap:24px;align-items:start}
+  @media (max-width:760px){.cols{grid-template-columns:1fr}}
+
+  .famgroup{margin-bottom:14px}
+  .famgroup h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);
+    font-family:ui-sans-serif,system-ui,sans-serif;margin:0 0 6px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12.5px;padding:4px 9px;border-radius:14px;
+    border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer;line-height:1.35}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip .n{opacity:.55;font-size:11px;margin-left:4px}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 2px;font-size:19px}
+  .panel .lede{color:var(--dim);font-size:13.5px;margin:0 0 14px}
+
+  .row{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);align-items:flex-start}
+  .row:first-of-type{border-top:0}
+  .row .name{font-weight:600;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);
+    text-underline-offset:3px}
+  .row .name:hover{text-decoration-color:var(--accent)}
+  .row .meta{color:var(--dim);font-size:13px;margin-top:2px}
+  .row .side{margin-left:auto;flex:none}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px 14px;
+    cursor:pointer;box-shadow:var(--shadow)}
+  .card:hover{border-color:var(--accent)}
+  .card h4{margin:0 0 6px;font-size:15.5px;line-height:1.25}
+  .card .ws{color:var(--dim);font-size:12.5px;font-family:ui-sans-serif,system-ui,sans-serif;line-height:1.45}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  table{border-collapse:collapse;font-size:13px;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;white-space:nowrap}
+  thead th{position:sticky;top:0;background:var(--panel);z-index:2;font-family:ui-sans-serif,system-ui,sans-serif;
+    font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);vertical-align:bottom}
+  tbody th{position:sticky;left:0;background:var(--panel);z-index:1;font-weight:600;text-align:left;
+    max-width:230px;white-space:normal}
+  td.m{text-align:center;color:var(--accent);font-weight:700}
+  td.g{text-align:center;color:var(--dim)}
+  tbody tr:hover td,tbody tr:hover th{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+
+  .pair{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+  .pair .cnt{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;font-size:13px;color:var(--accent);
+    min-width:26px;text-align:right}
+  .pair .shared{color:var(--dim);font-size:12.5px;font-family:ui-sans-serif,system-ui,sans-serif}
+
+  dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);
+    max-width:640px;width:calc(100% - 32px);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  dialog::backdrop{background:rgba(20,15,10,.55)}
+  .dlg-h{padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+  .dlg-h h3{margin:0 0 6px;font-size:20px}
+  .dlg-b{padding:16px 20px 22px;max-height:65vh;overflow:auto}
+  .dlg-b h5{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--dim);margin:16px 0 6px}
+  .dlg-b h5:first-child{margin-top:0}
+  .quote{font-size:13.5px;color:var(--dim);border-left:2px solid var(--line);padding-left:11px;margin:0}
+  .close{position:absolute;top:12px;right:14px;background:none;border:0;color:var(--dim);font-size:22px;
+    cursor:pointer;line-height:1}
+  .empty{color:var(--dim);font-size:14px;padding:20px 0}
+  .foot{color:var(--dim);font-size:12.5px;margin-top:26px;line-height:1.6}
+  .theme{position:fixed;top:14px;right:16px;background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:5px 12px;font:inherit;font-size:12px;color:var(--dim);cursor:pointer}
+</style>
+
+<button class="theme" id="themeBtn">tema</button>
+<div class="wrap">
+  <h1>Artes Marciais de Exalted 2e · quem usa qual arma</h1>
+  <p class="sub"><b>58 estilos</b> · 20 Terrestres, 31 Celestes, 7 Siderais. Armas conforme o parágrafo
+    <i>Weapons and Armor</i> de cada estilo. Clique em qualquer nome de estilo para abrir a ficha.</p>
+
+  <nav>
+    <button data-tab="arma" class="on">Por arma</button>
+    <button data-tab="estilo">Por estilo</button>
+    <button data-tab="matriz">Matriz</button>
+    <button data-tab="over">Sobreposição</button>
+  </nav>
+
+  <!-- ============ POR ARMA ============ -->
+  <section id="tab-arma">
+    <div class="toolbar">
+      <input type="search" id="wsearch" placeholder="filtrar armas (ex.: staff, spear, claws)">
+      <label class="chk"><input type="checkbox" id="wfam" checked> incluir estilos por família de arma</label>
+    </div>
+    <div class="cols">
+      <div id="weaponList"></div>
+      <div class="panel" id="weaponPanel"></div>
+    </div>
+  </section>
+
+  <!-- ============ POR ESTILO ============ -->
+  <section id="tab-estilo" hidden>
+    <div class="toolbar">
+      <input type="search" id="ssearch" placeholder="filtrar estilos ou armas">
+      <select id="stier">
+        <option value="">todos os níveis</option>
+        <option value="T">Terrestre</option><option value="C">Celeste</option><option value="S">Sideral</option>
+      </select>
+    </div>
+    <div class="cards" id="styleCards"></div>
+  </section>
+
+  <!-- ============ MATRIZ ============ -->
+  <section id="tab-matriz" hidden>
+    <div class="toolbar">
+      <select id="mmode">
+        <option value="fam">colunas = famílias de arma</option>
+        <option value="w">colunas = armas individuais</option>
+      </select>
+      <select id="mtier">
+        <option value="">todos os níveis</option>
+        <option value="T">Terrestre</option><option value="C">Celeste</option><option value="S">Sideral</option>
+      </select>
+      <input type="search" id="msearch" placeholder="filtrar estilos">
+    </div>
+    <div class="tablewrap"><table id="matrix"></table></div>
+  </section>
+
+  <!-- ============ SOBREPOSIÇÃO ============ -->
+  <section id="tab-over" hidden>
+    <div class="toolbar">
+      <select id="omode">
+        <option value="w">contar armas idênticas</option>
+        <option value="fam">contar famílias em comum</option>
+      </select>
+      <select id="otier">
+        <option value="">qualquer combinação de níveis</option>
+        <option value="same">só pares do mesmo nível</option>
+        <option value="cross">só pares de níveis diferentes</option>
+      </select>
+      <input type="search" id="osearch" placeholder="filtrar por estilo">
+    </div>
+    <div class="panel" id="overPanel"></div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<dialog id="dlg">
+  <button class="close" onclick="document.getElementById('dlg').close()">&times;</button>
+  <div class="dlg-h" id="dlgH"></div>
+  <div class="dlg-b" id="dlgB"></div>
+</dialog>
+
+<script>
+/* ---------- famílias ---------- */
+const FAM = {
+  unarmed:"Desarmado / corpo",
+  brawling:"Brawling aids (garras, manoplas)",
+  bladeShort:"Lâminas curtas",
+  bladeLong:"Espadas",
+  staff:"Bastões e varas",
+  club:"Clavas e martelos",
+  polearm:"Lanças e polearms",
+  chain:"Correntes e cordas",
+  thrown:"Arremesso",
+  ranged:"Arcos e firewands",
+  exotic:"Exóticas de MA",
+  improvised:"Improvisadas",
+  shield:"Escudos",
+  none:"Sem arma"
+};
+
+/* ---------- armas ---------- */
+/* covers: arma genérica que abrange uma família inteira */
+const W = {
+  unarmed:{l:"Unarmed (fists/palms)",f:["unarmed"]},
+  kicks:{l:"Kicks",f:["unarmed"]},
+  natural:{l:"Natural weapons (claws, teeth, hooves, horns)",f:["unarmed"]},
+  improvised:{l:"Improvised weapons",f:["improvised"]},
+  cestus:{l:"Cestus",f:["brawling"]},
+  pankrator:{l:"Pankrator's cestus",f:["brawling"]},
+  gauntlet:{l:"Fighting gauntlet",f:["brawling"]},
+  khatar:{l:"Khatar",f:["brawling","bladeShort"]},
+  tigerclaws:{l:"Tiger claws",f:["brawling"]},
+  razorclaws:{l:"Razor claws",f:["brawling"]},
+  razorharness:{l:"Razor harness",f:["brawling"]},
+  ironboot:{l:"Iron boot",f:["brawling"]},
+  godboots:{l:"God-kicking boots",f:["brawling"]},
+  axeshoes:{l:"Axe-bladed shoes",f:["brawling"]},
+  baneclaw:{l:"Baneclaw (paired)",f:["brawling","exotic"]},
+  knife:{l:"Knife",f:["bladeShort","thrown"]},
+  punchdagger:{l:"Punch dagger",f:["bladeShort","brawling"]},
+  handneedle:{l:"Hand-needle",f:["bladeShort"]},
+  swordany:{l:"Swords (qualquer espada)",f:["bladeLong"],covers:["bladeLong"]},
+  straightsword:{l:"Straight sword / daiklave",f:["bladeLong"]},
+  slashingsword:{l:"Slashing sword",f:["bladeLong"]},
+  shortsword:{l:"Short sword",f:["bladeLong"]},
+  hooksword:{l:"Hook sword",f:["bladeLong"]},
+  pairedswords:{l:"Paired identical swords (sem tag 2)",f:["bladeLong"]},
+  pairedshortswords:{l:"Paired short swords / short daiklaves",f:["bladeLong"]},
+  warfan:{l:"War fan",f:["exotic"]},
+  staff:{l:"Staff",f:["staff"]},
+  stick:{l:"Stick / cudgel",f:["staff","club"]},
+  tetsubo:{l:"Tetsubo",f:["staff","club"]},
+  wrackstaff:{l:"Wrackstaff",f:["staff"]},
+  sevensection:{l:"Seven-section staff",f:["staff","chain"]},
+  serpentsting:{l:"Serpent-sting staff",f:["staff"]},
+  stafflike:{l:"Staff-like weapons (genérico)",f:["staff"],covers:["staff"]},
+  woodweapons:{l:"Small wooden weapons (as clubs)",f:["club","staff"]},
+  club:{l:"Club",f:["club"]},
+  hammer:{l:"Hammer",f:["club"]},
+  mace:{l:"Mace",f:["club"]},
+  sledge:{l:"Sledge",f:["club"]},
+  goremaul:{l:"Goremaul",f:["club"]},
+  grandgoremaul:{l:"Grand goremaul",f:["club"]},
+  drinkprops:{l:"Hookah / pipe / bottle (as clubs)",f:["club","improvised"]},
+  spear:{l:"Spear",f:["polearm"]},
+  longspear:{l:"Long spear (lance)",f:["polearm"]},
+  direlance:{l:"Dire lance",f:["polearm"]},
+  polearmany:{l:"Polearms (genérico)",f:["polearm"],covers:["polearm"]},
+  daikalbar:{l:"Daikalbar",f:["polearm"]},
+  scythe:{l:"Scythe",f:["polearm"]},
+  shield:{l:"Shield",f:["shield"]},
+  fightingchain:{l:"Fighting chain",f:["chain"]},
+  ropeany:{l:"Rope weapons (genérico)",f:["chain"],covers:["chain"]},
+  weightedrope:{l:"Weighted rope",f:["chain"]},
+  ropedart:{l:"Rope dart",f:["chain"]},
+  lasso:{l:"Lasso",f:["chain"]},
+  whip:{l:"Whip",f:["chain"]},
+  garrote:{l:"Garrote",f:["chain"]},
+  threads:{l:"Wires / threads (criados por Charm)",f:["chain"]},
+  chakram:{l:"Chakram",f:["thrown"]},
+  shuriken:{l:"Shuriken",f:["thrown"]},
+  sling:{l:"Sling",f:["thrown"]},
+  kama:{l:"Kama",f:["thrown"]},
+  sickle:{l:"Sickle",f:["thrown"]},
+  needle:{l:"Throwing needle",f:["thrown"]},
+  selfbow:{l:"Self bow",f:["ranged"]},
+  compositebow:{l:"Composite bow",f:["ranged"]},
+  powerbow:{l:"Powerbow",f:["ranged"]},
+  firewand:{l:"Firewand / flame-discharge",f:["ranged"]},
+  sai:{l:"Sai",f:["exotic"]},
+  tonfa:{l:"Tonfa",f:["exotic"]},
+  harmonic:{l:"Harmonic weapon (Weapon-Tuning Resonance)",f:["exotic"]},
+  anyhand:{l:"Qualquer arma corpo a corpo (escolhida)",f:["exotic"],
+    covers:["bladeShort","bladeLong","staff","club","polearm","chain","brawling","exotic"]},
+  anyma:{l:"Qualquer arma de artes marciais",f:["exotic"],
+    covers:["bladeShort","bladeLong","staff","club","polearm","chain","brawling","exotic","thrown"]},
+  noweapon:{l:"Nenhuma (estilo sem armas)",f:["none"]}
+};
+
+/* ---------- estilos ---------- */
+const S = [
+/* ===== TERRESTRES ===== */
+{n:"Falling Blossom Style",t:"T",src:"Charm List 08",w:["swordany","knife"],a:"Incompatível com armadura.",
+ q:"Swords and knives count as unarmed attacks for the purpose of Falling Blossom Style, but this fighting art is incompatible with the use of armor."},
+{n:"First Pulse Style",t:"T",src:"Charm List 08",w:["improvised","cestus","ironboot","axeshoes"],a:"Sem armadura por hábito; funciona com light armor.",
+ q:"All improvised weapons are this style's form weapons... The style may also be used with the cestus or the iron boot (or their artifact equivalents)."},
+{n:"Five-Dragon Style",t:"T",src:"MoEP: Dragon-Blooded",w:["straightsword","spear","direlance"],a:"Compatível com armadura.",
+ q:"Practitioners consider the straight sword and the spear, and their artifact equivalents (the daiklave and the dire lance), to be form weapons."},
+{n:"Golden Exhalation Style",t:"T",src:"Charm List 08",w:["firewand"],a:"Armadura não atrapalha.",
+ q:"The Charms of this style can be used only with firewands or other flame-discharge weapons."},
+{n:"Golden Janissary Style",t:"T",src:"Charm List 08",w:["spear","direlance"],a:"Light armor ou nenhuma.",
+ q:"Golden Janissary Style treats spears and dire lances as form weapons."},
+{n:"Ill Lily Style",t:"T",src:"Charm List 08",w:["woodweapons"],a:"Compatível com armadura.",
+ q:"Any sort of small wooden weapon... treat wooden weapons as clubs. Artifact batons may be used if they contain no magical material other than green jade."},
+{n:"Ivory Pestle Style",t:"T",src:"Charm List 08",w:["stafflike","staff","stick","tetsubo","wrackstaff","improvised","unarmed"],a:"Light armor.",
+ q:"Staves or similar weapons, such as a cudgel, stick, tetsubo or wrackstaff, are form weapons... can also use the shaft of a spear, polearm or dire lance as if it were an ordinary staff."},
+{n:"Jade Mountain Style",t:"T",src:"Charm List 08",w:["club","hammer","mace","sledge","goremaul"],a:"Pode ser praticado com armadura.",
+ q:"Jade Mountain Style considers clubs, hammers, maces, sledges and goremauls form weapons, and it may be practiced in armor."},
+{n:"Lightning Hoof Style",t:"T",src:"Charm List 08",w:["spear","longspear","lasso","selfbow","compositebow"],a:"Nada com penalidade de mobilidade.",
+ q:"Can use spears, long spears (lances), lassoes and self or composite bows as form weapons, but they may not use any other martial arts weapons."},
+{n:"Night Breeze Style",t:"T",src:"Charm List 08",w:["chakram","shuriken","knife","sling","kama","sickle","needle"],a:"Sem armadura.",
+ q:"Night Breeze Charms treat all lightweight, thrown weapons such as chakrams, shuriken, knives, slings, kamas and sickles as form weapons."},
+{n:"Orgiastic Fugitive Style",t:"T",src:"Charm List 08",w:["drinkprops","unarmed"],a:"Sem armadura.",
+ q:"Practitioners fight equally well with hookahs, opium pipes, ale bottles, heavy glasses and their harmonious fists. Treat any weapon they use as clubs or sticks."},
+{n:"The Path of the Arbiter Style",t:"T",src:"Charm List 08",w:["anyhand"],a:"Armadura com Resources ≤ Martial Arts, e com brasão.",
+ q:"Not all Arbiters use the same weapon, although they all use hand-to-hand weapons. A beginning student must choose which weapon she wishes to use."},
+{n:"Seafaring Hero Style",t:"T",src:"Charm List 08",w:["ropeany","fightingchain","weightedrope","ropedart","slashingsword","shortsword"],a:"Nada acima de light armor.",
+ q:"Seafaring Hero Style treats chain and rope weapons as form weapons. Practitioners may also use slashing swords or short swords."},
+{n:"Swaying Grass Dance Style",t:"T",src:"Charm List 08",w:["kicks","ironboot","godboots"],a:"Sem armadura.",
+ q:"Kicks, iron boots and god-kicking boots are considered in-style weapons; its Charms will not function with unarmed punches."},
+{n:"Terrestrial Hero Style",t:"T",src:"MoEP: Dragon-Blooded",w:["unarmed"],a:"Pode ser usado com armadura.",
+ q:"Terrestrial Hero Style is an unarmed style, but it may be practiced while in armor."},
+{n:"Terrible Ascent-Driven Beast Style",t:"T",src:"Charm List 08",w:["unarmed"],a:"Compatível com armadura.",
+ q:"The Charms of Terrible Ascent-Driven Beast Style are compatible with armor but must be used unarmed."},
+{n:"White Veil Style",t:"T",src:"Charm List 08",w:["handneedle","garrote"],a:"Sem armadura.",
+ q:"They would treat the hand-needle and the garrote as form weapons."},
+{n:"Crimson Pentacle Blade Style",t:"T",src:"Charm List 08 (pan-elemental)",w:["polearmany","staff","direlance","daikalbar","shield"],a:"Sem armadura (usa escudo).",
+ q:"The variety of form weapons ranges from simple staves to artifact polearms such as dire lances or daikalbars. Speardancers wear no armor."},
+{n:"Even Blade Style",t:"T",src:"Charm List 08 (pan-elemental)",w:["slashingsword"],a:"Até medium armor.",
+ q:"The Even Blade Style favors slashing swords... Characters may use this style while wearing armor, but only up to medium weight."},
+{n:"Fivefold Shadow Hand Style",t:"T",src:"Charm List 08 (pan-elemental)",w:["shortsword","tonfa","ropeany","shuriken","knife","unarmed"],a:"Sem armadura.",
+ q:"Smoke uses the short sword, the Forgotten uses the tonfa, the Mountain uses rope weapons, the Breeze uses the shuriken, and Mist uses the knife."},
+
+/* ===== CELESTES ===== */
+{n:"Air Dragon Style",t:"C",src:"MoEP: Dragon-Blooded",w:["chakram","fightingchain"],a:"Pode ser praticado com armadura.",
+ q:"The Air Dragon Style's signature weapon is the chakram... When they do use weapons in personal combat, they often prefer the fighting chain."},
+{n:"Arms of the Unconquered Sun Style",t:"C",src:"Charm List 09",w:["unarmed"],a:"Até medium armor.",
+ q:"Arms of the Unconquered Sun is an unarmed style only, although it does permit practitioners to wear up to medium armor."},
+{n:"Black Claw Style",t:"C",src:"Charm List 09",w:["unarmed"],a:"Sem armadura.",
+ q:"Black Claw style may only be practiced with bare hands, and without armor."},
+{n:"Celestial Monkey Style",t:"C",src:"Charm List 09",w:["unarmed"],a:"Sem armadura (mestres escapam da regra).",
+ q:"This martial art is an unarmed style only, and characters cannot use this style while wearing armor."},
+{n:"Cobra Style",t:"C",src:"Charm List 09",w:["pairedswords"],a:"Sem armadura.",
+ q:"Cobra style considers any identical set of dual wielded swords which do not possess the 2 tag to be unarmed attacks."},
+{n:"Crane Style",t:"C",src:"Glories of the Most High",w:["hooksword","warfan"],a:"Sem armadura.",
+ q:"Considers hook swords and war fans as unarmed attacks... Most commonly, these weapons are wielded paired."},
+{n:"Crystal Chameleon Style",t:"C",src:"Charm List 09",w:["spear","ropedart","weightedrope"],a:"Sem armadura.",
+ q:"Treats attacks made with the spear, rope dart, weighted rope and their artifact equivalents as unarmed."},
+{n:"Dark Messiah Style",t:"C",src:"MoEP: Abyssals",w:["cestus","gauntlet","khatar","tigerclaws","razorharness","improvised"],a:"Não declarado no texto do estilo.",
+ q:"As in Solar Hero Style, the form weapons of this style are the cestus, fighting gauntlet, khatar, tiger claws, razor harness... Practitioners can also use improvised weapons."},
+{n:"Dreaming Pearl Courtesan Style",t:"C",src:"Charm List 09",w:["whip","weightedrope","ropedart","warfan"],a:"Sem armadura.",
+ q:"Treat attacks made with a whip, weighted rope or rope dart as unarmed attacks... War fans are also form weapons."},
+{n:"Earth Dragon Style",t:"C",src:"MoEP: Dragon-Blooded",w:["tetsubo","grandgoremaul"],a:"Pode ser praticado com armadura.",
+ q:"Earth Dragons use the tetsubo as their signature weapon... The artifact version is a grand goremaul."},
+{n:"Ebon Shadow Style",t:"C",src:"Charm List 09",w:["fightingchain","sai"],a:"Sem armadura.",
+ q:"May use fighting chains or sais (and their artifact equivalents) freely with all Charms in the tree."},
+{n:"Fire Dragon Style",t:"C",src:"MoEP: Dragon-Blooded",w:["pairedshortswords","shortsword"],a:"Pode ser praticado com armadura.",
+ q:"The signature weapons of Fire Dragon Style are paired short swords... Paired short daiklaves serve as the artifact version."},
+{n:"Hungry Ghost Style",t:"C",src:"Charm List 09",w:["tigerclaws","fightingchain","razorharness"],a:"Sem armadura.",
+ q:"The style treats attacks made with tiger claws, fighting chains and razor harnesses as unarmed attacks."},
+{n:"Infernal Monster Style",t:"C",src:"MoEP: Infernals",w:["cestus","gauntlet","ironboot","improvised"],a:"Só com armadura criada por Charms Infernais.",
+ q:"Its form weapons are the cestus, fighting gauntlet, boot and all improvised weapons, as well as artifact versions thereof."},
+{n:"Laughing Wounds Style",t:"C",src:"Charm List 09",w:["unarmed","whip","fightingchain"],a:"Sem armadura.",
+ q:"Abyssals who know the Laughing Wounds Style can fight unarmed, but most prefer to wield exquisite whips or slender soulsteel fighting chains."},
+{n:"Lunar Hero Style",t:"C",src:"MoEP: Lunars",w:["natural","tigerclaws","razorclaws"],a:"Não declarado no texto do estilo.",
+ q:"Best practiced only with natural weapons... Practitioners may emulate this with tiger claws (and razor claws), which lose their accuracy bonus."},
+{n:"Mantis Style",t:"C",src:"Charm List 09",w:["anyma","unarmed","sevensection","serpentsting"],a:"Qualquer armadura bloqueia o estilo.",
+ q:"A Mantis combatant can use any martial arts weapon with this style, but it is most commonly practiced either unarmed or with a seven-section staff or serpent-sting staff."},
+{n:"Righteous Devil Style",t:"C",src:"Charm List 09",w:["firewand"],a:"Armadura não atrapalha.",
+ q:"The Charms of this style can be used only with firewands or other flame-discharge weapons."},
+{n:"Silver-Voiced Nightingale Style",t:"C",src:"Charm List 09",w:["harmonic","noweapon"],a:"Armadura proíbe o uso.",
+ q:"Not normally compatible with any weapons. The Weapon-Tuning Resonance Charm allows characters to harmonize with certain weapons."},
+{n:"Snake Style",t:"C",src:"Corebook",w:["hooksword","sevensection","serpentsting"],a:"Sem armadura (Errata 2.5).",
+ q:"The form weapons for Snake Style are hook swords and the seven-section staff... includes artifact versions such as serpent-sting staves."},
+{n:"Solar Hero Style",t:"C",src:"Corebook",w:["cestus","gauntlet","khatar","tigerclaws","pankrator","improvised"],a:"Não declarado no texto do estilo.",
+ q:"The form weapons for this style are the cestus, fighting gauntlet, khatar, tiger claws, pankrator's cestus and improvised weapons."},
+{n:"Throne Shadow Style",t:"C",src:"Lords of Creation",w:["cestus","gauntlet","khatar","pankrator","tigerclaws","improvised"],a:"Compatível com qualquer armadura.",
+ q:"Counts as unarmed attacks the cestus, fighting gauntlet, khatars, pankrator's cestus, tiger claws, and other such 'brawling aides,' as well as improvised weapons."},
+{n:"Tiger Style",t:"C",src:"Charm List 09",w:["tigerclaws","razorclaws"],a:"Sem armadura.",
+ q:"May use tiger claws or razor claws freely (considering them unarmed Martial Arts attacks) with all of its Charms."},
+{n:"Violet Bier of Sorrows",t:"C",src:"MoEP: Sidereals (tratado como Celeste na compilação 2.5)",w:["knife","swordany","staff","sevensection"],a:"Sem armadura.",
+ q:"Charms of this style treat attacks with knives, swords, staves and seven-section staves (and all their artifact versions) as unarmed attacks."},
+{n:"Water Dragon Style",t:"C",src:"MoEP: Dragon-Blooded",w:["tigerclaws","razorclaws"],a:"Compatível com armadura.",
+ q:"These Immaculates wield 'dragon's claws' in combat, which are effectively stylized tiger claws (or razor claws)."},
+{n:"Wood Dragon Style",t:"C",src:"MoEP: Dragon-Blooded",w:["selfbow","compositebow","powerbow"],a:"Pode ser praticado com armadura.",
+ q:"An Immaculate of Wood fires her signature weapon, the bow, with deadly accuracy... Those who can construct powerbows often do so for their comrades."},
+{n:"White Reaper Style",t:"C",src:"Charm List 09",w:["scythe","spear"],a:"Totalmente compatível com armadura.",
+ q:"White Reaper style treats attacks made with the scythe, the spear and their artifact equivalents as unarmed."},
+{n:"The Art of Forceful Declaration",t:"C",src:"Charm List 09 (social)",w:["cestus","gauntlet","khatar"],a:"Qualquer armadura.",
+ q:"This style is compatible with the cestus, fighting gauntlet and khatar and their artifact equivalents, and it may be practiced in any armor."},
+{n:"The Art of Meditative Discussion",t:"C",src:"Charm List 09 (social)",w:["hooksword","sai","sevensection"],a:"Permite armadura.",
+ q:"Students of this style learn to wield hooked swords, sais and seven-section-staves, even learning the unique combination of one hooked sword with one sai."},
+{n:"The Art of Relentless Persuasion",t:"C",src:"Charm List 09 (social)",w:["unarmed"],a:"Usa armadura de propósito (perde 1 dado sem ela).",
+ q:"The Art of Relentless Persuasion must be performed barehanded. Students of the style use armor in order to center and ground themselves."},
+{n:"The Art of Victorious Concession",t:"C",src:"Charm List 09 (social)",w:["unarmed"],a:"Qualquer armadura.",
+ q:"Can only be performed barehanded, though a practitioner may wear any sort of armor."},
+
+/* ===== SIDERAIS ===== */
+{n:"Border of Kaleidoscopic Logic Style",t:"S",src:"Scroll of the Monk",w:["noweapon"],a:"Sem armadura.",
+ q:"Practitioners may not use this style's Charms while wearing armor or wielding weapons. In truth, weapons are irrelevant for most of its Charms."},
+{n:"Charcoal March of Spiders Style",t:"S",src:"Scroll of the Monk",w:["knife","sevensection","threads"],a:"Sem armadura.",
+ q:"Characters can use knives or seven-section staffs (and their artifact equivalents) as unarmed attacks... If a Charm allows a practitioner to create wires or threads, attacking with them is considered unarmed as well."},
+{n:"Citrine Poxes of Contagion Style",t:"S",src:"Scroll of the Monk",w:["staff","wrackstaff","sevensection","serpentsting","hammer","goremaul"],a:"Sem armadura.",
+ q:"Treat attacks with a staff, wrackstaff, seven-section staff, serpent-sting staff, hammer or goremaul as unarmed attacks if the character inflicts bashing damage with them."},
+{n:"Obsidian Shards of Infinity Style",t:"S",src:"Scroll of the Monk",w:["sai","baneclaw","knife","punchdagger"],a:"Sem armadura.",
+ q:"Paired sais, paired baneclaws or multiple knives or punch daggers are treated as unarmed attacks... He must always use more than one."},
+{n:"Prismatic Arrangement of Creation Style",t:"S",src:"Scroll of the Monk",w:["noweapon"],a:"Sem armadura.",
+ q:"Weapons cannot be used with most Prismatic Arrangement of Creation Charms (or are simply irrelevant), with a few significant exceptions."},
+{n:"Quicksilver Hand of Dreams Style",t:"S",src:"Scroll of the Monk",w:["noweapon"],a:"Sem armadura (exceto sonhada, via Gossamer Understanding).",
+ q:"Cannot be used with weapons, nor may the character wear armor... The Gossamer Understanding Charm removes these restrictions, but only insofar as armor and weapons crafted from dreams."},
+{n:"Scarlet Patterned Battlefield Style",t:"S",src:"Scroll of the Monk",w:["noweapon"],a:"Sem armadura.",
+ q:"This style may not be practiced in armor. It has no form weapons."}
+];
+
+/* ---------- utils ---------- */
+const TIER={T:"Terrestre",C:"Celeste",S:"Sideral"};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const famsOf=st=>[...new Set(st.w.flatMap(k=>W[k]?W[k].f:[]))];
+const covOf=st=>[...new Set(st.w.flatMap(k=>(W[k]&&W[k].covers)||[]))];
+const tierTag=t=>`<span class="tier ${t}">${TIER[t]}</span>`;
+/* estilos que aceitam a arma k, direto ou por cobertura genérica */
+function stylesFor(k,useFam){
+  const fams=W[k].f;
+  return S.filter(st=>{
+    if(st.w.includes(k)) return true;
+    if(!useFam) return false;
+    return covOf(st).some(f=>fams.includes(f));
+  });
+}
+
+/* ---------- tabs ---------- */
+$$("nav button").forEach(b=>b.onclick=()=>{
+  $$("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  ["arma","estilo","matriz","over"].forEach(t=>$("#tab-"+t).hidden = t!==b.dataset.tab);
+});
+
+/* ---------- tema ---------- */
+$("#themeBtn").onclick=()=>{
+  const cur=document.documentElement.dataset.theme
+    || (matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  document.documentElement.dataset.theme = cur==="dark"?"light":"dark";
+};
+
+/* ---------- modal ---------- */
+function openStyle(name){
+  const st=S.find(x=>x.n===name); if(!st) return;
+  const fams=famsOf(st);
+  const sib=S.filter(o=>o!==st && o.w.some(k=>st.w.includes(k)));
+  const sibFam=S.filter(o=>o!==st && !sib.includes(o) && famsOf(o).some(f=>fams.includes(f)&&f!=="none"));
+  $("#dlgH").innerHTML=`<h3>${st.n}</h3>${tierTag(st.t)}
+    <span style="color:var(--dim);font-size:13px;margin-left:8px">${st.src}</span>`;
+  $("#dlgB").innerHTML=`
+    <h5>Form weapons</h5>
+    <div class="chips">${st.w.map(k=>`<span class="chip">${W[k].l}</span>`).join("")}</div>
+    <h5>Armadura</h5><p style="margin:0;font-size:14px">${st.a}</p>
+    <h5>Famílias</h5>
+    <div class="chips">${fams.map(f=>`<span class="chip">${FAM[f]}</span>`).join("")}</div>
+    <h5>O que o livro diz</h5><p class="quote">${st.q}</p>
+    <h5>Estilos com arma idêntica (${sib.length})</h5>
+    ${sib.length?`<div class="chips">${sib.map(o=>{
+      const sh=o.w.filter(k=>st.w.includes(k)).map(k=>W[k].l).join(", ");
+      return `<span class="chip" onclick="openStyle('${o.n.replace(/'/g,"\\'")}')"
+        title="${sh}">${o.n}<span class="n">${o.t}</span></span>`;}).join("")}</div>`
+      :`<p class="empty" style="padding:4px 0">Nenhum.</p>`}
+    <h5>Só parentesco de família (${sibFam.length})</h5>
+    ${sibFam.length?`<div class="chips">${sibFam.map(o=>`<span class="chip"
+        onclick="openStyle('${o.n.replace(/'/g,"\\'")}')">${o.n}<span class="n">${o.t}</span></span>`).join("")}</div>`
+      :`<p class="empty" style="padding:4px 0">Nenhum.</p>`}`;
+  const d=$("#dlg"); if(!d.open) d.showModal();
+}
+window.openStyle=openStyle;
+
+/* ---------- aba: por arma ---------- */
+let curW=null;
+function drawWeapons(){
+  const q=$("#wsearch").value.toLowerCase().trim();
+  const byFam={};
+  Object.keys(W).forEach(k=>{
+    if(q && !W[k].l.toLowerCase().includes(q)) return;
+    W[k].f.forEach(f=>(byFam[f]=byFam[f]||[]).push(k));
+  });
+  $("#weaponList").innerHTML=Object.keys(FAM).filter(f=>byFam[f]).map(f=>`
+    <div class="famgroup"><h3>${FAM[f]}</h3><div class="chips">
+    ${byFam[f].sort((a,b)=>W[a].l.localeCompare(W[b].l)).map(k=>{
+      const n=stylesFor(k,$("#wfam").checked).length;
+      return `<button class="chip ${k===curW?"on":""}" data-w="${k}">${W[k].l}<span class="n">${n}</span></button>`;
+    }).join("")}</div></div>`).join("") || `<p class="empty">Nada encontrado.</p>`;
+  $$("#weaponList .chip").forEach(b=>b.onclick=()=>{curW=b.dataset.w;drawWeapons();drawWeaponPanel();});
+}
+function drawWeaponPanel(){
+  const p=$("#weaponPanel");
+  if(!curW){p.innerHTML=`<p class="empty">Escolha uma arma à esquerda para ver quem a usa.</p>`;return;}
+  const useFam=$("#wfam").checked;
+  const exact=S.filter(st=>st.w.includes(curW));
+  const viaFam=stylesFor(curW,useFam).filter(st=>!exact.includes(st));
+  const row=st=>`<div class="row"><div>
+      <span class="name" onclick="openStyle('${st.n.replace(/'/g,"\\'")}')">${st.n}</span>
+      <div class="meta">${st.w.map(k=>W[k].l).join(" · ")}</div>
+      <div class="meta" style="opacity:.75">Armadura: ${st.a}</div>
+    </div><div class="side">${tierTag(st.t)}</div></div>`;
+  p.innerHTML=`<h2>${W[curW].l}</h2>
+    <p class="lede">${W[curW].f.map(f=>FAM[f]).join(" · ")} —
+      ${exact.length} estilo(s) citam esta arma${viaFam.length?`, +${viaFam.length} por regra genérica`:""}.</p>
+    ${exact.length?exact.map(row).join(""):`<p class="empty">Nenhum estilo cita esta arma diretamente.</p>`}
+    ${viaFam.length?`<h5 style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;
+      letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:20px 0 2px">
+      Cobertos por regra genérica ("qualquer espada", "polearms", "rope weapons"…)</h5>`
+      +viaFam.map(row).join(""):""}`;
+}
+$("#wsearch").oninput=drawWeapons;
+$("#wfam").onchange=()=>{drawWeapons();drawWeaponPanel();};
+
+/* ---------- aba: por estilo ---------- */
+function drawStyles(){
+  const q=$("#ssearch").value.toLowerCase().trim(), t=$("#stier").value;
+  const list=S.filter(st=>(!t||st.t===t) &&
+    (!q || st.n.toLowerCase().includes(q) || st.w.some(k=>W[k].l.toLowerCase().includes(q))));
+  $("#styleCards").innerHTML=list.map(st=>`<div class="card" onclick="openStyle('${st.n.replace(/'/g,"\\'")}')">
+    <h4>${st.n}</h4>${tierTag(st.t)}
+    <div class="ws" style="margin-top:8px">${st.w.map(k=>W[k].l).join(" · ")}</div></div>`).join("")
+    || `<p class="empty">Nada encontrado.</p>`;
+}
+$("#ssearch").oninput=drawStyles; $("#stier").onchange=drawStyles;
+
+/* ---------- aba: matriz ---------- */
+function drawMatrix(){
+  const mode=$("#mmode").value, t=$("#mtier").value, q=$("#msearch").value.toLowerCase().trim();
+  const rows=S.filter(st=>(!t||st.t===t)&&(!q||st.n.toLowerCase().includes(q)));
+  let cols;
+  if(mode==="fam") cols=Object.keys(FAM).map(f=>({k:f,l:FAM[f]}));
+  else{
+    const used=new Set(rows.flatMap(st=>st.w));
+    cols=[...used].sort((a,b)=>W[a].l.localeCompare(W[b].l)).map(k=>({k,l:W[k].l}));
+  }
+  const hit=(st,c)=> mode==="fam" ? famsOf(st).includes(c.k) : st.w.includes(c.k);
+  $("#matrix").innerHTML=`<thead><tr><th>Estilo</th><th>Nível</th>
+    ${cols.map(c=>`<th>${c.l}</th>`).join("")}</tr></thead><tbody>
+    ${rows.map(st=>`<tr><th><span class="name" onclick="openStyle('${st.n.replace(/'/g,"\\'")}')">${st.n}</span></th>
+      <td>${tierTag(st.t)}</td>
+      ${cols.map(c=>hit(st,c)?`<td class="m">●</td>`:`<td class="g">·</td>`).join("")}</tr>`).join("")}
+    </tbody>`;
+}
+$("#mmode").onchange=drawMatrix; $("#mtier").onchange=drawMatrix; $("#msearch").oninput=drawMatrix;
+
+/* ---------- aba: sobreposição ---------- */
+function drawOver(){
+  const mode=$("#omode").value, tf=$("#otier").value, q=$("#osearch").value.toLowerCase().trim();
+  const pairs=[];
+  for(let i=0;i<S.length;i++)for(let j=i+1;j<S.length;j++){
+    const a=S[i],b=S[j];
+    if(tf==="same"&&a.t!==b.t) continue;
+    if(tf==="cross"&&a.t===b.t) continue;
+    if(q && !a.n.toLowerCase().includes(q) && !b.n.toLowerCase().includes(q)) continue;
+    let shared;
+    if(mode==="w") shared=a.w.filter(k=>b.w.includes(k)).map(k=>W[k].l);
+    else shared=famsOf(a).filter(f=>famsOf(b).includes(f)&&f!=="none").map(f=>FAM[f]);
+    if(shared.length) pairs.push({a,b,shared});
+  }
+  pairs.sort((x,y)=>y.shared.length-x.shared.length || x.a.n.localeCompare(y.a.n));
+  $("#overPanel").innerHTML=`<h2>${pairs.length} pares com sobreposição</h2>
+    <p class="lede">${mode==="w"?"Armas idênticas citadas nos dois estilos.":"Famílias de arma em comum."}
+      Mostrando os 200 primeiros.</p>
+    ${pairs.slice(0,200).map(p=>`<div class="pair">
+      <span class="cnt">${p.shared.length}</span>
+      <span><span class="name" onclick="openStyle('${p.a.n.replace(/'/g,"\\'")}')">${p.a.n}</span>
+        ${tierTag(p.a.t)} <span style="color:var(--dim)">+</span>
+        <span class="name" onclick="openStyle('${p.b.n.replace(/'/g,"\\'")}')">${p.b.n}</span> ${tierTag(p.b.t)}
+        <div class="shared">${p.shared.join(" · ")}</div></span>
+    </div>`).join("") || `<p class="empty">Nenhum par.</p>`}`;
+}
+$("#omode").onchange=drawOver; $("#otier").onchange=drawOver; $("#osearch").oninput=drawOver;
+
+/* ---------- init ---------- */
+curW="tigerclaws";
+drawWeapons(); drawWeaponPanel(); drawStyles(); drawMatrix(); drawOver();
+$("#foot").innerHTML=`Fontes: <i>Exalted 2ed Charm List 08 · Martial Arts Terrestrial</i>,
+  <i>Charm List 09 · Martial Arts Celestial</i>, <i>Scrolls of Esoteric Wisdom Vol. 1: Scroll of the Monk</i>
+  (cap. 4, Sidereal Martial Arts), <i>Scroll of Errata 2.5</i> e <i>MoEP: Sidereals</i>.
+  Armas conforme o bloco <i>Weapons and Armor</i> de cada estilo, ou o parágrafo de arma assinatura
+  quando o estilo não traz esse bloco (estilos Immaculate, Solar/Lunar Hero, Snake, Crane, Infernal Monster).
+  Violet Bier of Sorrows nasceu como arte sideral em <i>MoEP: Sidereals</i>, mas a compilação 2.5 a define
+  como Celestial martial art, e é assim que aparece aqui.`;
+</script>
