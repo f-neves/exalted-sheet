@@ -1647,6 +1647,18 @@ export function mountSheet(opts: SheetOpts) {
     let pos: PortraitPos = { x: 50, y: 50, z: 1 };
     let hasImage = false;
 
+    /* The shape of the picture, published as a CSS variable so a page can size
+       the column from it (the header on /character does). It comes from the file
+       and not from the layout, so it is a constant: the width can depend on it
+       without the height feeding back into the width. Clamped, because a banner
+       or a totem pole would otherwise take the whole header. */
+    const wrap = el('portrait-wrap');
+    const publishRatio = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      if (w && h) wrap.style.setProperty('--pt-ar', String(clamp(w / h, 0.5, 1.4)));
+    };
+    img.addEventListener('load', publishRatio);
+
     const applyPos = () => {
       img.style.objectPosition = `${pos.x}% ${pos.y}%`;
       img.style.transformOrigin = `${pos.x}% ${pos.y}%`;
@@ -1686,6 +1698,7 @@ export function mountSheet(opts: SheetOpts) {
         await media.clearPortrait();
         img.src = ''; lbImg.src = ''; hasImage = false;
         frame.classList.remove('adjusting'); zoom.hidden = true;
+        wrap.style.removeProperty('--pt-ar');   // no picture, no shape to follow
         paint();
       });
 

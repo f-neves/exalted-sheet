@@ -18,8 +18,8 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
         themselves live in the sheet skeleton; the script below lifts those nodes
         up into the two slots here, so the engine's bindings are untouched. */}
     <header class="pers-cab">
-      <div class="cab-portrait" id="cab-portrait"></div>
-
+      {/* The portrait column is the skeleton's own #portrait-wrap, moved in here
+          by the script below. It arrives as the first child, before the panel. */}
       <div class="pers-ident">
         <div class="char-head">
           <a class="back" id="back" href="#">← Campaign</a>
@@ -66,21 +66,43 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       nodes, carrying its scope and not this page's, and they have to be styled
       here once they move into the header. */}
   <style is:global>
-    /* ---------- the header: portrait beside the identity ---------- */
-    .pers-cab { display: flex; gap: 1.1rem; align-items: stretch; flex-wrap: wrap; margin: 1rem 0 1rem; }
+    /* ---------- the header: portrait beside the identity ----------
+       The proportions here are the Centelha sheet's, transplanted: the same
+       gap, the same column formula, the same panel. */
+    .pers-cab { display: flex; gap: 1.2rem; align-items: stretch; flex-wrap: wrap; margin: 1rem 0;
+      min-height: 22rem; }
 
-    /* The picture keeps a portrait's proportions and sets the height of the row;
-       the panel beside it stretches to match. Letting the frame stretch instead
-       looked like a bookmark: 200px wide and 500 tall, and the reframing you do
-       with Adjust stopped meaning anything. */
-    .pers-cab .cab-portrait { flex: 0 0 auto; }
-    .pers-cab .portrait-wrap { margin: 0; }
-    .pers-cab .portrait { --pt-w: 208px; --pt-h: 272px; }
+    /* The column takes the shape of the picture: the engine reads the file's
+       natural size into --pt-ar, and the width follows from it. The ratio comes
+       from the file and not from the layout, so it is a constant and the width
+       cannot feed back into itself. The frame then fills the column, whose
+       height is the header's, which is to say the panel's beside it. Without a
+       picture the fallback .827 gives back the classic upright frame.
+
+       The 22rem in the width and the 22rem of `min-height` above are the same
+       number on purpose: at that height the frame comes out exactly the shape of
+       the picture. Centelha reaches it by having that much to say in its panel;
+       this sheet says less, and without the floor the header collapsed to 174px
+       and squashed every portrait into a square. */
+    .pers-cab .portrait-wrap {
+      margin: 0; flex: 0 0 auto; align-self: stretch; display: flex;
+      width: clamp(9rem, calc(var(--pt-ar, .827) * 22rem), 38%);
+    }
+    .pers-cab .portrait { --pt-w: 100%; flex: 1; min-width: 0; align-items: stretch; }
+    .pers-cab .pt-frame, .pers-cab .pt-empty {
+      position: relative; flex: 1; min-height: 0; width: 100%; height: auto;
+    }
+    /* Absolute, because a percentage height against a flex-stretched box with no
+       height of its own resolves to the picture's own size and the frame ends up
+       part empty. Exalted keeps `cover` where Centelha uses `contain`: the crop
+       is the point of Adjust, and with the column already cut to the picture's
+       shape there is next to nothing left to crop. */
+    .pers-cab .pt-frame img { position: absolute; inset: 0; }
 
     .pers-ident {
-      flex: 1 1 24rem; min-width: 17rem; display: flex; flex-direction: column; gap: .35rem;
+      flex: 1 1 12rem; min-width: 11rem; display: flex; flex-direction: column; gap: .4rem;
       border: 1px solid var(--panel-border); border-radius: 6px;
-      background: var(--panel); padding: .75rem 1rem .9rem;
+      background: var(--panel); padding: .8rem 1rem 1rem;
     }
     .pers-ident .char-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin: 0 0 .3rem; }
     .pers-ident .char-head .back { font-family: 'Cinzel'; font-size: .72rem; letter-spacing: .05em; text-decoration: none; color: var(--ink-soft); }
@@ -101,15 +123,24 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     .pers-ident .gm-xp label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
     .pers-ident .gm-xp input { width: 6rem; }
 
-    @media (max-width: 820px) {
-      /* One column, picture on top. It grows a little, but not to the full width
-         of the screen: at 100% the frame turns into a letterbox and a standing
-         figure gets cropped down to a belt buckle. */
-      .pers-cab { flex-direction: column; }
-      .pers-cab .portrait { --pt-w: min(100%, 240px); --pt-h: 314px; }
-      /* Stacked, `flex-basis: 24rem` stops being a width and becomes a height,
-         and the panel grew a hand's width of nothing under the last field. */
-      .pers-ident { flex: 0 0 auto; }
+    @media (max-width: 900px) {
+      /* One column, picture on top. Nothing beside it to match heights with any
+         more, so the height comes from the ratio instead of from the panel.
+         The column keeps the same formula rather than going to the full width
+         Centelha uses: a tall picture at 100% of a phone is two screens of
+         portrait before the first field, and you scroll past the character to
+         reach the character. */
+      .pers-cab { flex-direction: column; align-items: stretch; gap: .8rem; min-height: 0; }
+      .pers-cab .portrait-wrap {
+        align-self: flex-start;
+        width: clamp(9rem, calc(var(--pt-ar, .827) * 22rem), 100%);
+      }
+      .pers-cab .pt-frame, .pers-cab .pt-empty {
+        flex: none; width: 100%; height: auto; aspect-ratio: var(--pt-ar, .827);
+      }
+      /* Stacked, `flex-basis: 12rem` stops being a width and becomes a height,
+         and the panel grows a hand's width of nothing under the last field. */
+      .pers-ident { flex: 0 0 auto; min-width: 0; }
     }
 
     /* ---------- prose ---------- */
@@ -346,7 +377,8 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
        finds them by id and by data attribute, never by where they sit.
        This runs before the page is revealed, so nothing is seen jumping. */
     for (const row of Array.from(document.querySelectorAll('.idrow'))) el('ident-slot').appendChild(row);
-    el('cab-portrait').appendChild(el('portrait-wrap'));
+    const cab = document.querySelector('.pers-cab')!;
+    cab.insertBefore(el('portrait-wrap'), cab.firstChild);
 
     // Which caste favours which abilities is a thing you need while building a
     // character, not while playing one. The engine still writes it; the sheet in

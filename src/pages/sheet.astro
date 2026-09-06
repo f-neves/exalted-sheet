@@ -64,9 +64,20 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     save: (S) => {
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* quota */ }
     },
+    // Same short bar as /character. Nothing was removed: the buttons and their
+    // handlers are still in the skeleton and in the engine, and flipping any of
+    // these to true (or dropping the line) brings them back. Worth knowing what
+    // goes with them here, where there is no account behind the sheet: Export
+    // and Link were the only ways to carry a character to another browser, and
+    // Import the only way to bring one in.
+    tools: { checks: false, export: false, import: false, print: false, link: false },
     onReset: () => {
       try { localStorage.removeItem(KEY); } catch { /* ignore */ }
       location.hash = '';
     },
   });
+
+  // The caste description goes quiet here too. The engine still writes it; drop
+  // this line to show it again.
+  document.getElementById('caste-info')!.hidden = true;
 </script>
