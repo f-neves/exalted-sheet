@@ -54,6 +54,14 @@ export interface SheetOpts {
   readOnly?: boolean;
   media?: MediaAdapter;
   share?: ShareAdapter;
+  /**
+   * Which of the XP bar's buttons this page offers. Left out, every one of them
+   * shows, which is what the offline /sheet wants: with no account behind it,
+   * Export, Import and Link are the only way a character leaves the browser.
+   * A page that has a database under it can switch off what it does not need;
+   * nothing is removed, only hidden, so turning one back on is one word.
+   */
+  tools?: Partial<Record<'checks' | 'export' | 'import' | 'print' | 'link' | 'reset', boolean>>;
   /** Fires after every recalculation, so pages need not scrape the XP bar. */
   onChange?: (info: { spent: number; budget: number; remaining: number }) => void;
 }
@@ -1607,6 +1615,16 @@ export function mountSheet(opts: SheetOpts) {
     el('checks').classList.toggle('hidden');
   });
 
+  /* The handlers above stay wired either way; a hidden button is just a button
+     nobody can reach. Switching one back on is a matter of one flag. */
+  for (const [tool, id] of [
+    ['checks', 'checks-toggle'], ['export', 'f-export'], ['import', 'f-import'],
+    ['print', 'f-print'], ['link', 'f-link'], ['reset', 'f-reset'],
+  ] as const) {
+    if (opts.tools?.[tool] === false) el(id).hidden = true;
+  }
+  if (opts.tools?.checks === false) el('checks').classList.add('hidden');
+
   /* ---------------------------------------------------- derived toggle */
   el('deriv-toggle').addEventListener('click', () => {
     const d = el('derived');
@@ -1615,8 +1633,6 @@ export function mountSheet(opts: SheetOpts) {
   });
 
   /* ----------------------------------------------------- portrait & gallery */
-
-  const FRAME_W = 172, FRAME_H = 208;
 
   async function mountMedia(media: MediaAdapter) {
     el('portrait-wrap').hidden = false;
@@ -1694,8 +1710,12 @@ export function mountSheet(opts: SheetOpts) {
         const pe = ev as PointerEvent;
         const dx = pe.clientX - lastX, dy = pe.clientY - lastY;
         lastX = pe.clientX; lastY = pe.clientY;
-        pos.x = clamp(pos.x - (dx / (FRAME_W * pos.z)) * 100, 0, 100);
-        pos.y = clamp(pos.y - (dy / (FRAME_H * pos.z)) * 100, 0, 100);
+        // Measured, not assumed: the header on /character lets the frame grow to
+        // the height of the panel beside it, so a hardcoded size would drag the
+        // picture at the wrong speed.
+        const box = frame.getBoundingClientRect();
+        pos.x = clamp(pos.x - (dx / (box.width * pos.z)) * 100, 0, 100);
+        pos.y = clamp(pos.y - (dy / (box.height * pos.z)) * 100, 0, 100);
         applyPos();
       });
       const drop = () => { if (dragging) { dragging = false; media.savePortraitPos(pos); } };

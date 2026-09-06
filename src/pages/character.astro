@@ -13,28 +13,41 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
   <div class="notice bad" id="error" hidden></div>
 
   <div id="wrap" hidden>
-    <div class="char-head">
-      <a class="back" id="back" href="#">← Campaign</a>
-      <h1 class="char-name" id="char-name">Character</h1>
-      <span class="seal" id="status-seal">Draft</span>
-    </div>
+    {/* Portrait on one side, everything that names the character on the other,
+        the two columns the same height. The portrait and the identity fields
+        themselves live in the sheet skeleton; the script below lifts those nodes
+        up into the two slots here, so the engine's bindings are untouched. */}
+    <header class="pers-cab">
+      <div class="cab-portrait" id="cab-portrait"></div>
+
+      <div class="pers-ident">
+        <div class="char-head">
+          <a class="back" id="back" href="#">← Campaign</a>
+          <h1 class="char-name" id="char-name">Character</h1>
+          <span class="seal" id="status-seal">Draft</span>
+        </div>
+
+        <div class="ident-slot" id="ident-slot"></div>
+
+        <div class="ident-foot">
+          <div class="status-bar" id="status-bar">
+            <span class="muted" id="status-text"></span>
+            <span class="status-actions" id="status-actions"></span>
+          </div>
+
+          <div class="gm-xp" id="gm-xp" hidden>
+            <label>Storyteller: XP for this character
+              <input type="number" id="xp-input" min="0" step="1" />
+            </label>
+            <button class="btn primary" id="xp-save" type="button">Set XP</button>
+            <span class="muted" id="xp-saved"></span>
+          </div>
+        </div>
+      </div>
+    </header>
 
     <div class="notice bad" id="review" hidden></div>
     <div class="notice bad" id="xp-warn" hidden></div>
-
-    <div class="status-bar" id="status-bar">
-      <span class="muted" id="status-text"></span>
-      <span class="status-actions" id="status-actions"></span>
-    </div>
-
-    <div class="panel-card gm-xp" id="gm-xp" hidden>
-      <h2>Storyteller: experience for this character</h2>
-      <div class="row">
-        <input type="number" id="xp-input" min="0" step="1" />
-        <button class="btn primary" id="xp-save" type="button">Set XP</button>
-        <span class="muted" id="xp-saved"></span>
-      </div>
-    </div>
 
     <SheetSkeleton />
 
@@ -49,21 +62,66 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     </div>
   </div>
 
-  <style>
-    .char-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin: 1rem 0 .5rem; }
-    .char-head .back { font-family: 'Cinzel'; font-size: .72rem; letter-spacing: .05em; text-decoration: none; color: var(--ink-soft); }
-    .char-head .back:hover { color: var(--accent); }
-    .char-name { font-size: 1.5rem; letter-spacing: .05em; color: var(--accent); margin: 0; }
-    .status-bar { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; margin: 0 0 .8rem; font-size: .9rem; }
-    .status-actions { display: flex; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
-    .gm-xp { margin: 0 0 1rem; }
-    .gm-xp .row { display: flex; gap: .5rem; align-items: center; }
-    .gm-xp input { width: 6rem; }
+  {/* Global, not scoped: the portrait and the identity fields are the skeleton's
+      nodes, carrying its scope and not this page's, and they have to be styled
+      here once they move into the header. */}
+  <style is:global>
+    /* ---------- the header: portrait beside the identity ---------- */
+    .pers-cab { display: flex; gap: 1.1rem; align-items: stretch; flex-wrap: wrap; margin: 1rem 0 1rem; }
+
+    /* The picture keeps a portrait's proportions and sets the height of the row;
+       the panel beside it stretches to match. Letting the frame stretch instead
+       looked like a bookmark: 200px wide and 500 tall, and the reframing you do
+       with Adjust stopped meaning anything. */
+    .pers-cab .cab-portrait { flex: 0 0 auto; }
+    .pers-cab .portrait-wrap { margin: 0; }
+    .pers-cab .portrait { --pt-w: 208px; --pt-h: 272px; }
+
+    .pers-ident {
+      flex: 1 1 24rem; min-width: 17rem; display: flex; flex-direction: column; gap: .35rem;
+      border: 1px solid var(--panel-border); border-radius: 6px;
+      background: var(--panel); padding: .75rem 1rem .9rem;
+    }
+    .pers-ident .char-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin: 0 0 .3rem; }
+    .pers-ident .char-head .back { font-family: 'Cinzel'; font-size: .72rem; letter-spacing: .05em; text-decoration: none; color: var(--ink-soft); }
+    .pers-ident .char-head .back:hover { color: var(--accent); }
+    .pers-ident .char-name { font-size: 1.5rem; letter-spacing: .05em; color: var(--accent); margin: 0; }
+
+    /* The identity rows keep their own column proportions; only the spacing is
+       retuned for a panel instead of the full page width. */
+    .ident-slot .idrow { gap: .5rem .9rem; margin: 0 0 .5rem; }
+    .ident-slot .idrow:last-child { margin-bottom: 0; }
+
+    /* Status and the Storyteller's XP sink to the bottom, so the panel ends level
+       with the picture however tall the picture turns out to be. */
+    .pers-ident .ident-foot { margin-top: auto; padding-top: .5rem; display: flex; flex-direction: column; gap: .5rem; }
+    .pers-ident .status-bar { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; margin: 0; font-size: .9rem; }
+    .pers-ident .status-actions { display: flex; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
+    .pers-ident .gm-xp { display: flex; align-items: flex-end; gap: .5rem; flex-wrap: wrap; margin: 0; }
+    .pers-ident .gm-xp label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+    .pers-ident .gm-xp input { width: 6rem; }
+
+    @media (max-width: 820px) {
+      /* One column, picture on top. It grows a little, but not to the full width
+         of the screen: at 100% the frame turns into a letterbox and a standing
+         figure gets cropped down to a belt buckle. */
+      .pers-cab { flex-direction: column; }
+      .pers-cab .portrait { --pt-w: min(100%, 240px); --pt-h: 314px; }
+      /* Stacked, `flex-basis: 24rem` stops being a width and becomes a height,
+         and the panel grew a hand's width of nothing under the last field. */
+      .pers-ident { flex: 0 0 auto; }
+    }
+
+    /* ---------- prose ---------- */
     .prose-grid label { display: flex; flex-direction: column; gap: .2rem; }
     .prose-grid > label > span { font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
     .prose-grid textarea { width: 100%; min-height: 9rem; resize: vertical; }
     .saved-flash { font-size: .8rem; min-height: 1.1rem; }
-    @media print { .char-head .back, .status-bar, .gm-xp, .notice { display: none !important; } }
+
+    @media print {
+      .pers-ident .char-head .back, .pers-ident .status-bar, .pers-ident .gm-xp, .notice { display: none !important; }
+      .pers-ident { border: none; background: none; padding: 0; }
+    }
   </style>
 </Base>
 
@@ -280,6 +338,21 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       },
     };
 
+    /* ---- the header ---------------------------------------------------
+       The portrait and the identity fields belong to the sheet skeleton, which
+       lays them out one above the other down the page. Here they are lifted into
+       the header, picture on one side and fields on the other, the way the
+       Centelha sheet reads. Moving the nodes keeps every binding: the engine
+       finds them by id and by data attribute, never by where they sit.
+       This runs before the page is revealed, so nothing is seen jumping. */
+    for (const row of Array.from(document.querySelectorAll('.idrow'))) el('ident-slot').appendChild(row);
+    el('cab-portrait').appendChild(el('portrait-wrap'));
+
+    // Which caste favours which abilities is a thing you need while building a
+    // character, not while playing one. The engine still writes it; the sheet in
+    // the campaign just does not show it. Drop this line to bring it back.
+    el('caste-info').hidden = true;
+
     el('loading').hidden = true;
     el('wrap').hidden = false;
 
@@ -289,6 +362,11 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       readOnly: !canEdit,
       budgetLocked, budgetValue,
       media, share,
+      // The sheet lives in a database here: it is saved as you type, it prints
+      // from the browser, and Share hands out the link. Export, Import, Link,
+      // Print and the starting-sheet checks stay in the code, switched off, and
+      // still earn their place on the offline /sheet.
+      tools: { checks: false, export: false, import: false, print: false, link: false },
       onChange: ({ remaining }) => {
         const warn = el('xp-warn');
         if (remaining < 0) {
