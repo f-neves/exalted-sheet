@@ -10,6 +10,9 @@
   <span class="breakdown" id="xpBreak"></span>
   <button class="btn" id="checks-toggle" type="button" title="Starting-sheet rules">Checks</button>
   <span class="xp-btns">
+    <!-- Only pages that pass a share adapter (/character) reveal these two. -->
+    <button class="btn" id="f-share" type="button" hidden>Share</button>
+    <button class="btn tiny unshare" id="f-unshare" type="button" hidden aria-label="Stop sharing">✕</button>
     <button class="btn" id="f-export" type="button">Export</button>
     <button class="btn" id="f-import" type="button">Import</button>
     <button class="btn" id="f-print" type="button">Print</button>
@@ -21,9 +24,9 @@
 
 <div class="checks hidden" id="checks"></div>
 
-<!-- Portrait and gallery. Stays hidden unless the page passes a media adapter,
+<!-- Portrait. Stays hidden unless the page passes a media adapter,
      so the offline /sheet is unaffected. -->
-<div class="media" id="media" hidden>
+<div class="portrait-wrap" id="portrait-wrap" hidden>
   <div class="portrait">
     <div class="pt-frame" id="pt-frame" title="Click to enlarge" hidden>
       <img id="pt-img" alt="Character portrait" />
@@ -37,16 +40,6 @@
       <button type="button" class="btn tiny" id="pt-adjust" hidden>Adjust</button>
       <button type="button" class="btn tiny danger" id="pt-del" hidden>Remove</button>
     </div>
-  </div>
-
-  <div class="gallery">
-    <div class="sub-head">Images &amp; links
-      <span class="gal-tools">
-        <label class="btn tiny" id="gal-pick">Upload<input type="file" id="gal-file" hidden /></label>
-        <button class="btn tiny" id="gal-link" type="button">+ link</button>
-      </span>
-    </div>
-    <div id="gal-list"></div>
   </div>
 </div>
 
@@ -166,6 +159,20 @@
   <div class="cols3 notes-grid" id="notes"></div>
 </div>
 
+<!-- Images & links: character art, references, links to their story. Stays hidden
+     unless the page passes a media adapter, so the offline /sheet is unaffected. -->
+<div class="gallery-wrap" id="gallery-wrap" hidden>
+  <div class="gallery">
+    <div class="sub-head">Images &amp; links
+      <span class="gal-tools">
+        <label class="btn tiny" id="gal-pick">Upload<input type="file" id="gal-file" hidden /></label>
+        <button class="btn tiny" id="gal-link" type="button">+ link</button>
+      </span>
+    </div>
+    <div id="gal-list"></div>
+  </div>
+</div>
+
 <!-- is:global because the engine builds this DOM with innerHTML, which never
      receives Astro's scoping attribute. -->
 <style is:global>
@@ -187,6 +194,10 @@
   .xpbar .xp-btns { display: flex; gap: .35rem; margin-left: auto; flex-wrap: wrap; }
   .xpbar .btn { background: color-mix(in srgb, var(--on-accent) 14%, transparent); color: var(--on-accent); border-color: color-mix(in srgb, var(--on-accent) 30%, transparent); }
   .xpbar .btn:hover { background: color-mix(in srgb, var(--on-accent) 26%, transparent); }
+  /* A live share link is a state worth seeing at a glance, not only on hover. */
+  .xpbar .btn.on { background: var(--on-accent); color: var(--accent); border-color: var(--on-accent); }
+  /* Narrow enough that revoking never costs the row its single line. */
+  .xpbar .btn.unshare { padding: .12rem .4rem; margin-left: -.15rem; }
 
   /* ---------- identity ---------- */
   .idrow { display: grid; grid-template-columns: 1.4fr 1fr 1.4fr 1fr 1fr; gap: .8rem; margin-bottom: .5rem; }
@@ -369,8 +380,8 @@
   .notes-grid label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
 
   /* ---------- portrait & gallery ---------- */
-  .media { display: grid; grid-template-columns: auto 1fr; gap: 1rem 1.4rem; align-items: start; margin: 0 0 1rem; }
-  @media (max-width: 640px) { .media { grid-template-columns: 1fr; } }
+  .portrait-wrap { margin: 0 0 1rem; }
+  .gallery-wrap { margin: 1rem 0; }
   .portrait { display: flex; flex-direction: column; gap: .35rem; align-items: flex-start; }
   .pt-frame {
     width: 172px; height: 208px; overflow: hidden; cursor: zoom-in; flex: none;
@@ -395,7 +406,7 @@
   .gal-row a { color: var(--ink); text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gal-row a:hover { color: var(--accent); text-decoration: underline; }
   .gal-kind { font-family: 'Cinzel'; font-size: .6rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); flex: none; }
-  @media print { .media, .pt-lightbox { display: none !important; } }
+  @media print { .portrait-wrap, .gallery-wrap, .pt-lightbox { display: none !important; } }
 
   /* Starting-sheet checks: advisory only, never blocking */
   .checks { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 5px; padding: .5rem .8rem; margin: 0 0 .9rem; }

@@ -69,7 +69,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
 
 <script>
   import { getSupabase } from '../lib/supabase';
-  import { requireLogin, supabaseConfigured } from '../lib/auth';
+  import { currentUser, requireLogin, supabaseConfigured } from '../lib/auth';
   import { mountSheet, type GalleryItem, type PortraitPos } from '../lib/engine';
   import { uiConfirm, uiError, uiPrompt } from '../lib/dialog';
 
@@ -93,8 +93,6 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
 
   (async () => {
     if (!supabaseConfigured) { el('loading').hidden = true; el('setup').hidden = false; return; }
-    const user = await requireLogin(base);
-    if (!user) return;
 
     const sb = getSupabase();
     const q = new URLSearchParams(location.search);
@@ -103,7 +101,10 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     const fail = (text: string) => { el('loading').hidden = true; el('error').hidden = false; el('error').textContent = text; };
 
     // /character?new=1&campaign=<id> creates then swaps the URL for the real id.
+    // Creating one is always the owner's own act, so this path alone requires login.
     if (!id && q.get('new')) {
+      const user = await requireLogin(base);
+      if (!user) return;
       const campaign = q.get('campaign');
       const { data, error } = await sb.from('characters')
         .insert({ owner_id: user.id, campaign_id: campaign || null, name: 'New character' })
@@ -114,17 +115,27 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     }
     if (!id) return fail('No character selected.');
 
-    const { data: ch, error } = await sb.from('characters').select('*').eq('id', id).maybeSingle();
+    // Anyone may land here: a signed-in owner/GM, or a visitor following a share
+    // link. Try the read first; only chase a login when that comes up empty,
+    // since a signed-out RLS miss and "does not exist" look identical from here.
+    let user = await currentUser();
+    let { data: ch, error } = await sb.from('characters').select('*').eq('id', id).maybeSingle();
     if (error) return fail('Could not load the character: ' + error.message);
+    if (!ch && !user) {
+      user = await requireLogin(base);
+      if (!user) return;
+      ({ data: ch, error } = await sb.from('characters').select('*').eq('id', id).maybeSingle());
+      if (error) return fail('Could not load the character: ' + error.message);
+    }
     if (!ch) return fail('That character does not exist, or is not yours to see.');
 
-    const isOwner = ch.owner_id === user.id;
+    const isOwner = !!user && ch.owner_id === user.id;
     let isGm = false;
     let campaign: any = null;
     if (ch.campaign_id) {
       const { data: c } = await sb.from('campaigns').select('id, name, gm_id, starting_xp').eq('id', ch.campaign_id).maybeSingle();
       campaign = c;
-      isGm = !!c && c.gm_id === user.id;
+      isGm = !!user && !!c && c.gm_id === user.id;
     }
     const status: string = ch.status || 'draft';
 
@@ -134,8 +145,25 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     const gmEditing = isGm && sessionStorage.getItem(`gm-edit:${id}`) === '1';
     const canEdit = (isOwner && status === 'draft') || gmEditing;
 
-    (el('back') as HTMLAnchorElement).href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}characters`;
-    if (!ch.campaign_id) el('back').textContent = '← Characters';
+    /* ---- the read-only share link, driven from the XP bar --------------
+       Every character can be shared, in any status and in or out of a campaign;
+       the Storyteller may share one too, which is why set_share accepts them. */
+    const share = (isOwner || isGm) ? {
+      enabled: !!ch.share_enabled,
+      link: `${location.origin}${base}character?id=${id}`,
+      async set(on: boolean) {
+        const { error } = await sb.rpc('set_share', { p_id: id, p_enabled: on });
+        if (error) { await uiError('Could not change the sharing: ' + error.message); return false; }
+        return true;
+      },
+    } : undefined;
+
+    if (user) {
+      (el('back') as HTMLAnchorElement).href = ch.campaign_id ? `${base}campaign?id=${ch.campaign_id}` : `${base}characters`;
+      if (!ch.campaign_id) el('back').textContent = '← Characters';
+    } else {
+      el('back').hidden = true;
+    }
     el('char-name').textContent = ch.name || 'Character';
 
     /* ---- experience -------------------------------------------------- */
@@ -225,7 +253,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
         const { error } = await sb.storage.from(CHAR_BUCKET).upload(path, file, { contentType: file.type });
         if (error) return uiError('Could not upload: ' + error.message);
         const { error: e2 } = await sb.from('files').insert({
-          campaign_id: ch.campaign_id, character_id: id, owner_id: user.id,
+          campaign_id: ch.campaign_id, character_id: id, owner_id: user!.id,
           name: file.name, storage_path: path, bucket: CHAR_BUCKET,
           mime: file.type, category: 'attachment',
         });
@@ -241,7 +269,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
         if (!href) return uiError('That link must start with http:// or https://');
         const name = await uiPrompt('Label', href, { title: 'Name it' });
         await sb.from('files').insert({
-          campaign_id: ch.campaign_id, character_id: id, owner_id: user.id,
+          campaign_id: ch.campaign_id, character_id: id, owner_id: user!.id,
           name: (name || href).trim(), url: href, mime: 'link', category: 'attachment',
         });
       },
@@ -260,7 +288,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       save: canEdit ? (state) => saveSheet(state) : () => {},
       readOnly: !canEdit,
       budgetLocked, budgetValue,
-      media,
+      media, share,
       onChange: ({ remaining }) => {
         const warn = el('xp-warn');
         if (remaining < 0) {
@@ -302,7 +330,9 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       el('review').innerHTML = `<strong>Your Storyteller asked for changes:</strong> ${esc(ch.review_note)}`;
     }
 
-    el('status-text').textContent = isGm && !isOwner
+    el('status-text').textContent = !user
+      ? 'Shared view. Read-only.'
+      : isGm && !isOwner
       ? (gmEditing ? 'Editing as Storyteller.' : 'Storyteller view. Read-only until you choose to edit.')
       : status === 'draft' ? 'You are editing. Send it over when it is ready.'
       : status === 'submitted' ? 'Sent. Waiting for approval; read-only until then.'
@@ -363,7 +393,7 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       el('xp-save').addEventListener('click', async () => {
         const xp = Math.max(0, +input.value || 0);
         const { error } = await sb.from('character_xp').upsert(
-          { character_id: id, xp, set_by: user.id, updated_at: new Date().toISOString() },
+          { character_id: id, xp, set_by: user!.id, updated_at: new Date().toISOString() },
           { onConflict: 'character_id' });
         const flash = el('xp-saved');
         if (error) { flash.textContent = 'Error: ' + error.message; return; }

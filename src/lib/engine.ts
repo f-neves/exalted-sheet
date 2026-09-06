@@ -33,6 +33,18 @@ export interface MediaAdapter {
   removeItem: (id: string) => Promise<void>;
 }
 
+/**
+ * Optional read-only sharing. Left out (the offline /sheet), the Share buttons stay
+ * hidden; supplied (/character), they flip `characters.share_enabled` and hand the
+ * link straight to the clipboard. The engine never learns what a share link *is*.
+ */
+export interface ShareAdapter {
+  enabled: boolean;
+  link: string;
+  /** Persist the new state. Returns false when the write failed, so the UI can stay put. */
+  set: (on: boolean) => Promise<boolean>;
+}
+
 export interface SheetOpts {
   load: () => any | null | Promise<any | null>;
   save: (state: any) => void;
@@ -41,6 +53,7 @@ export interface SheetOpts {
   onReset?: () => void;
   readOnly?: boolean;
   media?: MediaAdapter;
+  share?: ShareAdapter;
   /** Fires after every recalculation, so pages need not scrape the XP bar. */
   onChange?: (info: { spent: number; budget: number; remaining: number }) => void;
 }
@@ -1532,15 +1545,55 @@ export function mountSheet(opts: SheetOpts) {
 
   el('f-print').addEventListener('click', () => window.print());
 
+  /** Say something on the button itself, then put its label back. */
+  function flash(b: HTMLElement, word: string) {
+    const old = b.textContent;
+    b.textContent = word;
+    setTimeout(() => (b.textContent = old), 1200);
+  }
+
   el('f-link').addEventListener('click', () => {
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
     const url = location.origin + location.pathname + '#c=' + b64;
     navigator.clipboard?.writeText(url);
-    const b = el('f-link');
-    const old = b.textContent;
-    b.textContent = 'Copied';
-    setTimeout(() => (b.textContent = old), 1200);
+    flash(el('f-link'), 'Copied');
   });
+
+  /* One click is the whole gesture: switch sharing on if it is off, and leave the
+     link in the clipboard either way. Unshare only appears once there is something
+     to revoke. */
+  if (opts.share) {
+    const share = opts.share;
+    const btn = el('f-share');
+    const off = el('f-unshare');
+
+    const paint = () => {
+      btn.hidden = false;
+      btn.classList.toggle('on', share.enabled);
+      off.hidden = !share.enabled;
+      btn.title = share.enabled
+        ? 'The read-only link is live. Click to copy it again.'
+        : 'Copy a read-only link to this sheet. Anyone with it can look, no account needed.';
+      off.title = 'Switch the link off. Anyone holding it loses access.';
+    };
+    paint();
+
+    btn.addEventListener('click', async () => {
+      if (!share.enabled) {
+        if (!(await share.set(true))) return flash(btn, 'Failed');
+        share.enabled = true;
+        paint();
+      }
+      navigator.clipboard?.writeText(share.link);
+      flash(btn, 'Copied');
+    });
+
+    off.addEventListener('click', async () => {
+      if (!(await share.set(false))) return flash(off, 'Failed');
+      share.enabled = false;
+      paint();
+    });
+  }
 
   el('f-reset').addEventListener('click', () => {
     if (!confirm('Discard this character and start a blank sheet?')) return;
@@ -1566,7 +1619,8 @@ export function mountSheet(opts: SheetOpts) {
   const FRAME_W = 172, FRAME_H = 208;
 
   async function mountMedia(media: MediaAdapter) {
-    el('media').hidden = false;
+    el('portrait-wrap').hidden = false;
+    el('gallery-wrap').hidden = false;
     const frame = el('pt-frame');
     const img = el('pt-img') as HTMLImageElement;
     const empty = el('pt-empty');

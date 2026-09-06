@@ -66,8 +66,13 @@ create table if not exists public.characters (
   review_note   text not null default '',
   approved_at   timestamptz,
   approved_by   uuid references auth.users(id) on delete set null,
+  share_enabled boolean not null default false,
   updated_at    timestamptz not null default now()
 );
+
+-- Added after the initial release: lets an existing table pick up the column
+-- without dropping and recreating it.
+alter table public.characters add column if not exists share_enabled boolean not null default false;
 
 -- XP lives apart from the character precisely so the player cannot write it.
 create table if not exists public.character_xp (
@@ -144,6 +149,13 @@ $$;
 create or replace function public.owner_of_character(p uuid)
 returns uuid language sql security definer stable set search_path = public as $$
   select owner_id from public.characters where id = p;
+$$;
+
+-- Backs every anonymous read-only policy below: a character with the owner's
+-- share link switched on, and nothing else, is visible to a signed-out visitor.
+create or replace function public.character_shared(p uuid)
+returns boolean language sql security definer stable set search_path = public as $$
+  select coalesce((select share_enabled from public.characters where id = p), false);
 $$;
 
 -- Bridges a storage object back to its files row, so campaign-bucket reads can
@@ -297,6 +309,20 @@ begin
   if not found then raise exception 'not allowed'; end if;
 end; $$;
 
+-- The switch for the read-only share link, independent of status: an approved
+-- sheet can be shared same as a draft, which the UPDATE policy on characters
+-- would not otherwise allow.
+create or replace function public.set_share(p_id uuid, p_enabled boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  -- Owner or Storyteller, any status, campaign or not: the normal UPDATE policy
+  -- locks a submitted sheet, and sharing is not an edit.
+  update public.characters set share_enabled = p_enabled
+   where id = p_id
+     and (owner_id = auth.uid() or public.is_gm(public.campaign_of_character(p_id)));
+  if not found then raise exception 'not allowed'; end if;
+end; $$;
+
 grant execute on function public.create_campaign(text, text)  to authenticated;
 grant execute on function public.join_campaign(text)          to authenticated;
 grant execute on function public.regenerate_code(uuid)        to authenticated;
@@ -305,6 +331,7 @@ grant execute on function public.cancel_submission(uuid)      to authenticated;
 grant execute on function public.approve_sheet(uuid)          to authenticated;
 grant execute on function public.return_sheet(uuid, text)     to authenticated;
 grant execute on function public.reopen_sheet(uuid)           to authenticated;
+grant execute on function public.set_share(uuid, boolean)     to authenticated;
 
 -- ---------------------------------------------------------------------
 -- Row level security
@@ -358,6 +385,11 @@ create policy members_delete on public.campaign_members for delete to authentica
 drop policy if exists characters_select on public.characters;
 create policy characters_select on public.characters for select to authenticated
   using (owner_id = auth.uid() or (campaign_id is not null and public.is_gm(campaign_id)));
+-- anyone, signed in or not (and whoever they are signed in as), reads a
+-- character whose owner switched sharing on
+drop policy if exists characters_select_shared on public.characters;
+create policy characters_select_shared on public.characters for select to public
+  using (share_enabled);
 drop policy if exists characters_insert on public.characters;
 create policy characters_insert on public.characters for insert to authenticated
   with check (owner_id = auth.uid());
@@ -377,6 +409,9 @@ drop policy if exists xp_select on public.character_xp;
 create policy xp_select on public.character_xp for select to authenticated
   using (public.owner_of_character(character_id) = auth.uid()
          or public.is_gm(public.campaign_of_character(character_id)));
+drop policy if exists xp_select_shared on public.character_xp;
+create policy xp_select_shared on public.character_xp for select to public
+  using (public.character_shared(character_id));
 drop policy if exists xp_insert on public.character_xp;
 create policy xp_insert on public.character_xp for insert to authenticated
   with check (public.is_gm(public.campaign_of_character(character_id)));
@@ -402,6 +437,9 @@ create policy files_select on public.files for select to authenticated using (
   or (campaign_id is not null and public.is_member(campaign_id) and visible_to_players)
   or (campaign_id is not null and public.is_member(campaign_id) and auth.uid() = any(visible_to))
 );
+drop policy if exists files_select_shared on public.files;
+create policy files_select_shared on public.files for select to public
+  using (character_id is not null and public.character_shared(character_id));
 drop policy if exists files_insert on public.files;
 create policy files_insert on public.files for insert to authenticated
   with check (owner_id = auth.uid());
@@ -431,6 +469,11 @@ create policy st_char_select on storage.objects for select to authenticated usin
     public.owner_of_character(((storage.foldername(name))[1])::uuid) = auth.uid()
     or public.is_gm(public.campaign_of_character(((storage.foldername(name))[1])::uuid))
   )
+);
+
+drop policy if exists st_char_select_shared on storage.objects;
+create policy st_char_select_shared on storage.objects for select to public using (
+  bucket_id = 'characters' and public.character_shared(((storage.foldername(name))[1])::uuid)
 );
 
 drop policy if exists st_char_insert on storage.objects;
