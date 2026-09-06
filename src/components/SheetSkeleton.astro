@@ -30,15 +30,34 @@
   <div class="portrait">
     <div class="pt-frame" id="pt-frame" title="Click to enlarge" hidden>
       <img id="pt-img" alt="Character portrait" />
+      <!-- The actions live over the picture, in the bottom fifth of the frame.
+           Reframing turns that same strip into the zoom bar, so the frame does
+           not change size going in and out of it, which is what a strip living
+           under the frame could not manage. -->
+      <div class="pt-bar" id="pt-bar" hidden>
+        <div class="pt-pair">
+          <button type="button" class="btn pt-bt" id="pt-adjust">Adjust framing</button>
+          <button type="button" class="btn pt-bt danger" id="pt-del">Remove image</button>
+        </div>
+        <div class="pt-tune">
+          <input type="range" class="pt-zoom" id="pt-zoom" min="1" max="3" step="0.05" value="1" aria-label="Zoom" />
+          <button type="button" class="btn pt-bt" id="pt-done">Done</button>
+        </div>
+      </div>
     </div>
     <div class="pt-empty" id="pt-empty">No portrait</div>
-    <input type="range" class="pt-zoom" id="pt-zoom" min="1" max="3" step="0.05" value="1" title="Zoom" hidden />
+    <!-- On a narrow screen the strip over the picture stands down and the same
+         two actions become ordinary buttons under it. They are their own
+         buttons, not the ones above moved: one has to live inside the frame,
+         because that is where the strip becomes the zoom bar, and one outside. -->
+    <div class="pt-outside" id="pt-outside" hidden>
+      <button type="button" class="btn" id="pt-adjust-out">Adjust framing</button>
+      <button type="button" class="btn danger" id="pt-del-out">Remove image</button>
+    </div>
     <div class="pt-actions">
       <label class="btn tiny" id="pt-pick" hidden><span id="pt-pick-txt">Upload</span>
         <input type="file" id="pt-file" accept="image/*" hidden />
       </label>
-      <button type="button" class="btn tiny" id="pt-adjust" hidden>Adjust</button>
-      <button type="button" class="btn tiny danger" id="pt-del" hidden>Remove</button>
     </div>
   </div>
 </div>
@@ -389,16 +408,80 @@
   .pt-frame {
     width: var(--pt-w); height: var(--pt-h); overflow: hidden; cursor: zoom-in; flex: none;
     border: 1px solid var(--panel-border); border-radius: 5px; background: var(--panel);
+    /* Anchors the strip inside the frame, and becomes the size reference for it:
+       the buttons' text follows the width of the frame instead of a fixed value
+       that is too big in a narrow column and too small in a wide one. */
+    position: relative; container-type: inline-size;
   }
   .pt-frame.adjusting { cursor: grab; border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .pt-frame.adjusting:active { cursor: grabbing; }
   .pt-frame img { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; -webkit-user-drag: none; }
+
+  /* ---- the strip of actions over the picture ----
+     The bottom fifth of the frame, tiled by the two buttons, no gap between them.
+     It shows on hover only: the picture is the subject, the controls are visitors.
+     Reframing swaps the pair for the zoom bar in the same strip. */
+  .pt-bar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 20%; z-index: 3;
+    display: flex; align-items: stretch; gap: 0;
+    opacity: 0; transition: opacity .14s; pointer-events: none;
+  }
+  .pt-bar[hidden] { display: none; }
+  .pt-frame:hover .pt-bar,
+  .pt-frame:focus-within .pt-bar,
+  .pt-frame.adjusting .pt-bar { opacity: 1; pointer-events: auto; }
+  /* no mouse, no hover: on a touch screen the strip stays within reach */
+  @media (hover: none) { .pt-bar { opacity: 1; pointer-events: auto; } }
+  .pt-pair { display: flex; gap: 0; width: 100%; }
+  .pt-tune {
+    display: none; width: 100%; align-items: center; gap: .5rem; padding: 0 .5rem;
+    background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(3px);
+    border-top: 1px solid var(--panel-border);
+  }
+  .pt-frame.adjusting .pt-pair { display: none; }
+  .pt-frame.adjusting .pt-tune { display: flex; }
+  .pt-tune .pt-zoom { flex: 1; width: auto; min-width: 0; }
+  /* They keep the site's .btn for colour and typeface, and lose the rounded
+     corner and the loose border, because together they are one strip. The label
+     rides the width of the frame (cqi = 1% of it): a fixed size breaks
+     "framing" in half in a narrow column and looks lost in a wide one. */
+  .pt-bt {
+    flex: 1 1 0; min-width: 0; padding: .2rem; border-radius: 0;
+    border: none; border-top: 1px solid var(--panel-border);
+    background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(3px);
+    font-size: clamp(.55rem, 5.2cqi, .72rem); line-height: 1.2; text-align: center;
+    overflow-wrap: break-word;
+  }
+  .pt-pair .pt-bt + .pt-bt { border-left: 1px solid var(--panel-border); }
+  /* while reframing, Done goes back to being a button of its own beside the bar */
+  .pt-tune .pt-bt {
+    flex: 0 0 auto; padding: .25rem .6rem; background: var(--panel);
+    border: 1px solid var(--panel-border); border-radius: 4px; font-size: .66rem;
+  }
+  /* Red text, but not a red edge: `.btn.danger` colours the whole border, and on
+     a button whose only borders are the seams of the strip that read as a stray
+     line across the top of the picture. */
+  .pt-bt.danger { color: var(--danger); border-color: var(--panel-border); }
+  .pt-bt.danger:hover { background: color-mix(in srgb, var(--danger) 22%, transparent); border-color: var(--panel-border); }
+  /* The same pair below the frame, for screens with no room for the strip. */
+  .pt-outside { display: none; gap: .4rem; width: 100%; }
+  .pt-outside .btn { flex: 1 1 0; min-width: 0; text-align: center; }
   .pt-empty {
     width: var(--pt-w); height: var(--pt-h); display: grid; place-items: center; flex: none;
     border: 1px dashed var(--panel-border); border-radius: 5px;
     color: var(--ink-soft); font-size: .82rem; font-style: italic;
   }
-  .pt-zoom { width: var(--pt-w); }
+  /* Drawn by hand: the browser's own slider is a grey lump on top of a picture. */
+  .pt-zoom { -webkit-appearance: none; appearance: none; height: 16px; background: transparent; cursor: pointer; margin: 0; }
+  .pt-zoom::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--accent) 40%, var(--rule)); }
+  .pt-zoom::-moz-range-track { height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--accent) 40%, var(--rule)); }
+  .pt-zoom::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; margin-top: -5.5px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0, 0, 0, .35); }
+  .pt-zoom::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0, 0, 0, .35); }
+  .pt-zoom:focus-visible { outline: none; }
+  .pt-zoom:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .pt-zoom:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
   .pt-actions { display: flex; gap: .3rem; flex-wrap: wrap; max-width: var(--pt-w); }
+  .pt-actions:empty { display: none; }
   .pt-lightbox {
     position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .8);
     display: grid; place-items: center; cursor: zoom-out; padding: 2rem;

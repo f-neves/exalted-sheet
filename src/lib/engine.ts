@@ -1666,13 +1666,30 @@ export function mountSheet(opts: SheetOpts) {
       zoom.value = String(pos.z);
     };
 
+    /* Reframing is a mode, and the stylesheet does the rest: the strip swaps its
+       pair of buttons for the zoom bar, and the cursor turns into a hand. The
+       class goes on the column as well as on the frame, because the pair below
+       the picture is the frame's sibling and has to stand down while the zoom bar
+       is the one in charge. */
+    let adjusting = false, dragging = false, lastX = 0, lastY = 0;
+    const column = frame.parentElement!;
+    const setAdjusting = (on: boolean) => {
+      adjusting = on;
+      frame.classList.toggle('adjusting', on);
+      column.classList.toggle('adjusting', on);
+    };
+
     const paint = () => {
       frame.hidden = !hasImage;
       empty.hidden = hasImage;
       el('pt-pick').hidden = !media.canEdit;
-      el('pt-del').hidden = !(media.canEdit && hasImage);
-      el('pt-adjust').hidden = !(media.canEdit && hasImage);
-      if (!(media.canEdit && hasImage)) zoom.hidden = true;
+      // The strip over the picture, and the same pair below it that a narrow
+      // screen shows instead. Both need a picture to act on and someone allowed
+      // to act; which of the two is on screen is the stylesheet's business.
+      const canFrame = media.canEdit && hasImage;
+      el('pt-bar').hidden = !canFrame;
+      el('pt-outside').hidden = !canFrame;
+      if (!canFrame) setAdjusting(false);
       const txt = el('pt-pick-txt');
       if (txt) txt.textContent = hasImage ? 'Replace' : 'Upload';
       el('gal-pick').hidden = !media.canEdit;
@@ -1693,27 +1710,28 @@ export function mountSheet(opts: SheetOpts) {
         (ev.target as HTMLInputElement).value = '';
       });
 
-      el('pt-del').addEventListener('click', async () => {
-        if (!confirm('Remove the portrait?')) return;
+      // The pair inside the frame and the pair below it do the same thing; which
+      // one is on screen is decided by the width of the screen, in the CSS.
+      const bothOf = (a: string, b: string, fn: () => void) =>
+        [a, b].forEach((id) => el(id).addEventListener('click', fn));
+
+      bothOf('pt-del', 'pt-del-out', async () => {
+        if (!hasImage || !confirm('Remove the portrait?')) return;
         await media.clearPortrait();
         img.src = ''; lbImg.src = ''; hasImage = false;
-        frame.classList.remove('adjusting'); zoom.hidden = true;
         wrap.style.removeProperty('--pt-ar');   // no picture, no shape to follow
         paint();
       });
 
       // Adjust mode: drag to pan, slider to zoom. Only the card is reframed;
       // the lightbox always shows the whole image.
-      let adjusting = false, dragging = false, lastX = 0, lastY = 0;
-      const adjustBtn = el('pt-adjust');
-      adjustBtn.addEventListener('click', () => {
-        adjusting = !adjusting;
-        frame.classList.toggle('adjusting', adjusting);
-        zoom.hidden = !adjusting;
-        adjustBtn.textContent = adjusting ? 'Done' : 'Adjust';
-      });
+      bothOf('pt-adjust', 'pt-adjust-out', () => setAdjusting(true));
+      el('pt-done').addEventListener('click', () => setAdjusting(false));
+
       frame.addEventListener('pointerdown', (ev) => {
-        if (!adjusting) return;
+        // The strip belongs to itself: pressing a button there must not drag
+        // the picture out from under it.
+        if (!adjusting || (ev.target as HTMLElement).closest('.pt-bar')) return;
         const pe = ev as PointerEvent;
         dragging = true; lastX = pe.clientX; lastY = pe.clientY;
         frame.setPointerCapture?.(pe.pointerId);
@@ -1748,8 +1766,9 @@ export function mountSheet(opts: SheetOpts) {
       el('gal-link').addEventListener('click', async () => { await media.addLink(); await refreshGallery(); });
     }
 
-    frame.addEventListener('click', () => {
-      if (frame.classList.contains('adjusting') || !hasImage) return;
+    frame.addEventListener('click', (ev) => {
+      // Pressing a button on the strip must not enlarge the picture by the way.
+      if (adjusting || !hasImage || (ev.target as HTMLElement).closest('.pt-bar')) return;
       lightbox.hidden = false;
       document.body.style.overflow = 'hidden';
     });

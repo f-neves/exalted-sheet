@@ -141,6 +141,16 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
       /* Stacked, `flex-basis: 12rem` stops being a width and becomes a height,
          and the panel grows a hand's width of nothing under the last field. */
       .pers-ident { flex: 0 0 auto; min-width: 0; }
+
+      /* The actions come off the picture and become ordinary buttons under it.
+         The strip disappears entirely outside of reframing: empty, it would go
+         on covering the bottom fifth of the frame and eating the tap that
+         enlarges the picture. While reframing it comes back, because that is
+         where the zoom bar lives. */
+      .pt-outside:not([hidden]) { display: flex; }
+      .pt-frame:not(.adjusting) .pt-bar { display: none; }
+      .pt-pair { display: none; }
+      .portrait.adjusting .pt-outside { display: none; }
     }
 
     /* ---------- prose ---------- */
