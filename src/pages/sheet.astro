@@ -163,6 +163,10 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     // the slot shows, but stays a placeholder until the sheet has somewhere to live.
     el('portrait-wrap').hidden = false;
     el('pt-empty').textContent = 'Save to your account to add a picture';
+    // The upload button lives here, and only /character ever shows it. Empty, it
+    // still counts as a flex item in the picture's column and steals a sliver of
+    // height from the frame beside it, so it comes out rather than just hiding.
+    document.querySelector('.pt-actions')?.remove();
 
     document.getElementById('caste-info')!.hidden = true;
 
