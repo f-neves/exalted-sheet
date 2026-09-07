@@ -4,15 +4,99 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
 ---
 
 <Base title="Exalted 2e — Character Sheet">
+  {/* Portrait on one side, everything that names the character on the other, the same
+      header /character uses. The portrait and the identity fields themselves live in
+      the sheet skeleton; the script below lifts those nodes up into the two slots here,
+      so the engine's bindings are untouched. There is no account behind this page, so
+      the picture starts as a placeholder and the header's only action is handing the
+      sheet to one. */}
+  <header class="pers-cab">
+    <div class="pers-ident">
+      <div class="char-head">
+        <h1 class="char-name" id="char-name">Character</h1>
+        <span class="seal" id="status-seal">This browser</span>
+      </div>
+
+      <div class="ident-slot" id="ident-slot"></div>
+
+      <div class="ident-foot">
+        <div class="status-bar" id="status-bar">
+          <span class="muted">Held in this browser alone. Save it to keep it, add a picture, and reach it from any device.</span>
+          <span class="status-actions" id="status-actions">
+            <button class="btn primary" id="save-account" type="button">Save to your account</button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
   <SheetSkeleton />
+
+  {/* Global, not scoped: the portrait and the identity fields are the skeleton's
+      nodes, carrying its scope and not this page's, and they have to be styled
+      here once they move into the header. Kept in step with /character, minus
+      what that page needs and this one does not: the back link and the
+      Storyteller's XP box. */}
+  <style is:global>
+    .pers-cab { display: flex; gap: 1.2rem; align-items: stretch; flex-wrap: wrap; margin: 1rem 0;
+      min-height: 22rem; }
+
+    .pers-cab .portrait-wrap {
+      margin: 0; flex: 0 0 auto; align-self: stretch; display: flex;
+      width: clamp(9rem, calc(var(--pt-ar, .827) * 22rem), 38%);
+    }
+    .pers-cab .portrait { --pt-w: 100%; flex: 1; min-width: 0; align-items: stretch; }
+    .pers-cab .pt-frame, .pers-cab .pt-empty {
+      position: relative; flex: 1; min-height: 0; width: 100%; height: auto;
+    }
+    .pers-cab .pt-frame img { position: absolute; inset: 0; }
+
+    .pers-ident {
+      flex: 1 1 12rem; min-width: 11rem; display: flex; flex-direction: column; gap: .4rem;
+      border: 1px solid var(--panel-border); border-radius: 6px;
+      background: var(--panel); padding: .8rem 1rem 1rem;
+    }
+    .pers-ident .char-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin: 0 0 .3rem; }
+    .pers-ident .char-name { font-size: 1.5rem; letter-spacing: .05em; color: var(--accent); margin: 0; }
+
+    .ident-slot .idrow { gap: .5rem .9rem; margin: 0 0 .5rem; }
+    .ident-slot .idrow:last-child { margin-bottom: 0; }
+
+    .pers-ident .ident-foot { margin-top: auto; padding-top: .5rem; display: flex; flex-direction: column; gap: .5rem; }
+    .pers-ident .status-bar { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; margin: 0; font-size: .9rem; }
+    .pers-ident .status-actions { display: flex; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
+
+    @media (max-width: 900px) {
+      .pers-cab { flex-direction: column; align-items: stretch; gap: .8rem; min-height: 0; }
+      .pers-cab .portrait-wrap {
+        align-self: flex-start;
+        width: clamp(9rem, calc(var(--pt-ar, .827) * 22rem), 100%);
+      }
+      .pers-cab .pt-frame, .pers-cab .pt-empty {
+        flex: none; width: 100%; height: auto; aspect-ratio: var(--pt-ar, .827);
+      }
+      .pers-ident { flex: 0 0 auto; min-width: 0; }
+    }
+
+    @media print {
+      .pers-ident .status-bar, .notice { display: none !important; }
+      .pers-ident { border: none; background: none; padding: 0; }
+    }
+  </style>
 </Base>
 
 <script>
   import { mountSheet } from '../lib/engine';
   import { SPLAT_BY_ID } from '../lib/data';
-  import { uiConfirm } from '../lib/dialog';
+  import { uiConfirm, uiError } from '../lib/dialog';
+  import { currentUser, requireLogin, supabaseConfigured } from '../lib/auth';
+  import { getSupabase } from '../lib/supabase';
+
+  const base = import.meta.env.BASE_URL;
+  const el = (id: string) => document.getElementById(id)!;
 
   const KEY = 'exalted:sheet';
+  const SAVE_FLAG = 'exalted:sheet:pending-save';
 
   /** Does this saved sheet hold anything worth not clobbering? */
   function hasWork(state: any) {
@@ -27,57 +111,124 @@ import SheetSkeleton from '../components/SheetSkeleton.astro';
     return (state.charms?.list || []).length > 0 || (state.backgrounds || []).length > 0;
   }
 
-  mountSheet({
-    load: async () => {
-      const hash = location.hash.match(/c=([^&]+)/);
-      if (hash) {
-        try { return JSON.parse(decodeURIComponent(escape(atob(hash[1])))); } catch { /* fall through */ }
+  function readLocal(): any {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  /**
+   * Copies the browser's sheet into the account as a new character, the same insert
+   * /characters offers from "Save it to my account". The local copy is left alone:
+   * this hands it over, it does not move it, so a failed insert loses nothing.
+   */
+  async function saveToAccount(state: any, userId: string) {
+    const sb = getSupabase();
+    const name = (state?.id?.name || '').trim();
+    const concept = (state?.id?.concept || '').trim();
+    const { data, error } = await sb.from('characters').insert({
+      owner_id: userId, campaign_id: null, name, concept, sheet: state,
+    }).select('id').single();
+    if (error) { await uiError('Could not save it: ' + error.message); return false; }
+    location.href = `${base}character?id=${data.id}`;
+    return true;
+  }
+
+  (async () => {
+    // Returning from /login after the Save button sent someone there: pick up where
+    // they left off instead of making them click Save twice.
+    if (sessionStorage.getItem(SAVE_FLAG) === '1') {
+      sessionStorage.removeItem(SAVE_FLAG);
+      if (supabaseConfigured) {
+        const user = await currentUser();
+        const local = readLocal();
+        if (user && local) { if (await saveToAccount(local, user.id)) return; }
       }
+    }
 
-      let saved: any = null;
-      try {
-        const raw = localStorage.getItem(KEY);
-        if (raw) saved = JSON.parse(raw);
-      } catch { /* storage unavailable */ }
+    let initialName = 'Character';
+    const local = readLocal();
+    if (local) initialName = (local.id?.name || '').trim() || 'Character';
+    el('char-name').textContent = initialName;
 
-      // ?splat=lunar, from the type cards on the home page.
-      const wanted = new URLSearchParams(location.search).get('splat');
-      const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+    // The portrait and identity fields belong to the sheet skeleton, which lays them
+    // out one above the other down the page. Here they are lifted into the header,
+    // picture on one side and fields on the other, the way /character reads.
+    for (const row of Array.from(document.querySelectorAll('.idrow'))) el('ident-slot').appendChild(row);
+    const cab = document.querySelector('.pers-cab')!;
+    cab.insertBefore(el('portrait-wrap'), cab.firstChild);
 
-      if (wanted && SPLAT_BY_ID[wanted]) {
-        if (!saved) { clean(); return { splat: wanted }; }
-        if (saved.splat !== wanted) {
-          // Switching type resets caste and favoured picks, so ask before discarding work.
-          const name = SPLAT_BY_ID[wanted].name;
-          const ok = !hasWork(saved) || await uiConfirm(
-            `Turn the character in this browser into a ${name}? `
-            + 'Its caste and favoured picks are cleared, and traits below the new floors are raised.',
-            { title: `Switch to ${name}`, ok: `Make it a ${name}`, cancel: 'Keep what I have' });
-          clean();
-          if (!ok) return saved;
-          return { ...saved, splat: wanted, caste: '', favored: { abilities: [], attributes: [] } };
+    // No account behind this page, so there is nowhere to keep an uploaded picture:
+    // the slot shows, but stays a placeholder until the sheet has somewhere to live.
+    el('portrait-wrap').hidden = false;
+    el('pt-empty').textContent = 'Save to your account to add a picture';
+
+    document.getElementById('caste-info')!.hidden = true;
+
+    el('save-account').addEventListener('click', async () => {
+      if (!supabaseConfigured) return uiError('This build has no account area configured.');
+      const btn = el('save-account') as HTMLButtonElement;
+      const user = await currentUser();
+      if (!user) {
+        sessionStorage.setItem(SAVE_FLAG, '1');
+        await requireLogin(base);
+        return;
+      }
+      const state = readLocal();
+      if (!state) return uiError('There is nothing on this sheet yet.');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      const ok = await saveToAccount(state, user.id);
+      if (!ok) { btn.disabled = false; btn.textContent = 'Save to your account'; }
+    });
+
+    mountSheet({
+      load: async () => {
+        const hash = location.hash.match(/c=([^&]+)/);
+        if (hash) {
+          try { return JSON.parse(decodeURIComponent(escape(atob(hash[1])))); } catch { /* fall through */ }
         }
-        clean();
-      }
-      return saved;
-    },
-    save: (S) => {
-      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* quota */ }
-    },
-    // Same short bar as /character. Nothing was removed: the buttons and their
-    // handlers are still in the skeleton and in the engine, and flipping any of
-    // these to true (or dropping the line) brings them back. Worth knowing what
-    // goes with them here, where there is no account behind the sheet: Export
-    // and Link were the only ways to carry a character to another browser, and
-    // Import the only way to bring one in.
-    tools: { checks: false, export: false, import: false, print: false, link: false },
-    onReset: () => {
-      try { localStorage.removeItem(KEY); } catch { /* ignore */ }
-      location.hash = '';
-    },
-  });
 
-  // The caste description goes quiet here too. The engine still writes it; drop
-  // this line to show it again.
-  document.getElementById('caste-info')!.hidden = true;
+        const saved = readLocal();
+
+        // ?splat=lunar, from the type cards on the home page.
+        const wanted = new URLSearchParams(location.search).get('splat');
+        const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+
+        if (wanted && SPLAT_BY_ID[wanted]) {
+          if (!saved) { clean(); return { splat: wanted }; }
+          if (saved.splat !== wanted) {
+            // Switching type resets caste and favoured picks, so ask before discarding work.
+            const name = SPLAT_BY_ID[wanted].name;
+            const ok = !hasWork(saved) || await uiConfirm(
+              `Turn the character in this browser into a ${name}? `
+              + 'Its caste and favoured picks are cleared, and traits below the new floors are raised.',
+              { title: `Switch to ${name}`, ok: `Make it a ${name}`, cancel: 'Keep what I have' });
+            clean();
+            if (!ok) return saved;
+            return { ...saved, splat: wanted, caste: '', favored: { abilities: [], attributes: [] } };
+          }
+          clean();
+        }
+        return saved;
+      },
+      save: (S) => {
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* quota */ }
+        el('char-name').textContent = (S?.id?.name || '').trim() || 'Character';
+      },
+      // Same short bar as /character. Nothing was removed: the buttons and their
+      // handlers are still in the skeleton and in the engine, and flipping any of
+      // these to true (or dropping the line) brings them back. Worth knowing what
+      // goes with them here, where there is no account behind the sheet: Export
+      // and Link were the only ways to carry a character to another browser, and
+      // Import the only way to bring one in.
+      tools: { checks: false, export: false, import: false, print: false, link: false },
+      onReset: () => {
+        try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+        location.hash = '';
+        el('char-name').textContent = 'Character';
+      },
+    });
+  })();
 </script>
