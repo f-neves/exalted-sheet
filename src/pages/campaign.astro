@@ -107,6 +107,7 @@ import Base from '../layouts/Base.astro';
   import { getSupabase } from '../lib/supabase';
   import { requireLogin, supabaseConfigured } from '../lib/auth';
   import { uiConfirm, uiError, uiForm, uiPrompt } from '../lib/dialog';
+  import { SPLAT_BY_ID } from '../lib/data';
 
   const base = import.meta.env.BASE_URL;
   const el = (id: string) => document.getElementById(id)!;
@@ -249,18 +250,25 @@ import Base from '../layouts/Base.astro';
     async function loadCharacters() {
       // RLS shows the Storyteller every character and a player only their own.
       const { data } = await sb.from('characters')
-        .select('id, name, concept, owner_id, status')
+        .select('id, name, concept, owner_id, status, splat:sheet->>splat')
         .eq('campaign_id', id).order('updated_at', { ascending: false });
       const pending = (data || []).filter((c: any) => c.status === 'submitted').length;
       el('pending-note').textContent = isGm && pending ? `· ${pending} waiting for you` : '';
       el('characters').innerHTML = (data || []).length
-        ? '<div class="char-grid">' + (data || []).map((c: any) => `
-            <a class="char-card" href="${base}character?id=${c.id}">
-              <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+        ? '<div class="char-grid">' + (data || []).map((c: any) => {
+            const splat = SPLAT_BY_ID[c.splat];
+            const style = splat ? ` style="--c:${splat.accent}"` : '';
+            return `
+            <a class="char-card" href="${base}character?id=${c.id}"${style}>
+              <div class="card-top">
+                <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+                ${splat ? `<span class="splat-tag">${esc(splat.name)}</span>` : ''}
+              </div>
               <span class="cname">${esc(c.name || 'Unnamed')}</span>
               ${c.concept ? `<span class="cwho">${esc(c.concept)}</span>` : ''}
               <span class="cwho">${esc(memberNames[c.owner_id] || '')}</span>
-            </a>`).join('') + '</div>'
+            </a>`;
+          }).join('') + '</div>'
         : '<div class="empty">No characters yet.</div>';
     }
     await loadCharacters();

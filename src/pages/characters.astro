@@ -97,14 +97,17 @@ import Base from '../layouts/Base.astro';
 
     const name = (state.id?.name || '').trim() || 'Unnamed character';
     const concept = (state.id?.concept || '').trim();
-    const splat = SPLAT_BY_ID[state.splat]?.name || '';
+    const splat = SPLAT_BY_ID[state.splat];
+    const style = splat ? ` style="--c:${splat.accent}"` : '';
     el('local').hidden = false;
     el('local-list').innerHTML = `<div class="char-grid">
-      <a class="char-card local" href="${base}sheet">
-        <span class="seal">This browser</span>
+      <a class="char-card local" href="${base}sheet"${style}>
+        <div class="card-top">
+          <span class="seal">This browser</span>
+          ${splat ? `<span class="splat-tag">${esc(splat.name)}</span>` : ''}
+        </div>
         <span class="cname">${esc(name)}</span>
         ${concept ? `<span class="cwho">${esc(concept)}</span>` : ''}
-        ${splat ? `<span class="cmeta"><b>${esc(splat)}</b></span>` : ''}
       </a></div>`;
     return { state, name, concept };
   }
@@ -143,13 +146,20 @@ import Base from '../layouts/Base.astro';
     });
   }
 
-  const card = (c: any, sub: string) => `
-    <a class="char-card" href="${base}character?id=${c.id}">
-      <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+  const card = (c: any, sub: string) => {
+    const splat = SPLAT_BY_ID[c.splat];
+    const style = splat ? ` style="--c:${splat.accent}"` : '';
+    return `
+    <a class="char-card" href="${base}character?id=${c.id}"${style}>
+      <div class="card-top">
+        <span class="seal ${c.status}">${SEALS[c.status] || 'Draft'}</span>
+        ${splat ? `<span class="splat-tag">${esc(splat.name)}</span>` : ''}
+      </div>
       <span class="cname">${esc(c.name || 'Unnamed')}</span>
       ${c.concept ? `<span class="cwho">${esc(c.concept)}</span>` : ''}
       <span class="cmeta">${sub}</span>
     </a>`;
+  };
 
   (async () => {
     const local = showLocal();
@@ -175,7 +185,7 @@ import Base from '../layouts/Base.astro';
     // owner_id, not RLS alone: a Storyteller can read every character in their campaigns,
     // and those are not theirs to list here.
     const { data, error } = await sb.from('characters')
-      .select('id, name, concept, status, updated_at, campaign_id, campaign:campaigns(id, name)')
+      .select('id, name, concept, status, updated_at, campaign_id, splat:sheet->>splat, campaign:campaigns(id, name)')
       .eq('owner_id', user.id)
       .order('updated_at', { ascending: false });
 

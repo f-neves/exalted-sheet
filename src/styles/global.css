@@ -182,13 +182,19 @@ input[type='number'] { -moz-appearance: textfield; }
 }
 .char-card, .camp-card {
   display: flex; flex-direction: column; gap: .25rem; text-decoration: none; color: var(--ink);
-  border: 1px solid var(--panel-border); border-left: 4px solid var(--accent);
+  border: 1px solid var(--panel-border); border-left: 4px solid var(--c, var(--accent));
   background: var(--panel); border-radius: 6px; padding: .65rem .8rem;
   transition: border-color .12s, transform .12s;
 }
-.char-card:hover, .camp-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.char-card.local { border-left-color: var(--gold); }
+.char-card:hover, .camp-card:hover { border-color: var(--accent); border-left-color: var(--c, var(--accent)); transform: translateY(-2px); }
+/* A card's own sheet type (--c, the splat's accent, set inline per card) always wins;
+   this is only where a character has none to give yet. */
+.char-card.local { border-left-color: var(--c, var(--gold)); }
 .char-card .seal, .camp-card .seal { align-self: flex-start; }
+/* The seal and the sheet type share a line, the type pushed to the far end of it. */
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.card-top .seal { align-self: auto; }
+.splat-tag { font-family: 'Cinzel'; font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: var(--c, var(--ink-soft)); }
 .cname, .camp-name { font-family: 'Cinzel'; font-size: 1rem; color: var(--accent); }
 .cwho, .camp-desc { font-size: .86rem; color: var(--ink-soft); }
 .cmeta { font-size: .76rem; color: var(--ink-soft); letter-spacing: .04em; margin-top: .15rem; }
