@@ -516,3 +516,31 @@ drop policy if exists st_camp_delete on storage.objects;
 create policy st_camp_delete on storage.objects for delete to authenticated using (
   bucket_id = 'campaign' and public.is_gm(((storage.foldername(name))[1])::uuid)
 );
+
+-- ---------------------------------------------------------------------
+-- Keep-alive
+--
+-- A free-plan project pauses after a week without activity, and a plain select
+-- through PostgREST did not stop it (the 3-day select against profiles ran fine
+-- until the project paused anyway). The keepalive workflow calls this function
+-- instead: it writes one row, so Postgres does real work every time. The table
+-- has RLS on and no policy, so it is unreachable except through the function,
+-- and the function takes no input and returns only the timestamp it just wrote.
+-- ---------------------------------------------------------------------
+
+create table if not exists public.keepalive (
+  id        boolean primary key default true check (id),
+  touched   timestamptz not null default now(),
+  pings     bigint not null default 0
+);
+alter table public.keepalive enable row level security;
+
+create or replace function public.touch_keepalive()
+returns timestamptz language sql security definer set search_path = public as $$
+  insert into public.keepalive as k (id, touched, pings) values (true, now(), 1)
+  on conflict (id) do update set touched = now(), pings = k.pings + 1
+  returning touched;
+$$;
+
+revoke all on function public.touch_keepalive() from public;
+grant execute on function public.touch_keepalive() to anon, authenticated;
