@@ -109,7 +109,7 @@ export function mountSheet(opts: SheetOpts) {
     const sp = SPLAT_BY_ID[RULES.defaultSplat] || SPLATS[0];
     const st: any = {
       meta: { schema: SCHEMA },
-      id: { name: '', player: '', concept: '', motivation: '', anima: '', sobriquet: '' },
+      id: { name: '', player: '', concept: '', motivation: '', anima: '', sobriquet: '', notes: '' },
       splat: sp.id,
       caste: sp.castes[0]?.id || '',
       favored: { abilities: [], attributes: [] },
@@ -131,6 +131,8 @@ export function mountSheet(opts: SheetOpts) {
       meritsFlaws: [],
       sorcery: { circles: {}, spells: [] },
       commitments: [],
+      // Motes on hand right now. null means "the full pool" (or, for committed, the commitment list's sum).
+      motes: { personal: null, peripheral: null, committed: null },
       health: { extras: {}, marks: [] },
       weapons: [],
       armor: [],
@@ -262,6 +264,13 @@ export function mountSheet(opts: SheetOpts) {
     st.commitments = (Array.isArray(raw.commitments) ? raw.commitments : []).map((c: any) => ({
       name: String(c?.name ?? ''), motes: num(c?.motes, 0),
     }));
+
+    const moteOf = (v: any) => (v === null || v === undefined || v === '' || !Number.isFinite(+v)
+      ? null : clamp(Math.round(+v), 0, 99));
+    st.motes = {
+      personal: moteOf(raw.motes?.personal), peripheral: moteOf(raw.motes?.peripheral),
+      committed: moteOf(raw.motes?.committed),
+    };
 
     st.health = {
       extras: Object.fromEntries(RULES.healthTrack.map((l: any) => [l.id, clamp(num(raw.health?.extras?.[l.id], 0), 0, 20)])),
@@ -670,27 +679,49 @@ export function mountSheet(opts: SheetOpts) {
       : '<div class="empty">Nothing committed.</div>';
   }
 
-  function renderPools() {
+  /** Pool maxima from the traits, and what the player says is on hand right now. */
+  function essenceNow() {
     const sp = splat();
     const ctx = poolCtx();
     const personal = calc.poolValue(sp.pools.personal, ctx);
     const peripheral = calc.poolValue(sp.pools.peripheral, ctx);
-    const committed = S.commitments.reduce((a: number, c: any) => a + (c.motes || 0), 0);
-    const total = personal.value + peripheral.value;
-    const row = (l: string, v: any, f: string) =>
-      `<div class="cmb"><b>${l}</b> <span class="val" data-calc="${esc(f)}">${v}</span></div>`;
     // Heroic mortals have no personal pool at all, so that row is dropped rather than shown as 0.
     const hasPersonal = Object.keys(sp.pools.personal || {}).length > 0;
-    el('pools').innerHTML =
-      (hasPersonal ? row('Personal', personal.value, personal.formula) : '')
-      + row('Peripheral', peripheral.value, peripheral.formula)
-      + (hasPersonal
-        ? row('Total', total, `Personal ${personal.value} + Peripheral ${peripheral.value} = ${total}`)
+    const listed = S.commitments.reduce((a: number, c: any) => a + (c.motes || 0), 0);
+    const m = S.motes;
+    const curPersonal = hasPersonal ? Math.min(m.personal ?? personal.value, personal.value) : 0;
+    const curPeripheral = Math.min(m.peripheral ?? peripheral.value, peripheral.value);
+    const committed = m.committed ?? listed;
+    const total = curPersonal + curPeripheral;
+    return { personal, peripheral, hasPersonal, listed, curPersonal, curPeripheral, committed, total };
+  }
+
+  function poolTotalsHtml(e: any) {
+    const row = (l: string, v: any, f: string) =>
+      `<div class="cmb"><b>${l}</b> <span class="val" data-calc="${esc(f)}">${v}</span></div>`;
+    return (e.hasPersonal
+        ? row('Total', e.total, `Personal ${e.curPersonal} + Peripheral ${e.curPeripheral} = ${e.total}`)
         : '')
-      + row('Committed', committed, S.commitments.length
-          ? S.commitments.map((c: any) => `${c.name || 'unnamed'} ${c.motes}`).join(' + ') + ` = ${committed}`
-          : 'Nothing committed')
-      + row('Available', total - committed, `${total} − ${committed} = ${total - committed}`);
+      + row('Available', e.total - e.committed, `${e.total} − committed ${e.committed} = ${e.total - e.committed}`);
+  }
+
+  function renderPools() {
+    const e = essenceNow();
+    const dis = ro() ? ' disabled' : '';
+    const mote = (key: string, v: number | null, ph: number) =>
+      `<input class="mote" type="number" min="0" max="99" step="1" data-mote="${key}"`
+      + ` value="${v ?? ''}" placeholder="${ph}"${dis} />`;
+    const cur = (l: string, key: string, pool: any) =>
+      `<div class="cmb"><b>${l}</b> ${mote(key, S.motes[key], pool.value)}`
+      + ` <span class="val" data-calc="${esc(pool.formula + ' · leave blank for a full pool')}">/ ${pool.value}</span></div>`;
+    el('pools').innerHTML =
+      (e.hasPersonal ? cur('Personal', 'personal', e.personal) : '')
+      + cur('Peripheral', 'peripheral', e.peripheral)
+      + `<div class="cmb"><b>Committed</b> ${mote('committed', S.motes.committed, e.listed)}`
+      + ` <span class="val" data-calc="${esc(S.commitments.length
+          ? 'Commitments: ' + S.commitments.map((c: any) => `${c.name || 'unnamed'} ${c.motes}`).join(' + ') + ` = ${e.listed} · leave blank to use this sum`
+          : 'Nothing listed below · leave blank for 0')}">motes</span></div>`
+      + `<div id="pool-totals">${poolTotalsHtml(e)}</div>`;
   }
 
   /** Charm rows opened on the sheet, as "setId:charmId". Not saved: it is a reading
@@ -1026,7 +1057,7 @@ export function mountSheet(opts: SheetOpts) {
     const mv = calc.movement({ dexterity: S.attrs.dexterity.v }, RULES);
     const personal = calc.poolValue(sp.pools.personal, ctx);
     const peripheral = calc.poolValue(sp.pools.peripheral, ctx);
-    const committed = S.commitments.reduce((a: number, c: any) => a + (c.motes || 0), 0);
+    const e = essenceNow();
 
     const r = (l: string, v: any, f: string, extra = false) =>
       `<div class="derv${extra ? ' derv-extra' : ''}"><span class="dl">${l}</span>`
@@ -1042,8 +1073,8 @@ export function mountSheet(opts: SheetOpts) {
       + (Object.keys(sp.pools.personal || {}).length
         ? r('Personal Essence', personal.value, personal.formula) : '')
       + r('Peripheral Essence', peripheral.value, peripheral.formula)
-      + r('Essence available', personal.value + peripheral.value - committed,
-          `Personal ${personal.value} + Peripheral ${peripheral.value} − committed ${committed} = ${personal.value + peripheral.value - committed}`)
+      + r('Essence available', e.total - e.committed,
+          `On hand ${e.total} − committed ${e.committed} = ${e.total - e.committed}`)
       + r('Join Battle', `${jb.value}d`, jb.formula, true)
       + r('Wound penalty', wound.value + (wound.incapacitated ? ' · Incap' : ''),
           `${S.health.marks.filter(Boolean).length} of ${levels.length} health levels filled`, true)
@@ -1318,6 +1349,12 @@ export function mountSheet(opts: SheetOpts) {
     if (d.mfflaw !== undefined) { S.meritsFlaws[+d.mfflaw].flaw = t.checked; renderOther(); recompute(); return; }
     if (d.chcat !== undefined) { S.charms.list[+d.chcat].category = t.value; renderCharms(); recompute(); return; }
     if (d.cname !== undefined) { S.commitments[+d.cname].name = t.value; recompute(); return; }
+    if (d.mote !== undefined) {
+      // Blank goes back to the default; the inputs are left alone so typing is not interrupted.
+      S.motes[d.mote] = t.value.trim() === '' ? null : clamp(Math.round(iv()), 0, 99);
+      el('pool-totals').innerHTML = poolTotalsHtml(essenceNow());
+      renderDerived(); save(); return;
+    }
     if (d.cmotes !== undefined) { S.commitments[+d.cmotes].motes = iv(); recompute(); return; }
     if (d.chname !== undefined) { S.charms.list[+d.chname].name = t.value; save(); return; }
     if (d.chfav !== undefined) { S.charms.list[+d.chfav].favored = t.checked; renderCharms(); recompute(); return; }

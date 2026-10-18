@@ -76,6 +76,9 @@
   <label>Anima Banner<input class="txt" data-id="anima" /></label>
   <label>Sobriquet<input class="txt" data-id="sobriquet" /></label>
 </div>
+<div class="idrow idrow-notes">
+  <label>Notes<textarea class="txt" data-id="notes" rows="2"></textarea></label>
+</div>
 <div class="caste-info" id="caste-info"></div>
 
 <h2 class="barh">Attributes <small id="attr-hint"></small></h2>
@@ -227,6 +230,8 @@
   .idrow .txt { font-size: 1rem; border: none; border-bottom: 1px solid var(--rule); background: transparent; border-radius: 0; padding: .18rem .1rem; }
   .idrow .txt:focus { box-shadow: none; border-bottom-color: var(--accent); }
   .idrow select { width: 100%; }
+  .idrow.idrow-notes { grid-template-columns: 1fr; }
+  .idrow textarea.txt { resize: vertical; min-height: 2.6rem; line-height: 1.35; text-transform: none; letter-spacing: normal; }
   .caste-info { font-size: .84rem; color: var(--ink-soft); margin: 0 0 .8rem; line-height: 1.45; }
   .caste-info b { font-family: 'Cinzel'; color: var(--accent-strong); font-weight: 600; }
   .caste-info .todo { color: var(--danger); }
@@ -394,6 +399,7 @@
   .cmb:last-child { border-bottom: none; }
   .cmb b { font-family: 'Cinzel'; font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-strong); }
   .cmb .val { font-family: 'Cinzel'; color: var(--accent); font-weight: 700; }
+  .cmb .mote { width: 3.6rem; text-align: center; margin-left: .3rem; }
 
   .notes-grid textarea { width: 100%; min-height: 7rem; resize: vertical; }
   .notes-grid label { display: flex; flex-direction: column; gap: .2rem; font-family: 'Cinzel'; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
