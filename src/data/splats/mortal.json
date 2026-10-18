@@ -87,7 +87,7 @@
     "peripheral": { "essence": 10 }
   },
 
-  "soak": { "bashing": 1, "lethal": 0.5, "aggravated": 0 },
+  "soak": { "bashing": 1, "lethal": 0, "aggravated": 0 },
 
   "creation": {
     "_doc": "Advisory checks on a starting sheet. None of these block spending.",

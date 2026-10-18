@@ -233,7 +233,9 @@ export function soak({ stamina, armorB = 0, armorL = 0, armorA = 0 }, splat) {
   const mk = (mult, armor, label) => {
     const nat = floor(stamina * mult);
     const value = nat + armor;
-    const natTxt = mult === 1 ? `Stamina ${stamina}` : `⌊Stamina ${stamina} × ${mult}⌋ = ${nat}`;
+    const natTxt = mult === 1 ? `Stamina ${stamina}`
+      : mult === 0 ? 'no natural soak'
+      : `⌊Stamina ${stamina} × ${mult}⌋ = ${nat}`;
     return { value, formula: `${natTxt}${armor ? ` + armour ${armor}` : ''} = ${value} ${label}` };
   };
   return {
