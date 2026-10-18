@@ -131,8 +131,8 @@ export function mountSheet(opts: SheetOpts) {
       meritsFlaws: [],
       sorcery: { circles: {}, spells: [] },
       commitments: [],
-      // Motes on hand right now. null means "the full pool" (or, for committed, the commitment list's sum).
-      motes: { personal: null, peripheral: null, committed: null },
+      // Motes spent from each pool. null means none spent (or, for committed, the commitment list's sum).
+      motes: { spentPersonal: null, spentPeripheral: null, committed: null },
       health: { extras: {}, marks: [] },
       weapons: [],
       armor: [],
@@ -268,7 +268,7 @@ export function mountSheet(opts: SheetOpts) {
     const moteOf = (v: any) => (v === null || v === undefined || v === '' || !Number.isFinite(+v)
       ? null : clamp(Math.round(+v), 0, 99));
     st.motes = {
-      personal: moteOf(raw.motes?.personal), peripheral: moteOf(raw.motes?.peripheral),
+      spentPersonal: moteOf(raw.motes?.spentPersonal), spentPeripheral: moteOf(raw.motes?.spentPeripheral),
       committed: moteOf(raw.motes?.committed),
     };
 
@@ -679,7 +679,7 @@ export function mountSheet(opts: SheetOpts) {
       : '<div class="empty">Nothing committed.</div>';
   }
 
-  /** Pool maxima from the traits, and what the player says is on hand right now. */
+  /** Pool maxima from the traits, less what the player says was spent and committed. */
   function essenceNow() {
     const sp = splat();
     const ctx = poolCtx();
@@ -689,8 +689,8 @@ export function mountSheet(opts: SheetOpts) {
     const hasPersonal = Object.keys(sp.pools.personal || {}).length > 0;
     const listed = S.commitments.reduce((a: number, c: any) => a + (c.motes || 0), 0);
     const m = S.motes;
-    const curPersonal = hasPersonal ? Math.min(m.personal ?? personal.value, personal.value) : 0;
-    const curPeripheral = Math.min(m.peripheral ?? peripheral.value, peripheral.value);
+    const curPersonal = hasPersonal ? Math.max(0, personal.value - (m.spentPersonal ?? 0)) : 0;
+    const curPeripheral = Math.max(0, peripheral.value - (m.spentPeripheral ?? 0));
     const committed = m.committed ?? listed;
     const total = curPersonal + curPeripheral;
     return { personal, peripheral, hasPersonal, listed, curPersonal, curPeripheral, committed, total };
@@ -711,17 +711,29 @@ export function mountSheet(opts: SheetOpts) {
     const mote = (key: string, v: number | null, ph: number) =>
       `<input class="mote" type="number" min="0" max="99" step="1" data-mote="${key}"`
       + ` value="${v ?? ''}" placeholder="${ph}"${dis} />`;
-    const cur = (l: string, key: string, pool: any) =>
-      `<div class="cmb"><b>${l}</b> ${mote(key, S.motes[key], pool.value)}`
-      + ` <span class="val" data-calc="${esc(pool.formula + ' · leave blank for a full pool')}">/ ${pool.value}</span></div>`;
+    const cur = (l: string, key: string, field: string, now: number, pool: any) =>
+      `<div class="cmb"><b>${l}</b> <span class="lbl">spent</span>${mote(field, S.motes[field], 0)}`
+      + ` <span class="val" id="pool-left-${key}" data-calc="${esc(`Pool: ${pool.formula} · left = pool − spent`)}">${now} / ${pool.value}</span></div>`;
     el('pools').innerHTML =
-      (e.hasPersonal ? cur('Personal', 'personal', e.personal) : '')
-      + cur('Peripheral', 'peripheral', e.peripheral)
+      (e.hasPersonal ? cur('Personal', 'personal', 'spentPersonal', e.curPersonal, e.personal) : '')
+      + cur('Peripheral', 'peripheral', 'spentPeripheral', e.curPeripheral, e.peripheral)
       + `<div class="cmb"><b>Committed</b> ${mote('committed', S.motes.committed, e.listed)}`
       + ` <span class="val" data-calc="${esc(S.commitments.length
           ? 'Commitments: ' + S.commitments.map((c: any) => `${c.name || 'unnamed'} ${c.motes}`).join(' + ') + ` = ${e.listed} · leave blank to use this sum`
           : 'Nothing listed below · leave blank for 0')}">motes</span></div>`
       + `<div id="pool-totals">${poolTotalsHtml(e)}</div>`;
+  }
+
+  /** Refresh only the computed numbers, so the box being typed into is not rebuilt. */
+  function refreshPoolNumbers() {
+    const e = essenceNow();
+    const left = (key: string, cur: number, pool: any) => {
+      const n = document.getElementById(`pool-left-${key}`);
+      if (n) n.textContent = `${cur} / ${pool.value}`;
+    };
+    left('personal', e.curPersonal, e.personal);
+    left('peripheral', e.curPeripheral, e.peripheral);
+    el('pool-totals').innerHTML = poolTotalsHtml(e);
   }
 
   /** Charm rows opened on the sheet, as "setId:charmId". Not saved: it is a reading
@@ -1352,7 +1364,7 @@ export function mountSheet(opts: SheetOpts) {
     if (d.mote !== undefined) {
       // Blank goes back to the default; the inputs are left alone so typing is not interrupted.
       S.motes[d.mote] = t.value.trim() === '' ? null : clamp(Math.round(iv()), 0, 99);
-      el('pool-totals').innerHTML = poolTotalsHtml(essenceNow());
+      refreshPoolNumbers();
       renderDerived(); save(); return;
     }
     if (d.cmotes !== undefined) { S.commitments[+d.cmotes].motes = iv(); recompute(); return; }
