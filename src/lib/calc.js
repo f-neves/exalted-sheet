@@ -195,31 +195,35 @@ export function virtueStats(virtues) {
 }
 
 /* ------------------------------------------------------------------ *
- * Defence values (canonical 2e — always round UP)
+ * Defence values (canonical 2e rounds UP; mortals round DOWN, `round: 'down'`)
  * ------------------------------------------------------------------ */
 
-export function dodgeDV({ dexterity, dodge, essence, mobility = 0, bonus = 0 }) {
-  const raw = ceil((dexterity + dodge + essence) / 2);
+const halve = (sum, round) => (round === 'down'
+  ? { raw: floor(sum / 2), l: '⌊', r: '⌋' }
+  : { raw: ceil(sum / 2), l: '⌈', r: '⌉' });
+
+export function dodgeDV({ dexterity, dodge, essence, mobility = 0, bonus = 0, round = 'up' }) {
+  const { raw, l, r } = halve(dexterity + dodge + essence, round);
   const value = Math.max(0, raw - Math.abs(mobility) + bonus);
-  let f = `⌈(Dexterity ${dexterity} + Dodge ${dodge} + Essence ${essence}) ÷ 2⌉ = ${raw}`;
+  let f = `${l}(Dexterity ${dexterity} + Dodge ${dodge} + Essence ${essence}) ÷ 2${r} = ${raw}`;
   if (mobility) f += ` − mobility ${Math.abs(mobility)}`;
   if (bonus) f += ` ${bonus > 0 ? '+' : '−'} ${Math.abs(bonus)}`;
   return { value, formula: `${f} = ${value}` };
 }
 
-export function parryDV({ dexterity, ability, abilityName = 'Ability', weaponDefense = 0, mobility = 0, bonus = 0 }) {
-  const raw = ceil((dexterity + ability + weaponDefense) / 2);
+export function parryDV({ dexterity, ability, abilityName = 'Ability', weaponDefense = 0, mobility = 0, bonus = 0, round = 'up' }) {
+  const { raw, l, r } = halve(dexterity + ability + weaponDefense, round);
   const value = Math.max(0, raw - Math.abs(mobility) + bonus);
-  let f = `⌈(Dexterity ${dexterity} + ${abilityName} ${ability} + weapon Defense ${weaponDefense}) ÷ 2⌉ = ${raw}`;
+  let f = `${l}(Dexterity ${dexterity} + ${abilityName} ${ability} + weapon Defense ${weaponDefense}) ÷ 2${r} = ${raw}`;
   if (mobility) f += ` − mobility ${Math.abs(mobility)}`;
   if (bonus) f += ` ${bonus > 0 ? '+' : '−'} ${Math.abs(bonus)}`;
   return { value, formula: `${f} = ${value}` };
 }
 
-export function mentalDV({ willpower, integrity, essence, bonus = 0 }) {
-  const raw = ceil((willpower + integrity + essence) / 2);
+export function mentalDV({ willpower, integrity, essence, bonus = 0, round = 'up' }) {
+  const { raw, l, r } = halve(willpower + integrity + essence, round);
   const value = Math.max(0, raw + bonus);
-  let f = `⌈(Willpower ${willpower} + Integrity ${integrity} + Essence ${essence}) ÷ 2⌉ = ${raw}`;
+  let f = `${l}(Willpower ${willpower} + Integrity ${integrity} + Essence ${essence}) ÷ 2${r} = ${raw}`;
   if (bonus) f += ` ${bonus > 0 ? '+' : '−'} ${Math.abs(bonus)}`;
   return { value, formula: `${f} = ${value}` };
 }

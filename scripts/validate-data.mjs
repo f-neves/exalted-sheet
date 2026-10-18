@@ -124,6 +124,7 @@ const splatSchema = z.object({
   }),
   pools: z.object({ personal: poolSchema, peripheral: poolSchema }),
   soak: z.object({ bashing: z.number(), lethal: z.number(), aggravated: z.number() }),
+  dvRound: z.enum(['up', 'down']).optional(),
   limit: z.object({
     enabled: z.boolean(), label: z.string(), boxes: z.number().int().min(1), breakLabel: z.string(),
   }),

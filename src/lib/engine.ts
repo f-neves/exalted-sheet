@@ -1010,7 +1010,7 @@ export function mountSheet(opts: SheetOpts) {
       const dmg = calc.rawDamage({ strength: str, damage: w.damage, damageType: w.damageType });
       const pdv = calc.parryDV({
         dexterity: dex, ability: t.v, abilityName: abilRec?.name || w.ability,
-        weaponDefense: w.defense, mobility: arm.mobility,
+        weaponDefense: w.defense, mobility: arm.mobility, round: splat().dvRound,
       });
       h += `<div class="cmb"><b>${esc(w.name || 'unnamed')}${w.primary ? ' ★' : ''}</b> `
         + `<span class="val" data-calc="${esc(atk.formula)}">${atk.value}d</span> attack · `
@@ -1035,10 +1035,10 @@ export function mountSheet(opts: SheetOpts) {
     const ctx = poolCtx();
 
     const ddv = calc.dodgeDV({
-      dexterity: S.attrs.dexterity.v, dodge: S.abils.dodge.v, essence: S.essence.v, mobility: arm.mobility,
+      dexterity: S.attrs.dexterity.v, dodge: S.abils.dodge.v, essence: S.essence.v, mobility: arm.mobility, round: splat().dvRound,
     });
     const mdv = calc.mentalDV({
-      willpower: S.willpower.v, integrity: S.abils.integrity.v, essence: S.essence.v,
+      willpower: S.willpower.v, integrity: S.abils.integrity.v, essence: S.essence.v, round: splat().dvRound,
     });
     const primary = S.weapons.find((w: any) => w.primary) || S.weapons[0];
     let pdv: any = null;
@@ -1047,7 +1047,7 @@ export function mountSheet(opts: SheetOpts) {
       const abilRec = RULES.attackAbilities.find((a: any) => a.id === primary.ability);
       pdv = calc.parryDV({
         dexterity: S.attrs.dexterity.v, ability: t.v, abilityName: abilRec?.name || primary.ability,
-        weaponDefense: primary.defense, mobility: arm.mobility,
+        weaponDefense: primary.defense, mobility: arm.mobility, round: splat().dvRound,
       });
     }
     const sk = calc.soak({

@@ -30,7 +30,7 @@
   },
 
   "derived": {
-    "_doc": "Canonical Exalted 2e. Every DV rounds UP. Mobility penalty from armour is applied to Dodge DV and Parry DV.",
+    "_doc": "Canonical Exalted 2e. Every DV rounds UP, except for a type whose splat sets dvRound \"down\" (mortals). Mobility penalty from armour is applied to Dodge DV and Parry DV.",
     "dodgeDV":  { "terms": { "dexterity": 1, "dodge": 1, "essence": 1 }, "divisor": 2, "round": "up" },
     "parryDV":  { "terms": { "dexterity": 1, "ability": 1, "weaponDefense": 1 }, "divisor": 2, "round": "up" },
     "mdv":      { "terms": { "willpower": 1, "integrity": 1, "essence": 1 }, "divisor": 2, "round": "up" },

@@ -89,6 +89,8 @@
 
   "soak": { "bashing": 1, "lethal": 0, "aggravated": 0 },
 
+  "dvRound": "down",
+
   "creation": {
     "_doc": "Advisory checks on a starting sheet. None of these block spending.",
     "minVirtueDotsBought": 5,

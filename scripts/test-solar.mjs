@@ -275,6 +275,10 @@ eq(calc.traitXp('willpower', 3, 0, false, splat), 0, 'no refund: willpower 3');
 // Canonical Dodge DV: no stray +3.
 eq(calc.dodgeDV({ dexterity: 5, dodge: 4, essence: 3 }).value, 6, 'canonical Dodge DV');
 eq(calc.parryDV({ dexterity: 5, ability: 5, weaponDefense: 2 }).value, 6, 'canonical Parry DV');
+// Mortals halve and round down.
+eq(calc.dodgeDV({ dexterity: 3, dodge: 2, essence: 2, round: 'down' }).value, 3, 'mortal Dodge DV rounds down');
+eq(calc.parryDV({ dexterity: 3, ability: 3, weaponDefense: 1, round: 'down' }).value, 3, 'mortal Parry DV rounds down');
+eq(calc.mentalDV({ willpower: 4, integrity: 2, essence: 1, round: 'down' }).value, 3, 'mortal Mental DV rounds down');
 
 /* --------------------------------------------------------------------- */
 if (failures) {
