@@ -1000,6 +1000,13 @@ export function mountSheet(opts: SheetOpts) {
         : '<div class="empty">No armour yet.</div>');
   }
 
+  /** Parry takes the higher of Melee and Martial Arts, whatever the weapon's own Ability. */
+  function parryAbility() {
+    return ['melee', 'martial-arts']
+      .map((id) => ({ v: S.abils[id]?.v || 0, name: RULES.attackAbilities.find((a: any) => a.id === id)?.name || id }))
+      .reduce((best, a) => (a.v > best.v ? a : best));
+  }
+
   function renderCombat() {
     const arm = armorStack();
     const levels = healthLevels();
@@ -1020,8 +1027,9 @@ export function mountSheet(opts: SheetOpts) {
         accuracy: w.accuracy, specialty: spec, wound, fatigue: arm.fatigue,
       });
       const dmg = calc.rawDamage({ strength: str, damage: w.damage, damageType: w.damageType });
+      const pa = parryAbility();
       const pdv = calc.parryDV({
-        dexterity: dex, ability: t.v, abilityName: abilRec?.name || w.ability,
+        dexterity: dex, ability: pa.v, abilityName: pa.name,
         weaponDefense: w.defense, mobility: arm.mobility, round: splat().dvRound,
       });
       h += `<div class="cmb"><b>${esc(w.name || 'unnamed')}${w.primary ? ' ★' : ''}</b> `
@@ -1055,10 +1063,9 @@ export function mountSheet(opts: SheetOpts) {
     const primary = S.weapons.find((w: any) => w.primary) || S.weapons[0];
     let pdv: any = null;
     if (primary) {
-      const t = S.abils[primary.ability] || { v: 0 };
-      const abilRec = RULES.attackAbilities.find((a: any) => a.id === primary.ability);
+      const pa = parryAbility();
       pdv = calc.parryDV({
-        dexterity: S.attrs.dexterity.v, ability: t.v, abilityName: abilRec?.name || primary.ability,
+        dexterity: S.attrs.dexterity.v, ability: pa.v, abilityName: pa.name,
         weaponDefense: primary.defense, mobility: arm.mobility, round: splat().dvRound,
       });
     }
